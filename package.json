@@ -10,7 +10,7 @@
 	"dependencies": {
 		"@react-native-async-storage/async-storage": "^1.23.1",
 		"@react-native-menu/menu": "^0.9.1",
-		"axios": "^1.7.2",
+		"axios": "^1.7.4",
 		"crypto-js": "^4.2.0",
 		"expo": "~50.0.14",
 		"expo-blur": "~12.9.2",
