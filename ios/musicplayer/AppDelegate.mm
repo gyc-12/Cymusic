@@ -2,7 +2,9 @@
 
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTLinkingManager.h>
-
+#import "CarSceneDelegate.h"
+#import "PhoneSceneDelegate.h"
+#import <CarPlay/CarPlay.h>
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -58,5 +60,18 @@
 {
   return [super application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
 }
-
+- (UISceneConfiguration *)application:(UIApplication *)application
+    configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession
+                                   options:(UISceneConnectionOptions *)options
+{
+    if (connectingSceneSession.role == CPTemplateApplicationSceneSessionRoleApplication) {
+        UISceneConfiguration *scene = [[UISceneConfiguration alloc] initWithName:@"CarPlay" sessionRole:connectingSceneSession.role];
+        scene.delegateClass = NSClassFromString(@"CarSceneDelegate");
+        return scene;
+    } else {
+        UISceneConfiguration *scene = [[UISceneConfiguration alloc] initWithName:@"Phone" sessionRole:connectingSceneSession.role];
+        scene.delegateClass = NSClassFromString(@"PhoneSceneDelegate");
+        return scene;
+    }
+}
 @end

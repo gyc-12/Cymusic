@@ -255,7 +255,7 @@ const PlayerScreen = () => {
 	const menuActions = [
 		{
 			id: 'favorite',
-			title: isFavorite ? i18n.t('player.like') : i18n.t('player.like'),
+			title: isFavorite ? i18n.t('player.unlike') : i18n.t('player.like'),
 			titleColor: isFavorite ? colors.primary : undefined,
 			image: isFavorite ? 'heart.fill' : 'heart',
 		},

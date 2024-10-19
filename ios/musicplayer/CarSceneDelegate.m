@@ -13,7 +13,7 @@
 - (void)templateApplicationScene:(CPTemplateApplicationScene *)templateApplicationScene
       didDisconnectInterfaceController:(CPInterfaceController *)interfaceController {
     // Dispatch disconnect to RNCarPlay
- in   [RNCarPlay disconnect];
+   [RNCarPlay disconnect];
 }
 
 @end

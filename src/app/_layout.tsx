@@ -1,6 +1,7 @@
 import { playbackService } from '@/constants/playbackService'
 import { colors } from '@/constants/tokens'
 import LyricManager from '@/helpers/lyricManager'
+import useCarPlay from '@/hooks/useCarPlay'
 import { useLogTrackPlayerState } from '@/hooks/useLogTrackPlayerState'
 import { useSetupTrackPlayer } from '@/hooks/useSetupTrackPlayer'
 import i18n, { setI18nConfig } from '@/utils/i18n'
@@ -25,7 +26,8 @@ const App = () => {
 
 	useLogTrackPlayerState()
 	// myTrackPlayer.setupTrackPlayer()
-
+	const { carPlayConnected, buildBrowseTree } = useCarPlay()
+	console.log('carPlayConnected', carPlayConnected)
 	LyricManager.setup()
 	const [isI18nReady, setIsI18nReady] = useState(false)
 

@@ -1015,6 +1015,8 @@ PODS:
     - React-debug
   - react-native-background-timer (2.4.1):
     - React-Core
+  - react-native-carplay (2.4.1-beta.0):
+    - React
   - react-native-loader-kit (2.0.8):
     - NVActivityIndicatorView (= 5.1.1)
     - React-Core
@@ -1298,6 +1300,7 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - react-native-background-timer (from `../node_modules/react-native-background-timer`)
+  - react-native-carplay (from `../node_modules/react-native-carplay`)
   - react-native-loader-kit (from `../node_modules/react-native-loader-kit`)
   - "react-native-menu (from `../node_modules/@react-native-menu/menu`)"
   - react-native-mmkv (from `../node_modules/react-native-mmkv`)
@@ -1451,6 +1454,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   react-native-background-timer:
     :path: "../node_modules/react-native-background-timer"
+  react-native-carplay:
+    :path: "../node_modules/react-native-carplay"
   react-native-loader-kit:
     :path: "../node_modules/react-native-loader-kit"
   react-native-menu:
@@ -1584,6 +1589,7 @@ SPEC CHECKSUMS:
   React-logger: 3eb80a977f0d9669468ef641a5e1fabbc50a09ec
   React-Mapbuffer: 84ea43c6c6232049135b1550b8c60b2faac19fab
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
+  react-native-carplay: 474f4e36fe22a09e1da4c78d53dd0ac416ec7675
   react-native-loader-kit: ed18c8ce83b69083211912326897d8286f37d797
   react-native-menu: 9728f90160c36b9a75481fc76e05354b99d54c59
   react-native-mmkv: 1fdc81aa70c1aba09370718e6a63a09cbbbac8d2

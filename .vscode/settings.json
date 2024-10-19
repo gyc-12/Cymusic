@@ -29,5 +29,8 @@
 		"vector": "cpp",
 		"*.ipp": "cpp"
 	},
-	"cSpell.words": ["abslist", "flac", "hilight", "TARGETID"]
+	"cSpell.words": ["abslist", "flac", "hilight", "TARGETID"],
+	"[xml]": {
+		"editor.defaultFormatter": "mikeburgh.xml-format"
+	}
 }

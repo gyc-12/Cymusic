@@ -3045,7 +3045,7 @@ base-64@^0.1.0:
 
 base-64@^1.0.0:
   version "1.0.0"
-  resolved "https://registry.yarnpkg.com/base-64/-/base-64-1.0.0.tgz#09d0f2084e32a3fd08c2475b973788eee6ae8f4a"
+  resolved "https://registry.npmjs.org/base-64/-/base-64-1.0.0.tgz"
   integrity sha512-kwDPIFCGx0NZHog36dj+tHiwP4QMzsZ3AgMViUBKI0+V5n4U0ufTCUMhnQ04diaRI8EX/QcPfql7zlhZ7j4zgg==
 
 base64-js@^1.2.3, base64-js@^1.3.0, base64-js@^1.3.1, base64-js@^1.5.1:
@@ -3067,7 +3067,7 @@ big-integer@1.6.x:
 
 bignumber.js@*:
   version "9.1.2"
-  resolved "https://registry.npmjs.org/bignumber.js/-/bignumber.js-9.1.2.tgz#b7c4242259c008903b13707983b5f4bbd31eda0c"
+  resolved "https://registry.npmjs.org/bignumber.js/-/bignumber.js-9.1.2.tgz"
   integrity sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==
 
 bl@^4.1.0:
@@ -4254,12 +4254,12 @@ expo-dev-menu@4.5.8:
 
 expo-document-picker@^12.0.2:
   version "12.0.2"
-  resolved "https://registry.yarnpkg.com/expo-document-picker/-/expo-document-picker-12.0.2.tgz#b5c55d8bfe28d0b824e19bc0881b83cf96df634d"
+  resolved "https://registry.npmjs.org/expo-document-picker/-/expo-document-picker-12.0.2.tgz"
   integrity sha512-tmwuRWoCPv6SmNDSMEWcttMBJ95k8/g5sMWnHdmvOx0UKp0pFXP8FI+55HKtQpo6k2+118MkdDDhQSwKqASVAw==
 
 expo-file-system@^15.4.2:
   version "15.9.0"
-  resolved "https://registry.yarnpkg.com/expo-file-system/-/expo-file-system-15.9.0.tgz#b048b9168875634efcce0aa002ee0eec31ed42a8"
+  resolved "https://registry.npmjs.org/expo-file-system/-/expo-file-system-15.9.0.tgz"
   integrity sha512-ikzqBGpbSzp/57+aruXzRR2s0HEVYxdd1o3RxfswJRujjT/6X128xmUTTFDaQUr+zydyvxvY7Mo0szWpXhPyLA==
   dependencies:
     uuid "^3.4.0"
@@ -4278,7 +4278,7 @@ expo-font@~11.10.3:
 
 expo-haptics@~12.8.1:
   version "12.8.1"
-  resolved "https://registry.npmjs.org/expo-haptics/-/expo-haptics-12.8.1.tgz#42b996763be33d661bd33bbc3b3958c3f2734b9d"
+  resolved "https://registry.npmjs.org/expo-haptics/-/expo-haptics-12.8.1.tgz"
   integrity sha512-ntLsHkfle8K8w9MW8pZEw92ZN3sguaGUSSIxv30fPKNeQFu7Cq/h47Qv3tONv2MO3wU48N9FbKnant6XlfptpA==
 
 expo-json-utils@~0.12.0:
@@ -4306,7 +4306,7 @@ expo-linking@~6.2.2:
 
 expo-localization@~14.8.4:
   version "14.8.4"
-  resolved "https://registry.npmjs.org/expo-localization/-/expo-localization-14.8.4.tgz#2911d281b32a9c51a84fe66f8519bb51cf7390b5"
+  resolved "https://registry.npmjs.org/expo-localization/-/expo-localization-14.8.4.tgz"
   integrity sha512-WWcG6Bg9s8p9wk5BvdXfxBLCEcvzS75O+nN5O+kWA3+cGDKcbfvExWmXcCSz8hn8y8rRVIEx8wwSgysMTtptUA==
   dependencies:
     rtl-detect "^1.0.2"
@@ -4340,7 +4340,7 @@ expo-modules-core@1.11.12:
 
 expo-music-info-2@^2.0.0:
   version "2.0.0"
-  resolved "https://registry.yarnpkg.com/expo-music-info-2/-/expo-music-info-2-2.0.0.tgz#85b00a53c019f9fd19f30d13b34e8f135704b036"
+  resolved "https://registry.npmjs.org/expo-music-info-2/-/expo-music-info-2-2.0.0.tgz"
   integrity sha512-QKrnzNIBJuLEc5IRaAuPgVro3EJCW5vhFjfFZfPFv9x2hfG8iy8iH0NgCuKhk0y7mldcWutd8nctXxEdp8BGnQ==
   dependencies:
     base-64 "^1.0.0"
@@ -4989,9 +4989,9 @@ human-signals@^2.1.0:
   integrity sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==
 
 i18n-js@^4.4.3:
-  version "4.4.3"
-  resolved "https://registry.npmjs.org/i18n-js/-/i18n-js-4.4.3.tgz#09744ddd377261f614502cc5622ce6981026ea4a"
-  integrity sha512-QIIyvJ+wOKdigL4BlgwiFFrpoXeGdlC8EYgori64YSWm1mnhNYYjIfRu5wETFrmiNP2fyD6xIjVG8dlzaiQr/A==
+  version "4.5.0"
+  resolved "https://registry.npmjs.org/i18n-js/-/i18n-js-4.5.0.tgz"
+  integrity sha512-eiT3ZzK+k1VUR/oDz0Nne3dWU6DE+4P3FxtHXgHMZyzW1lKAHsjEYaOPZClU4QA9rI+uoeE71zq1QzLnZ6LDJQ==
   dependencies:
     bignumber.js "*"
     lodash "*"
@@ -5716,7 +5716,7 @@ lighthouse-logger@^1.0.0:
 
 lightningcss-darwin-arm64@1.19.0:
   version "1.19.0"
-  resolved "https://registry.yarnpkg.com/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.19.0.tgz#56ab071e932f845dbb7667f44f5b78441175a343"
+  resolved "https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.19.0.tgz"
   integrity sha512-wIJmFtYX0rXHsXHSr4+sC5clwblEMji7HHQ4Ub1/CznVRxtCFha6JIt5JZaNf8vQrfdZnBxLLC6R8pC818jXqg==
 
 lightningcss-darwin-x64@1.19.0:
@@ -5726,32 +5726,32 @@ lightningcss-darwin-x64@1.19.0:
 
 lightningcss-linux-arm-gnueabihf@1.19.0:
   version "1.19.0"
-  resolved "https://registry.yarnpkg.com/lightningcss-linux-arm-gnueabihf/-/lightningcss-linux-arm-gnueabihf-1.19.0.tgz#0f921dc45f2e5c3aea70fab98844ac0e5f2f81be"
+  resolved "https://registry.npmjs.org/lightningcss-linux-arm-gnueabihf/-/lightningcss-linux-arm-gnueabihf-1.19.0.tgz"
   integrity sha512-P15VXY5682mTXaiDtbnLYQflc8BYb774j2R84FgDLJTN6Qp0ZjWEFyN1SPqyfTj2B2TFjRHRUvQSSZ7qN4Weig==
 
 lightningcss-linux-arm64-gnu@1.19.0:
   version "1.19.0"
-  resolved "https://registry.yarnpkg.com/lightningcss-linux-arm64-gnu/-/lightningcss-linux-arm64-gnu-1.19.0.tgz#027f9df9c7f4ffa127c37a71726245a5794d7ba2"
+  resolved "https://registry.npmjs.org/lightningcss-linux-arm64-gnu/-/lightningcss-linux-arm64-gnu-1.19.0.tgz"
   integrity sha512-zwXRjWqpev8wqO0sv0M1aM1PpjHz6RVIsBcxKszIG83Befuh4yNysjgHVplF9RTU7eozGe3Ts7r6we1+Qkqsww==
 
 lightningcss-linux-arm64-musl@1.19.0:
   version "1.19.0"
-  resolved "https://registry.yarnpkg.com/lightningcss-linux-arm64-musl/-/lightningcss-linux-arm64-musl-1.19.0.tgz#85ea987da868524eac6db94f8e1eaa23d0b688a3"
+  resolved "https://registry.npmjs.org/lightningcss-linux-arm64-musl/-/lightningcss-linux-arm64-musl-1.19.0.tgz"
   integrity sha512-vSCKO7SDnZaFN9zEloKSZM5/kC5gbzUjoJQ43BvUpyTFUX7ACs/mDfl2Eq6fdz2+uWhUh7vf92c4EaaP4udEtA==
 
 lightningcss-linux-x64-gnu@1.19.0:
   version "1.19.0"
-  resolved "https://registry.yarnpkg.com/lightningcss-linux-x64-gnu/-/lightningcss-linux-x64-gnu-1.19.0.tgz#02bec89579ab4153dccc0def755d1fd9e3ee7f3c"
+  resolved "https://registry.npmjs.org/lightningcss-linux-x64-gnu/-/lightningcss-linux-x64-gnu-1.19.0.tgz"
   integrity sha512-0AFQKvVzXf9byrXUq9z0anMGLdZJS+XSDqidyijI5njIwj6MdbvX2UZK/c4FfNmeRa2N/8ngTffoIuOUit5eIQ==
 
 lightningcss-linux-x64-musl@1.19.0:
   version "1.19.0"
-  resolved "https://registry.yarnpkg.com/lightningcss-linux-x64-musl/-/lightningcss-linux-x64-musl-1.19.0.tgz#e36a5df8193ae961d22974635e4c100a1823bb8c"
+  resolved "https://registry.npmjs.org/lightningcss-linux-x64-musl/-/lightningcss-linux-x64-musl-1.19.0.tgz"
   integrity sha512-SJoM8CLPt6ECCgSuWe+g0qo8dqQYVcPiW2s19dxkmSI5+Uu1GIRzyKA0b7QqmEXolA+oSJhQqCmJpzjY4CuZAg==
 
 lightningcss-win32-x64-msvc@1.19.0:
   version "1.19.0"
-  resolved "https://registry.yarnpkg.com/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.19.0.tgz#0854dbd153035eca1396e2227c708ad43655a61c"
+  resolved "https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.19.0.tgz"
   integrity sha512-C+VuUTeSUOAaBZZOPT7Etn/agx/MatzJzGRkeV+zEABmPuntv1zihncsi+AyGmjkkzq3wVedEy7h0/4S84mUtg==
 
 lightningcss@~1.19.0:
@@ -5891,7 +5891,7 @@ make-dir@^2.0.0, make-dir@^2.1.0:
 
 make-plural@*:
   version "7.4.0"
-  resolved "https://registry.npmjs.org/make-plural/-/make-plural-7.4.0.tgz#fa6990dd550dea4de6b20163f74e5ed83d8a8d6d"
+  resolved "https://registry.npmjs.org/make-plural/-/make-plural-7.4.0.tgz"
   integrity sha512-4/gC9KVNTV6pvYg2gFeQYTW3mWaoJt7WZE5vrp1KnQDgW92JtYZnzmZT81oj/dUTqAIu0ufI2x3dkgu3bB1tYg==
 
 makeerror@1.0.12:
@@ -7049,8 +7049,13 @@ react-native-awesome-slider@^2.5.1:
 
 react-native-background-timer@^2.4.1:
   version "2.4.1"
-  resolved "https://registry.npmjs.org/react-native-background-timer/-/react-native-background-timer-2.4.1.tgz#a3bc1cafa8c1e3aeefd0611de120298b67978a0f"
+  resolved "https://registry.npmjs.org/react-native-background-timer/-/react-native-background-timer-2.4.1.tgz"
   integrity sha512-TE4Kiy7jUyv+hugxDxitzu38sW1NqjCk4uE5IgU2WevLv7sZacaBc6PZKOShNRPGirLl1NWkaG3LDEkdb9Um5g==
+
+react-native-carplay@^2.4.1-beta.0:
+  version "2.4.1-beta.0"
+  resolved "https://registry.npmjs.org/react-native-carplay/-/react-native-carplay-2.4.1-beta.0.tgz#985c44e4eae622e7d2cf17c5b996a0182dbf5a52"
+  integrity sha512-tYJymLgJi+0516niv4ApGVC+VgENX/uCYqCX81tewSILWnS6KR7M0A9+bHyNk8xoheFyYGruX7onYxU2U8ykPA==
 
 react-native-fast-image@^8.6.3:
   version "8.6.3"
@@ -7067,7 +7072,7 @@ react-native-fs@^2.20.0:
 
 react-native-gesture-handler@~2.18.0:
   version "2.18.1"
-  resolved "https://registry.npmjs.org/react-native-gesture-handler/-/react-native-gesture-handler-2.18.1.tgz#ec9206f34cd2f34a66c0430b2c416d31ee6dff17"
+  resolved "https://registry.npmjs.org/react-native-gesture-handler/-/react-native-gesture-handler-2.18.1.tgz"
   integrity sha512-WF2fxQ5kTaxHghlkBM4YxO86SyGWVwrSNgJ1E8z/ZtL2xD5B3bg5agvuVFfOzvceC114yq71s6E9vKPz94ZxRw==
   dependencies:
     "@egjs/hammerjs" "^2.0.17"
@@ -7160,7 +7165,7 @@ react-native-track-player@^4.1.1:
 
 react-native-volume-manager@^1.10.0:
   version "1.10.0"
-  resolved "https://registry.yarnpkg.com/react-native-volume-manager/-/react-native-volume-manager-1.10.0.tgz#4e73d284b31cf3b9b41df7c8ce9115454ad3e0af"
+  resolved "https://registry.npmjs.org/react-native-volume-manager/-/react-native-volume-manager-1.10.0.tgz"
   integrity sha512-MJbUyXCEz5q2GDJoOImvVZ+aC39mdxqvD6ZYVXPBuhbdhoThOIDZoaVAf+vC7H8ahGToLtNWVfcbgds8zzgHAg==
 
 react-native@0.73.6:
@@ -7471,7 +7476,7 @@ rimraf@~2.4.0:
 
 rtl-detect@^1.0.2:
   version "1.1.2"
-  resolved "https://registry.npmjs.org/rtl-detect/-/rtl-detect-1.1.2.tgz#ca7f0330af5c6bb626c15675c642ba85ad6273c6"
+  resolved "https://registry.npmjs.org/rtl-detect/-/rtl-detect-1.1.2.tgz"
   integrity sha512-PGMBq03+TTG/p/cRB7HCLKJ1MgDIi07+QU1faSjiYRfmY5UsAttV9Hs08jDAHVwcOwmVLcSJkpwyfXszVjWfIQ==
 
 run-parallel@^1.1.9:
@@ -8451,7 +8456,7 @@ utils-merge@1.0.1:
 
 uuid@^3.4.0:
   version "3.4.0"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
+  resolved "https://registry.npmjs.org/uuid/-/uuid-3.4.0.tgz"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
 uuid@^7.0.3:
