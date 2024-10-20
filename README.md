@@ -58,6 +58,8 @@ tg频道：<https://t.me/gyc_123>
 <https://github.com/maotoumao/MusicFree>
 
 # Screenshots
+![Simulator Screenshot - iPhone 14 - 2024-10-19 at 14 51 12](https://github.com/user-attachments/assets/2b8e8726-499e-470c-a25b-c4f4c82483c6)
+
 
 ![alt text](readme.jpg)
 
