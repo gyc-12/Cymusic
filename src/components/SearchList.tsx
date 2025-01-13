@@ -127,7 +127,7 @@ export const SearchList: React.FC<SearchListProps> = ({
 			<FlatList
 				data={tracks}
 				contentContainerStyle={{
-					paddingTop: 20, // 动态设置顶部 padding
+					paddingTop: 60, // 增加 iOS 上的顶部 padding
 					paddingBottom: 128 + insets.bottom,
 					flexGrow: 1, // 这将允许内容在少于一屏时也能填满整个屏幕
 					justifyContent: tracks.length === 0 ? 'center' : 'flex-start', // 当没有结果时，居中显示 EmptyComponent
