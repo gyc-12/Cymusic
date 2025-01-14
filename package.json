@@ -59,6 +59,7 @@
 	},
 	"devDependencies": {
 		"@babel/core": "^7.20.0",
+		"@expo/config-plugins": "^9.0.14",
 		"@types/lodash.shuffle": "^4.2.9",
 		"@types/react": "~18.2.0",
 		"@typescript-eslint/eslint-plugin": "^7.4.0",

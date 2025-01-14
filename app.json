@@ -24,7 +24,17 @@
 				"NSAppTransportSecurity": {
 					"NSAllowsArbitraryLoads": true
 				},
-				"CADisableMinimumFrameDurationOnPhone": true
+				"CADisableMinimumFrameDurationOnPhone": true,
+				"UIApplicationSceneManifest": {
+					"UIApplicationSupportsMultipleScenes": true,
+					"UISceneConfigurations": {
+						"UIWindowSceneSessionRoleApplication": [
+							{
+								"UISceneConfigurationName": "Default Configuration"
+							}
+						]
+					}
+				}
 			},
 			"splash": {
 				"image": "./assets/splash.png",
@@ -54,7 +64,8 @@
 						"NSExtensionActivationSupportsText": 1
 					}
 				}
-			]
+			],
+			"./expo-plugins/withMultipleScenes"
 		],
 		"experiments": {
 			"typedRoutes": true,
