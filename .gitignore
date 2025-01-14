@@ -39,4 +39,7 @@ yarn-error.*
 
 expo-env.d.ts
 third_party_url.ts
+
+ios
+android
 # @end expo-cli
