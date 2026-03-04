@@ -9,23 +9,23 @@ import { produce } from 'immer'
 import shuffle from 'lodash.shuffle'
 import RNFS from 'react-native-fs'
 import ReactNativeTrackPlayer, {
-    Event,
-    State,
-    Track,
-    usePlaybackState,
-    useProgress,
+	Event,
+	State,
+	Track,
+	usePlaybackState,
+	useProgress,
 } from 'react-native-track-player'
 
 import { MusicRepeatMode } from '@/helpers/types'
 import PersistStatus from '@/store/PersistStatus'
 import {
-    getMusicIndex,
-    getPlayList,
-    getPlayListMusicAt,
-    isInPlayList,
-    isPlayListEmpty,
-    setPlayList,
-    usePlayList,
+	getMusicIndex,
+	getPlayList,
+	getPlayListMusicAt,
+	isInPlayList,
+	isPlayListEmpty,
+	setPlayList,
+	usePlayList,
 } from '@/store/playList'
 import { createMediaIndexMap } from '@/utils/mediaIndexMap'
 import { musicIsPaused } from '@/utils/trackUtils'
@@ -663,7 +663,7 @@ const reloadNowSelectedMusicApi = async () => {
 			return null
 		}
 		// 重新加载选中的脚本
-		const reloadedApi = reloadMusicApi(selectedApi)
+		const reloadedApi = await reloadMusicApi(selectedApi)
 
 		// 更新 musicApiStore 中的脚本
 		musicApiSelectedStore.setValue(reloadedApi)
@@ -679,7 +679,7 @@ const reloadNowSelectedMusicApi = async () => {
 		throw error
 	}
 }
-const reloadMusicApi = (musicApi: IMusic.MusicApi, isTest: boolean = false): IMusic.MusicApi => {
+const reloadMusicApi = async (musicApi: IMusic.MusicApi, isTest: boolean = false): Promise<IMusic.MusicApi> => {
 	if (!musicApi.isSelected && !isTest) {
 		return musicApi // 如果没有被选中，直接返回原始对象
 	}
@@ -687,7 +687,7 @@ const reloadMusicApi = (musicApi: IMusic.MusicApi, isTest: boolean = false): IMu
 	try {
 		// 检测是否为 lx-music 格式脚本
 		if (musicApi.scriptType === 'lxmusic' || isLxMusicScript(musicApi.script)) {
-			return reloadLxMusicScript(musicApi)
+			return await reloadLxMusicScript(musicApi)
 		}
 
 		// Cymusic 原有 CommonJS 格式
@@ -733,7 +733,7 @@ const setMusicApiAsSelectedById = async (musicApiId: string) => {
 		const selectedApi = musicApis[targetApiIndex]
 
 		// 重新加载选中的音源脚本
-		const reloadedApi = reloadMusicApi(selectedApi)
+		const reloadedApi = await reloadMusicApi(selectedApi)
 
 		// 更新重新加载后的音源
 		musicApiSelectedStore.setValue(reloadedApi)
@@ -898,12 +898,13 @@ const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) =
 									setQuality(currentQuality)
 								}
 								logInfo(`成功获取${currentQuality}音质的音乐URL:`, resp_url)
-							} catch (error) {
-								logInfo(`${currentQuality}音质无可用链接(catch),尝试下一个音质`)
-								logError(`(catch error):`, error)
-								currentQualityIndex++
+								} catch (error) {
+									logInfo(`${currentQuality}音质无可用链接(catch),尝试下一个音质`)
+									const errMsg = error instanceof Error ? error.message : String(error)
+									logError(`(catch error): ${errMsg}`)
+									currentQualityIndex++
+								}
 							}
-						}
 						if (!resp_url) {
 							nowApiState.setValue('异常')
 							throw new Error('无法获取任何音质的音乐，请稍后重试。')
@@ -911,14 +912,15 @@ const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) =
 							logInfo('最终的音乐 URL:', resp_url)
 							nowApiState.setValue('正常')
 						}
-					} catch (error) {
-						nowApiState.setValue('异常')
-						logError('获取音乐 URL 失败:', error)
-						const errorMessage =
-							error.message === '请求超时'
-								? '获取音乐超时，请稍后重试。'
-								: error.message || '获取音乐失败，请稍后重试。'
-						showToast(errorMessage, '', 'error')
+						} catch (error) {
+							nowApiState.setValue('异常')
+							const errMsg = error instanceof Error ? error.message : String(error)
+							logError(`获取音乐 URL 失败: ${errMsg}`)
+							const errorMessage =
+								errMsg === '请求超时'
+									? '获取音乐超时，请稍后重试。'
+									: errMsg || '获取音乐失败，请稍后重试。'
+							showToast(errorMessage, '', 'error')
 						// showErrorMessage(errorMessage)
 						resp_url = fakeAudioMp3Uri // 使用假的音频 URL 作为后备
 					}

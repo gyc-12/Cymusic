@@ -2,13 +2,13 @@
 import { colors } from '@/constants/tokens'
 import { logError, logInfo } from '@/helpers/logger'
 import myTrackPlayer, {
-    autoCacheLocalStore,
-    isCachedIconVisibleStore,
-    musicApiSelectedStore,
-    musicApiStore,
-    nowApiState,
-    songsNumsToLoadStore,
-    useCurrentQuality,
+	autoCacheLocalStore,
+	isCachedIconVisibleStore,
+	musicApiSelectedStore,
+	musicApiStore,
+	nowApiState,
+	songsNumsToLoadStore,
+	useCurrentQuality,
 } from '@/helpers/trackPlayerIndex'
 import { adaptLxMusicScript, isLxMusicScript } from '@/helpers/userApi/lxMusicSourceAdapter'
 import PersistStatus from '@/store/PersistStatus'
@@ -22,16 +22,16 @@ import * as DocumentPicker from 'expo-document-picker'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Linking,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View,
+	ActivityIndicator,
+	Alert,
+	Image,
+	Linking,
+	ScrollView,
+	StyleSheet,
+	Switch,
+	Text,
+	TouchableOpacity,
+	View,
 } from 'react-native'
 import RNFS from 'react-native-fs'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -204,7 +204,7 @@ const MusicSourceMenu = ({ isDelete, onSelectSource }) => {
 			logInfo(`开始测试音源: ${api.name}`)
 			statusResults[api.id] = { status: '测试中...' }
 			sourceStatusStore.setValue({ ...statusResults }) // 更新到GlobalState
-			const reloadedApi = myTrackPlayer.reloadMusicApi(api, true)
+			const reloadedApi = await myTrackPlayer.reloadMusicApi(api, true)
 			const result = await testMusicSource(reloadedApi)
 			statusResults[api.id] = result
 			sourceStatusStore.setValue({ ...statusResults }) // 更新到GlobalState
@@ -341,7 +341,7 @@ const importMusicSourceFromUrl = async () => {
 
 						if (isLxMusicScript(utf8SourceCode)) {
 							logInfo('检测到 lx-music 格式音源脚本')
-							musicApi = adaptLxMusicScript(utf8SourceCode)
+							musicApi = await adaptLxMusicScript(utf8SourceCode)
 						} else {
 							const module: { exports: ModuleExports } = { exports: {} }
 							const require = () => {}
@@ -364,8 +364,9 @@ const importMusicSourceFromUrl = async () => {
 						myTrackPlayer.addMusicApi(musicApi)
 						return
 					} catch (error) {
-						logError('导入音源失败:', error)
-						Alert.alert('错误', '导入音源失败，请检查 URL 是否正确')
+						const errMsg = error instanceof Error ? error.message : String(error)
+						logError('导入音源失败:', errMsg)
+						Alert.alert('错误', `导入音源失败: ${errMsg}`)
 					}
 				},
 			},
@@ -394,7 +395,7 @@ const importMusicSourceFromFile = async () => {
 
 		if (isLxMusicScript(fileContents)) {
 			logInfo('检测到 lx-music 格式音源脚本')
-			musicApi = adaptLxMusicScript(fileContents)
+			musicApi = await adaptLxMusicScript(fileContents)
 		} else {
 			const module: { exports: ModuleExports } = { exports: {} }
 			const require = () => {}
@@ -417,9 +418,10 @@ const importMusicSourceFromFile = async () => {
 		myTrackPlayer.addMusicApi(musicApi)
 		return
 	} catch (err) {
-		logError('Error importing music source:', err)
-		Alert.alert('导入失败', '无法导入音源，请查看日志，确保文件格式正确并稍后再试。')
-		logError('导入音源失败' + err)
+		const errMsg = err instanceof Error ? (err as Error).message : String(err)
+		logError('Error importing music source:', errMsg)
+		Alert.alert('导入失败', `无法导入音源: ${errMsg}`)
+		logError('导入音源失败: ' + errMsg)
 	}
 }
 const SettingModal = () => {

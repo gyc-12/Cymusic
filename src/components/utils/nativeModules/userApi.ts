@@ -58,7 +58,10 @@ export interface RequestParams {
   url: string
   options: {
     method: string
-    data: any
+    data?: any
+    body?: any
+    form?: Record<string, any>
+    formData?: any
     timeout: number
     headers: any
     binary: boolean
