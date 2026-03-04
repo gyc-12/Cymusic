@@ -45,3 +45,5 @@ third_party_url.ts
 # SpecStory explanation file
 .specstory/.what-is-this.md
 .cursorindexingignore
+ios
+android
