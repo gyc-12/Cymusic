@@ -4409,7 +4409,7 @@ expo-linking@~6.2.2:
 
 expo-localization@~14.8.4:
   version "14.8.4"
-  resolved "https://registry.npmjs.org/expo-localization/-/expo-localization-14.8.4.tgz"
+  resolved "https://registry.yarnpkg.com/expo-localization/-/expo-localization-14.8.4.tgz#2911d281b32a9c51a84fe66f8519bb51cf7390b5"
   integrity sha512-WWcG6Bg9s8p9wk5BvdXfxBLCEcvzS75O+nN5O+kWA3+cGDKcbfvExWmXcCSz8hn8y8rRVIEx8wwSgysMTtptUA==
   dependencies:
     rtl-detect "^1.0.2"
@@ -7681,7 +7681,7 @@ rimraf@~2.4.0:
 
 rtl-detect@^1.0.2:
   version "1.1.2"
-  resolved "https://registry.npmjs.org/rtl-detect/-/rtl-detect-1.1.2.tgz"
+  resolved "https://registry.yarnpkg.com/rtl-detect/-/rtl-detect-1.1.2.tgz#ca7f0330af5c6bb626c15675c642ba85ad6273c6"
   integrity sha512-PGMBq03+TTG/p/cRB7HCLKJ1MgDIi07+QU1faSjiYRfmY5UsAttV9Hs08jDAHVwcOwmVLcSJkpwyfXszVjWfIQ==
 
 run-parallel@^1.1.9:
