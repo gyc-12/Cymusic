@@ -7,6 +7,7 @@ import { PlayerVolumeBar } from '@/components/PlayerVolumeBar'
 import { ShowPlayerListToggle } from '@/components/ShowPlayerListToggle'
 import { unknownTrackImageUri } from '@/constants/images'
 import { colors, fontSize, screenPadding } from '@/constants/tokens'
+import LyricManager from '@/helpers/lyricManager'
 import myTrackPlayer, { nowLyricState } from '@/helpers/trackPlayerIndex'
 import { getSingerMidBySingerName } from '@/helpers/userApi/getMusicSource'
 import { usePlayerBackground } from '@/hooks/usePlayerBackground'
@@ -41,11 +42,18 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useActiveTrack, usePlaybackState, useProgress } from 'react-native-track-player'
+
+const LYRIC_DELAY_STEP = 0.5
+const LYRIC_DELAY_MIN = -15
+const LYRIC_DELAY_MAX = 15
+
 const PlayerScreen = () => {
 	const { top, bottom } = useSafeAreaInsets()
 	const { isFavorite, toggleFavorite } = useTrackPlayerFavorite()
 	const [showLyrics, setShowLyrics] = useState(false)
+	const [showLyricDelayControls, setShowLyricDelayControls] = useState(false)
 	const { duration, position } = useProgress(250)
+	const lyricDelaySeconds = PersistStatus.useValue('lyric.delaySeconds', 0) ?? 0
 	const lyricsOpacity = useSharedValue(0)
 	const lyricsTranslateY = useSharedValue(50)
 	const artworkScale = useSharedValue(1)
@@ -68,6 +76,7 @@ const PlayerScreen = () => {
 			lyricsOpacity.value = withTiming(1, { duration: 300 })
 			lyricsTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 })
 		} else {
+			setShowLyricDelayControls(false)
 			lyricsOpacity.value = withTiming(0, { duration: 300 })
 			lyricsTranslateY.value = withSpring(50, { damping: 15, stiffness: 100 })
 		}
@@ -299,16 +308,44 @@ const PlayerScreen = () => {
 		}
 	}, [showLyrics])
 	function handleLyricsFontSizeDecrease(): void {
-		const currentFontSize = PersistStatus.get('lyric.detailFontSize')
+		const currentFontSize = PersistStatus.get('lyric.detailFontSize') ?? 1
 		console.log('currentFontSize', currentFontSize)
 		PersistStatus.set('lyric.detailFontSize', currentFontSize - 1 < 0 ? 0 : currentFontSize - 1)
 		// scrollToCurrentLrcItem();
 	}
 	function handleLyricsFontSizeIncrease(): void {
-		const currentFontSize = PersistStatus.get('lyric.detailFontSize')
+		const currentFontSize = PersistStatus.get('lyric.detailFontSize') ?? 1
 		console.log('currentFontSize', currentFontSize)
 		PersistStatus.set('lyric.detailFontSize', currentFontSize + 1 > 3 ? 3 : currentFontSize + 1)
 		// scrollToCurrentLrcItem();
+	}
+	function formatLyricDelay(delaySeconds: number): string {
+		const normalized = Math.abs(delaySeconds) < 0.05 ? 0 : delaySeconds
+		const rounded = Math.round(normalized * 10) / 10
+		const prefix = rounded > 0 ? '+' : ''
+		return `${prefix}${rounded.toFixed(1)}s`
+	}
+	function updateLyricDelay(nextDelaySeconds: number): void {
+		const normalized = Math.round(nextDelaySeconds * 10) / 10
+		const clamped = Math.max(LYRIC_DELAY_MIN, Math.min(LYRIC_DELAY_MAX, normalized))
+		PersistStatus.set('lyric.delaySeconds', clamped)
+		LyricManager.refreshLyric().catch((err) => {
+			console.error('refresh lyric after delay changed failed', err)
+		})
+	}
+	function handleLyricDelayDecrease(): void {
+		const currentDelay = PersistStatus.get('lyric.delaySeconds') ?? 0
+		updateLyricDelay(currentDelay - LYRIC_DELAY_STEP)
+	}
+	function handleLyricDelayIncrease(): void {
+		const currentDelay = PersistStatus.get('lyric.delaySeconds') ?? 0
+		updateLyricDelay(currentDelay + LYRIC_DELAY_STEP)
+	}
+	function handleLyricDelayReset(): void {
+		updateLyricDelay(0)
+	}
+	function toggleLyricDelayControls(): void {
+		setShowLyricDelayControls((prev) => !prev)
 	}
 	function setCustomTimingClose(arg0: null) {
 		Alert.prompt(
@@ -368,7 +405,7 @@ const PlayerScreen = () => {
 									style={{ marginBottom: 4 }}
 								/>
 							</View>
-							<View style={styles.rightItem}>
+							<View style={styles.centeredItem}>
 								<MaterialCommunityIcons
 									name="format-font-size-increase"
 									size={30}
@@ -377,7 +414,45 @@ const PlayerScreen = () => {
 									style={{ marginBottom: 4 }}
 								/>
 							</View>
+							<View style={styles.rightItem}>
+								<TouchableOpacity
+									style={styles.lyricDelayToggleButton}
+									onPress={toggleLyricDelayControls}
+								>
+									<MaterialCommunityIcons
+										name="timer-outline"
+										size={26}
+										color={showLyricDelayControls ? colors.primary : 'white'}
+									/>
+								</TouchableOpacity>
+							</View>
 						</View>
+						{showLyricDelayControls ? (
+							<View style={[styles.container, styles.lyricDelayContainer]}>
+								<View style={styles.leftItem}>
+									<TouchableOpacity
+										style={styles.delayAdjustButton}
+										onPress={handleLyricDelayDecrease}
+									>
+										<Text style={styles.delayAdjustText}>-0.5s</Text>
+									</TouchableOpacity>
+								</View>
+								<View style={styles.centeredItem}>
+									<TouchableOpacity style={styles.delayValueButton} onPress={handleLyricDelayReset}>
+										<Text style={styles.delayLabel}>{i18n.t('player.lyricDelay')}</Text>
+										<Text style={styles.delayValueText}>{formatLyricDelay(lyricDelaySeconds)}</Text>
+									</TouchableOpacity>
+								</View>
+								<View style={styles.rightItem}>
+									<TouchableOpacity
+										style={styles.delayAdjustButton}
+										onPress={handleLyricDelayIncrease}
+									>
+										<Text style={styles.delayAdjustText}>+0.5s</Text>
+									</TouchableOpacity>
+								</View>
+							</View>
+						) : null}
 					</View>
 				) : (
 					<View style={{ flex: 1, marginTop: top + 70, marginBottom: bottom }}>
@@ -619,6 +694,44 @@ const styles = StyleSheet.create({
 	rightItem: {
 		flex: 1,
 		alignItems: 'flex-end',
+	},
+	lyricDelayContainer: {
+		marginTop: 10,
+	},
+	lyricDelayToggleButton: {
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		borderRadius: 8,
+	},
+	delayAdjustButton: {
+		backgroundColor: 'rgba(255,255,255,0.12)',
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		borderRadius: 8,
+	},
+	delayAdjustText: {
+		...defaultStyles.text,
+		fontSize: 14,
+		fontWeight: '600',
+	},
+	delayValueButton: {
+		alignItems: 'center',
+		justifyContent: 'center',
+		backgroundColor: 'rgba(255,255,255,0.12)',
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		borderRadius: 8,
+		minWidth: 130,
+	},
+	delayLabel: {
+		...defaultStyles.text,
+		fontSize: 11,
+		opacity: 0.8,
+	},
+	delayValueText: {
+		...defaultStyles.text,
+		fontSize: 15,
+		fontWeight: '700',
 	},
 	lyricContainer: {
 		flex: 1,

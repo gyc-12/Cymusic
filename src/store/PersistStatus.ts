@@ -19,6 +19,7 @@ interface IPersistConfig {
 	'app.pluginUpdateTime': number
 	'lyric.showTranslation': boolean
 	'lyric.detailFontSize': number
+	'lyric.delaySeconds': number
 	'app.logo': 'Default' | 'Logo1'
 	//歌单
 	'music.playLists': IMusic.PlayList[]

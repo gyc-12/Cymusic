@@ -3,6 +3,7 @@
  */
 
 import LyricParser from '@/utils/lrcParser'
+import PersistStatus from '@/store/PersistStatus'
 
 import { isSameMediaItem } from '@/utils/mediaItem'
 
@@ -14,7 +15,7 @@ const lyricStateStore = new GlobalState<{
 	lyricParser?: LyricParser
 	lyrics: ILyric.IParsedLrc
 	translationLyrics?: ILyric.IParsedLrc
-	meta?: Record<string, string>
+	meta?: Record<string, any>
 	hasTranslation: boolean
 }>({
 	loading: true,
@@ -60,6 +61,7 @@ async function refreshLyric(fromStart?: boolean, forceRequest = false) {
 		}
 
 		const currentParserMusicItem = lyricStateStore.getValue()?.lyricParser?.getCurrentMusicItem()
+		const lyricDelaySeconds = PersistStatus.get('lyric.delaySeconds') ?? 0
 
 		const lrcSource: ILyric.ILyricSource | null | undefined = {
 			rawLrc: nowLyricState.getValue() || '[00:00.00]暂无歌词',
@@ -81,7 +83,7 @@ async function refreshLyric(fromStart?: boolean, forceRequest = false) {
 			if (lrcSource) {
 				// const mediaExtra = MediaExtra.get(musicItem)
 				const parser = new LyricParser(lrcSource, musicItem, {
-					offset: 0,
+					offset: lyricDelaySeconds,
 				})
 
 				lyricStateStore.setValue({

@@ -139,6 +139,7 @@
 		"playingList": "Playing List",
 		"minutes": "Minutes",
 		"custom": "Custom",
+		"lyricDelay": "Lyric Delay",
 		"selectArtist": "Select Artist",
 		"error": {
 			"title": "Error",
