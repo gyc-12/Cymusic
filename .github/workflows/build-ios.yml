@@ -17,10 +17,13 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install
 
       - name: Prebuild iOS
-        run: npx expo prebuild --platform ios --clean
+        run: npx expo prebuild --platform ios
+
+      - name: Apply patches
+        run: npx patch-package
 
       - name: Install CocoaPods
         run: cd ios && pod install
