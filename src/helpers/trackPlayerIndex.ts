@@ -9,23 +9,23 @@ import { produce } from 'immer'
 import shuffle from 'lodash.shuffle'
 import RNFS from 'react-native-fs'
 import ReactNativeTrackPlayer, {
-	Event,
-	State,
-	Track,
-	usePlaybackState,
-	useProgress,
+    Event,
+    State,
+    Track,
+    usePlaybackState,
+    useProgress,
 } from 'react-native-track-player'
 
 import { MusicRepeatMode } from '@/helpers/types'
 import PersistStatus from '@/store/PersistStatus'
 import {
-	getMusicIndex,
-	getPlayList,
-	getPlayListMusicAt,
-	isInPlayList,
-	isPlayListEmpty,
-	setPlayList,
-	usePlayList,
+    getMusicIndex,
+    getPlayList,
+    getPlayListMusicAt,
+    isInPlayList,
+    isPlayListEmpty,
+    setPlayList,
+    usePlayList,
 } from '@/store/playList'
 import { createMediaIndexMap } from '@/utils/mediaIndexMap'
 import { musicIsPaused } from '@/utils/trackUtils'
@@ -37,6 +37,7 @@ import { fakeAudioMp3Uri } from '@/constants/images'
 import { nowLanguage } from '@/utils/i18n'
 import { showToast } from '@/utils/utils'
 import { logError, logInfo } from './logger'
+import { isLxMusicScript, reloadLxMusicScript } from './userApi/lxMusicSourceAdapter'
 
 /** 当前播放 */
 const currentMusicStore = new GlobalState<IMusic.IMusicItem | null>(null)
@@ -684,25 +685,28 @@ const reloadMusicApi = (musicApi: IMusic.MusicApi, isTest: boolean = false): IMu
 	}
 
 	try {
-		// 创建一个新的上下文来执行脚本
+		// 检测是否为 lx-music 格式脚本
+		if (musicApi.scriptType === 'lxmusic' || isLxMusicScript(musicApi.script)) {
+			return reloadLxMusicScript(musicApi)
+		}
+
+		// Cymusic 原有 CommonJS 格式
 		const context: any = {
 			module: { exports: {} },
 			exports: {},
-			require: () => {}, // 如果脚本中有 require 调用，你需要在这里实现
+			require: () => {},
 		}
 
-		// 执行脚本
 		const scriptFunction = new Function('module', 'exports', 'require', musicApi.script)
 		scriptFunction.call(context, context.module, context.exports, context.require)
 
-		// 更新 MusicApi 对象
 		return {
 			...musicApi,
 			getMusicUrl: context.module.exports.getMusicUrl || musicApi.getMusicUrl,
 		}
 	} catch (error) {
 		logError(`Error reloading script for API "${musicApi.name}":`, error)
-		return musicApi // 返回原始对象，以防出错
+		return musicApi
 	}
 }
 const setMusicApiAsSelectedById = async (musicApiId: string) => {

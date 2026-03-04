@@ -2,14 +2,15 @@
 import { colors } from '@/constants/tokens'
 import { logError, logInfo } from '@/helpers/logger'
 import myTrackPlayer, {
-	autoCacheLocalStore,
-	isCachedIconVisibleStore,
-	musicApiSelectedStore,
-	musicApiStore,
-	nowApiState,
-	songsNumsToLoadStore,
-	useCurrentQuality,
+    autoCacheLocalStore,
+    isCachedIconVisibleStore,
+    musicApiSelectedStore,
+    musicApiStore,
+    nowApiState,
+    songsNumsToLoadStore,
+    useCurrentQuality,
 } from '@/helpers/trackPlayerIndex'
+import { adaptLxMusicScript, isLxMusicScript } from '@/helpers/userApi/lxMusicSourceAdapter'
 import PersistStatus from '@/store/PersistStatus'
 import i18n, { changeLanguage, nowLanguage } from '@/utils/i18n'
 import { GlobalState } from '@/utils/stateMapper'
@@ -21,16 +22,16 @@ import * as DocumentPicker from 'expo-document-picker'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import {
-	ActivityIndicator,
-	Alert,
-	Image,
-	Linking,
-	ScrollView,
-	StyleSheet,
-	Switch,
-	Text,
-	TouchableOpacity,
-	View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Linking,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native'
 import RNFS from 'react-native-fs'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -336,32 +337,28 @@ const importMusicSourceFromUrl = async () => {
 
 						logInfo('获取到的源代码:', utf8SourceCode)
 
-						// 这里需要添加处理源代码的逻辑，类似于 importMusicSourceFromFile 中的逻辑
-						// 例如：解析源代码，创建 MusicApi 对象，并添加到 myTrackPlayer
-						// 1. 创建模拟的 CommonJS 模块对象
-						const module: { exports: ModuleExports } = { exports: {} }
+						let musicApi: IMusic.MusicApi
 
-						// 2. 创建模拟的 require 函数
-						const require = () => {} // 如果文件中有其他 require 调用，需要在这里实现
-
-						// 3. 将外部 JS 代码作为函数体执行
-						const moduleFunc = new Function('module', 'exports', 'require', utf8SourceCode)
-
-						// 4. 执行函数，填充 module.exports
-						moduleFunc(module, module.exports, require)
-						// const url = await module.exports.getMusicUrl('朵', '赵雷', '004IArbh3ytHgR', '128k')
-						// logInfo(url + '123123')
-						// 从模块导出创建 MusicApi 对象
-						const musicApi: IMusic.MusicApi = {
-							id: module.exports.id || '',
-							platform: 'tx', // 平台目前默认tx
-							author: module.exports.author || '',
-							name: module.exports.name || '',
-							version: module.exports.version || '',
-							srcUrl: module.exports.srcUrl || '',
-							script: utf8SourceCode, //
-							isSelected: false,
-							getMusicUrl: module.exports.getMusicUrl,
+						if (isLxMusicScript(utf8SourceCode)) {
+							logInfo('检测到 lx-music 格式音源脚本')
+							musicApi = adaptLxMusicScript(utf8SourceCode)
+						} else {
+							const module: { exports: ModuleExports } = { exports: {} }
+							const require = () => {}
+							const moduleFunc = new Function('module', 'exports', 'require', utf8SourceCode)
+							moduleFunc(module, module.exports, require)
+							musicApi = {
+								id: module.exports.id || '',
+								platform: 'tx',
+								author: module.exports.author || '',
+								name: module.exports.name || '',
+								version: module.exports.version || '',
+								srcUrl: module.exports.srcUrl || '',
+								script: utf8SourceCode,
+								scriptType: 'cymusic',
+								isSelected: false,
+								getMusicUrl: module.exports.getMusicUrl,
+							}
 						}
 
 						myTrackPlayer.addMusicApi(musicApi)
@@ -392,23 +389,29 @@ const importMusicSourceFromFile = async () => {
 		const fileUri = decodeURIComponent(result.assets[0].uri)
 		const fileContents = await RNFS.readFile(fileUri, 'utf8')
 		logInfo('File contents:', fileContents)
-		// 模拟 Node.js 的模块系统
-		const module: { exports: ModuleExports } = { exports: {} }
-		const require = () => {} // 如果文件中有其他 require 调用，你需要在这里实现
-		const moduleFunc = new Function('module', 'exports', 'require', fileContents)
-		moduleFunc(module, module.exports, require)
-		// const url = await module.exports.getMusicUrl('朵', '赵雷', '004IArbh3ytHgR', '128k')
-		// 从模块导出创建 MusicApi 对象
-		const musicApi: IMusic.MusicApi = {
-			id: module.exports.id || '',
-			platform: 'tx', // 平台目前默认tx
-			author: module.exports.author || '',
-			name: module.exports.name || '',
-			version: module.exports.version || '',
-			srcUrl: module.exports.srcUrl || '',
-			script: fileContents, //
-			isSelected: false,
-			getMusicUrl: module.exports.getMusicUrl,
+
+		let musicApi: IMusic.MusicApi
+
+		if (isLxMusicScript(fileContents)) {
+			logInfo('检测到 lx-music 格式音源脚本')
+			musicApi = adaptLxMusicScript(fileContents)
+		} else {
+			const module: { exports: ModuleExports } = { exports: {} }
+			const require = () => {}
+			const moduleFunc = new Function('module', 'exports', 'require', fileContents)
+			moduleFunc(module, module.exports, require)
+			musicApi = {
+				id: module.exports.id || '',
+				platform: 'tx',
+				author: module.exports.author || '',
+				name: module.exports.name || '',
+				version: module.exports.version || '',
+				srcUrl: module.exports.srcUrl || '',
+				script: fileContents,
+				scriptType: 'cymusic',
+				isSelected: false,
+				getMusicUrl: module.exports.getMusicUrl,
+			}
 		}
 
 		myTrackPlayer.addMusicApi(musicApi)
