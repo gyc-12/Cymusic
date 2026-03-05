@@ -13,6 +13,7 @@ import ShareIntent from './shareintent'
 const SingerListScreen = () => {
 	const pathname = usePathname()
 	logInfo('pathname', pathname)
+	const isShareIntentPath = pathname.includes('cymusic')
 
 	const { name: playlistName, album } = useLocalSearchParams<{ name: string; album?: string }>()
 	const isAlbum = !!album
@@ -22,6 +23,9 @@ const SingerListScreen = () => {
 	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
+		if (isShareIntentPath) {
+			return
+		}
 		const fetchSingerListDetail = async () => {
 			let detail
 			if (isAlbum) {
@@ -37,9 +41,9 @@ const SingerListScreen = () => {
 			setLoading(false)
 		}
 		fetchSingerListDetail()
-	}, [])
+	}, [isAlbum, isShareIntentPath, playlistName])
 
-	if (pathname.includes('cymusic')) {
+	if (isShareIntentPath) {
 		return <ShareIntent></ShareIntent>
 	}
 

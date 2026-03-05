@@ -50,8 +50,7 @@ class ShareViewController: UIViewController {
         } else if attachment.hasItemConformingToTypeIdentifier(textContentType) {
           await handleText(content: content, attachment: attachment, index: index)
         } else {
-          NSLog("[ERROR] content type not handle !\(String(describing: content))")
-          dismissWithError(message: "content type not handle \(String(describing: content)))")
+          await handleUnknownAttachment(content: content, attachment: attachment, index: index)
         }
       }
     }
@@ -59,8 +58,26 @@ class ShareViewController: UIViewController {
 
   private func handleText(content: NSExtensionItem, attachment: NSItemProvider, index: Int) async {
     Task.detached {
-      if let item = try! await attachment.loadItem(forTypeIdentifier: self.textContentType)
-        as? String
+      var textValue: String? = nil
+
+      if let item = try? await attachment.loadItem(forTypeIdentifier: self.textContentType) {
+        if let text = item as? String {
+          textValue = text
+        } else if let url = item as? URL {
+          textValue = self.readUtf8Text(from: url)
+        } else if let data = item as? Data {
+          textValue = String(data: data, encoding: .utf8)
+        }
+      }
+
+      // 部分文件（如 .js）可能走 text 类型，但实际返回 URL，这里补一层 fileURL 兜底
+      if textValue == nil,
+        let url = try? await attachment.loadItem(forTypeIdentifier: self.fileURLType) as? URL
+      {
+        textValue = self.readUtf8Text(from: url)
+      }
+
+      if let item = textValue
       {
         Task { @MainActor in
 
@@ -82,9 +99,62 @@ class ShareViewController: UIViewController {
     }
   }
 
+  private func handleUnknownAttachment(content: NSExtensionItem, attachment: NSItemProvider, index: Int) async {
+    Task.detached {
+      for identifier in attachment.registeredTypeIdentifiers {
+        if let item = try? await attachment.loadItem(forTypeIdentifier: identifier) {
+          if let text = item as? String {
+            Task { @MainActor in
+              self.sharedText.append(text)
+              if index == (content.attachments?.count)! - 1 {
+                let userDefaults = UserDefaults(suiteName: "group.\(self.hostAppBundleIdentifier)")
+                userDefaults?.set(self.sharedText, forKey: self.sharedKey)
+                userDefaults?.synchronize()
+                self.redirectToHostApp(type: .text)
+              }
+            }
+            return
+          }
+          if let url = item as? URL {
+            Task { @MainActor in
+              if url.isFileURL {
+                await self.handleFileURL(content: content, url: url, index: index)
+              } else {
+                self.sharedText.append(url.absoluteString)
+                if index == (content.attachments?.count)! - 1 {
+                  let userDefaults = UserDefaults(suiteName: "group.\(self.hostAppBundleIdentifier)")
+                  userDefaults?.set(self.sharedText, forKey: self.sharedKey)
+                  userDefaults?.synchronize()
+                  self.redirectToHostApp(type: .weburl)
+                }
+              }
+            }
+            return
+          }
+          if let data = item as? Data, let text = String(data: data, encoding: .utf8) {
+            Task { @MainActor in
+              self.sharedText.append(text)
+              if index == (content.attachments?.count)! - 1 {
+                let userDefaults = UserDefaults(suiteName: "group.\(self.hostAppBundleIdentifier)")
+                userDefaults?.set(self.sharedText, forKey: self.sharedKey)
+                userDefaults?.synchronize()
+                self.redirectToHostApp(type: .text)
+              }
+            }
+            return
+          }
+        }
+      }
+
+      NSLog("[ERROR] Unsupported attachment types: \(attachment.registeredTypeIdentifiers)")
+      await self.dismissWithError(
+        message: "Unsupported shared type: \(attachment.registeredTypeIdentifiers.joined(separator: ","))")
+    }
+  }
+
   private func handleUrl(content: NSExtensionItem, attachment: NSItemProvider, index: Int) async {
     Task.detached {
-      if let item = try! await attachment.loadItem(forTypeIdentifier: self.urlContentType) as? URL {
+      if let item = try? await attachment.loadItem(forTypeIdentifier: self.urlContentType) as? URL {
         Task { @MainActor in
 
           self.sharedText.append(item.absoluteString)
@@ -271,16 +341,36 @@ class ShareViewController: UIViewController {
   }
 
   private func handleFileURL(content: NSExtensionItem, url: URL, index: Int) async {
+    let hasSecurityScope = url.startAccessingSecurityScopedResource()
+    defer {
+      if hasSecurityScope {
+        url.stopAccessingSecurityScopedResource()
+      }
+    }
+
+    if let scriptText = readUtf8Text(from: url) {
+      // Fallback channel for environments where App Group may be unavailable (e.g. sideloaded installs)
+      UIPasteboard.general.string = scriptText
+      self.redirectToHostApp(type: .clip)
+      return
+    }
+
+    guard
+      let groupContainerURL = FileManager.default.containerURL(
+        forSecurityApplicationGroupIdentifier: "group.\(self.hostAppBundleIdentifier)")
+    else {
+      NSLog("[ERROR] App Group container unavailable for file share")
+      await self.dismissWithError(message: "App Group container unavailable")
+      return
+    }
+
     // Always copy
     let fileName = self.getFileName(from: url, type: .file)
     let fileExtension = self.getExtension(from: url, type: .file)
     let fileSize = self.getFileSize(from: url)
     let mimeType = url.mimeType(ext: fileExtension)
     let newName = "\(UUID().uuidString).\(fileExtension)"
-    let newPath = FileManager.default
-      .containerURL(
-        forSecurityApplicationGroupIdentifier: "group.\(self.hostAppBundleIdentifier)")!
-      .appendingPathComponent(newName)
+    let newPath = groupContainerURL.appendingPathComponent(newName)
     let copied = self.copyFile(at: url, to: newPath)
     if copied {
       self.sharedMedia.append(
@@ -288,6 +378,8 @@ class ShareViewController: UIViewController {
           path: newPath.absoluteString, thumbnail: nil, fileName: fileName,
           fileSize: fileSize, width: nil, height: nil, duration: nil, mimeType: mimeType,
           type: .file))
+    } else {
+      NSLog("[ERROR] Failed to copy shared file: \(url.absoluteString)")
     }
 
     if index == (content.attachments?.count)! - 1 {
@@ -298,11 +390,22 @@ class ShareViewController: UIViewController {
     }
   }
 
+  private func readUtf8Text(from url: URL) -> String? {
+    let hasSecurityScope = url.startAccessingSecurityScopedResource()
+    defer {
+      if hasSecurityScope {
+        url.stopAccessingSecurityScopedResource()
+      }
+    }
+    return try? String(contentsOf: url, encoding: .utf8)
+  }
+
   private func dismissWithError(message: String? = nil) {
     DispatchQueue.main.async {
-      NSLog("[ERROR] Error loading application ! \(message!)")
+      let safeMessage = message ?? "Unknown error"
+      NSLog("[ERROR] Error loading application ! \(safeMessage)")
       let alert = UIAlertController(
-        title: "Error", message: "Error loading application: \(message!)", preferredStyle: .alert)
+        title: "Error", message: "Error loading application: \(safeMessage)", preferredStyle: .alert)
 
       let action = UIAlertAction(title: "OK", style: .cancel) { _ in
         self.dismiss(animated: true, completion: nil)
@@ -339,6 +442,7 @@ class ShareViewController: UIViewController {
     case text
     case weburl
     case file
+    case clip
   }
 
   func getExtension(from url: URL, type: SharedMediaType) -> String {

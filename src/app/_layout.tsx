@@ -37,7 +37,7 @@ const App = () => {
 			// we want to handle share intent event in a specific page
 			console.log('[expo-router-index111] redirect to ShareIntent screen')
 			console.log('[expo-router-index111] hasShareIntent', hasShareIntent)
-			// router.push('/(modals)/settingModal')
+			router.replace('/(modals)/cymusic')
 		}
 	}, [hasShareIntent])
 	useEffect(() => {
@@ -108,7 +108,7 @@ const App = () => {
 		<ShareIntentProvider
 			options={{
 				debug: true,
-				resetOnBackground: true,
+				resetOnBackground: false,
 				onResetShareIntent: () =>
 					// used when app going in background and when the reset button is pressed
 					router.replace({

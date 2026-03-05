@@ -10,13 +10,12 @@ import myTrackPlayer, {
 	songsNumsToLoadStore,
 	useCurrentQuality,
 } from '@/helpers/trackPlayerIndex'
-import { adaptLxMusicScript, isLxMusicScript } from '@/helpers/userApi/lxMusicSourceAdapter'
+import { createMusicApiFromScript, fetchScriptFromUrl } from '@/helpers/userApi/importMusicSource'
 import PersistStatus from '@/store/PersistStatus'
 import i18n, { changeLanguage, nowLanguage } from '@/utils/i18n'
 import { GlobalState } from '@/utils/stateMapper'
 import { showToast } from '@/utils/utils'
 import { MenuView } from '@react-native-menu/menu'
-import { Buffer } from 'buffer'
 import Constants from 'expo-constants'
 import * as DocumentPicker from 'expo-document-picker'
 import { useRouter } from 'expo-router'
@@ -296,19 +295,6 @@ const MusicSourceMenu = ({ isDelete, onSelectSource }) => {
 	)
 }
 
-interface ModuleExports {
-	id?: string
-	author?: string
-	name?: string
-	version?: string
-	srcUrl?: string
-	getMusicUrl?: (
-		songname: string,
-		artist: string,
-		songmid: string,
-		quality: string,
-	) => Promise<string>
-}
 const importMusicSourceFromUrl = async () => {
 	Alert.prompt(
 		'导入音源',
@@ -328,39 +314,9 @@ const importMusicSourceFromUrl = async () => {
 					}
 
 					try {
-						const response = await fetch(url)
-						if (!response.ok) {
-							throw new Error(`HTTP error! status: ${response.status}`)
-						}
-						const sourceCode = await response.text()
-						const utf8SourceCode = Buffer.from(sourceCode, 'utf8').toString('utf8')
-
-						logInfo('获取到的源代码:', utf8SourceCode)
-
-						let musicApi: IMusic.MusicApi
-
-						if (isLxMusicScript(utf8SourceCode)) {
-							logInfo('检测到 lx-music 格式音源脚本')
-							musicApi = await adaptLxMusicScript(utf8SourceCode)
-						} else {
-							const module: { exports: ModuleExports } = { exports: {} }
-							const require = () => {}
-							const moduleFunc = new Function('module', 'exports', 'require', utf8SourceCode)
-							moduleFunc(module, module.exports, require)
-							musicApi = {
-								id: module.exports.id || '',
-								platform: 'tx',
-								author: module.exports.author || '',
-								name: module.exports.name || '',
-								version: module.exports.version || '',
-								srcUrl: module.exports.srcUrl || '',
-								script: utf8SourceCode,
-								scriptType: 'cymusic',
-								isSelected: false,
-								getMusicUrl: module.exports.getMusicUrl,
-							}
-						}
-
+						const sourceCode = await fetchScriptFromUrl(url)
+						logInfo('获取到的源代码:', sourceCode)
+						const musicApi = await createMusicApiFromScript(sourceCode)
 						myTrackPlayer.addMusicApi(musicApi)
 						return
 					} catch (error) {
@@ -390,31 +346,7 @@ const importMusicSourceFromFile = async () => {
 		const fileUri = decodeURIComponent(result.assets[0].uri)
 		const fileContents = await RNFS.readFile(fileUri, 'utf8')
 		logInfo('File contents:', fileContents)
-
-		let musicApi: IMusic.MusicApi
-
-		if (isLxMusicScript(fileContents)) {
-			logInfo('检测到 lx-music 格式音源脚本')
-			musicApi = await adaptLxMusicScript(fileContents)
-		} else {
-			const module: { exports: ModuleExports } = { exports: {} }
-			const require = () => {}
-			const moduleFunc = new Function('module', 'exports', 'require', fileContents)
-			moduleFunc(module, module.exports, require)
-			musicApi = {
-				id: module.exports.id || '',
-				platform: 'tx',
-				author: module.exports.author || '',
-				name: module.exports.name || '',
-				version: module.exports.version || '',
-				srcUrl: module.exports.srcUrl || '',
-				script: fileContents,
-				scriptType: 'cymusic',
-				isSelected: false,
-				getMusicUrl: module.exports.getMusicUrl,
-			}
-		}
-
+		const musicApi = await createMusicApiFromScript(fileContents)
 		myTrackPlayer.addMusicApi(musicApi)
 		return
 	} catch (err) {

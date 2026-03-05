@@ -1,0 +1,25 @@
+diff --git a/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift b/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift
+index 277e046..e431652 100644
+--- a/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift
++++ b/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift
+@@ -7,6 +7,7 @@
+ import ExpoModulesCore
+ import Foundation
+ import Photos
++import UIKit
+ 
+ public class ExpoShareIntentModule: Module {
+     // Each module class must implement the definition function. The definition consists of components
+@@ -106,6 +107,12 @@ public class ExpoShareIntentModule: Module {
+                         return "empty"
+                     }
+                 }
++            } else if url.fragment == "clip" {
++                if let clipboardText = UIPasteboard.general.string {
++                    return try? ShareIntentText(text: clipboardText, type: "text").toJSON()
++                } else {
++                    return "empty"
++                }
+             } else if url.fragment == "text" || url.fragment == "weburl" {
+                 if let key = url.host?.components(separatedBy: "=").last {
+                     if let sharedArray = userDefaults?.object(forKey: key) as? [String] {
