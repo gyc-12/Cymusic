@@ -1,21 +1,22 @@
 import { TrackShortcutsMenu } from '@/components/TrackShortcutsMenu'
 import { unknownTrackImageUri } from '@/constants/images'
 import { colors, fontSize } from '@/constants/tokens'
-import myTrackPlayer from '@/helpers/trackPlayerIndex'
-import PersistStatus from '@/store/PersistStatus'
 import { defaultStyles } from '@/styles'
+import { getThumbnailArtwork } from '@/utils/imageUtils'
 import rpx from '@/utils/rpx'
 import { Entypo, Ionicons } from '@expo/vector-icons'
-import React, { memo, useEffect, useState } from 'react'
+import React, { memo, useMemo } from 'react'
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
-import FastImage from 'react-native-fast-image' //导入默认导出时，不需要使用大括号 {}，并且可以使用任意名称来引用导入的值。
+import FastImage from 'react-native-fast-image'
 import LoaderKit from 'react-native-loader-kit'
-import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
+import { Track } from 'react-native-track-player'
 import { StopPropagation } from './utils/StopPropagation'
 
 export type TracksListItemProps = {
 	track: Track
 	onTrackSelect: (track: Track) => void
+	isActiveTrack?: boolean
+	isPlaying?: boolean
 	isSinger?: boolean
 	allowDelete?: boolean
 	onDeleteTrack?: (trackId: string) => void
@@ -24,15 +25,12 @@ export type TracksListItemProps = {
 	selectedTracks?: Set<string>
 	toggleMultiSelectMode?: () => void
 }
-//类型定义描述了 TracksListItemProps 对象的结构和属性。在这个例子中，TracksListItemProps 类型包含两个属性：
-//
-// track: 一个 Track 类型的对象。
-// onTrackSelect: 一个函数，该函数接受一个 Track 类型的参数，没有返回值。
-// 这个定义通常用于为组件的 props 提供类型检查和自动完成提示，确保在使用组件时传递的 props 符合预期的类型。
 
 const TracksListItem = ({
 	track,
 	onTrackSelect: handleTrackSelect,
+	isActiveTrack = false,
+	isPlaying = false,
 	isSinger = false,
 	allowDelete = false,
 	isMultiSelectMode = false,
@@ -41,25 +39,6 @@ const TracksListItem = ({
 	onDeleteTrack,
 	toggleMultiSelectMode,
 }: TracksListItemProps) => {
-	const { playing } = useIsPlaying()
-
-	const isActiveTrack = useActiveTrack()?.id === track.id
-	// 添加缓存状态检查
-	const [isCached, setIsCached] = useState(false)
-	const isCachedIconVisible = PersistStatus.get('music.isCachedIconVisible') ?? true
-	useEffect(() => {
-		// 检查歌曲是否已缓存
-		const checkCache = async () => {
-			try {
-				const cached = await myTrackPlayer.isCached(track as IMusic.IMusicItem)
-
-				setIsCached(cached)
-			} catch (error) {
-				console.error('检查缓存状态失败:', error)
-			}
-		}
-		checkCache()
-	}, [track])
 	return (
 		<TouchableHighlight
 			onPress={() => (isMultiSelectMode ? onToggleSelection?.(track.id) : handleTrackSelect(track))}
@@ -72,26 +51,27 @@ const TracksListItem = ({
 						style={{ marginRight: 10 }}
 					>
 						<Ionicons
-							name={selectedTracks.has(track.id) ? 'checkbox' : 'square-outline'}
+							name={selectedTracks?.has(track.id) ? 'checkbox' : 'square-outline'}
 							size={24}
-							color={selectedTracks.has(track.id) ? colors.primary : 'gray'}
+							color={selectedTracks?.has(track.id) ? colors.primary : 'gray'}
 						/>
 					</TouchableOpacity>
 				)}
 				<View>
 					<FastImage
-						source={{
-							uri: track.artwork ?? unknownTrackImageUri,
+						source={useMemo(() => ({
+							uri: getThumbnailArtwork(track.artwork) ?? unknownTrackImageUri,
 							priority: FastImage.priority.normal,
-						}}
+							cache: FastImage.cacheControl.immutable,
+						}), [track.artwork])}
 						style={{
 							...styles.trackArtworkImage,
-							opacity: isActiveTrack ? 0.6 : 1, //激活时候的透明度0.6
+							opacity: isActiveTrack ? 0.6 : 1,
 						}}
 					/>
 
 					{isActiveTrack &&
-						(playing ? (
+						(isPlaying ? (
 							<LoaderKit
 								style={styles.trackPlayingIconIndicator}
 								name="LineScaleParty"
@@ -113,7 +93,6 @@ const TracksListItem = ({
 						alignItems: 'center',
 					}}
 				>
-					{/* 左侧 3/4 区域：歌曲信息 */}
 					<View style={{ flex: 3 }}>
 						<Text
 							numberOfLines={1}
@@ -122,11 +101,6 @@ const TracksListItem = ({
 								color: isActiveTrack ? colors.primary : colors.text,
 							}}
 						>
-							{isCached && isCachedIconVisible && (
-								<>
-									<Ionicons name="cloud-done-outline" size={12} style={{ marginRight: 8 }} />{' '}
-								</>
-							)}
 							{track.title}
 						</Text>
 						{track.artist && (
@@ -136,7 +110,6 @@ const TracksListItem = ({
 						)}
 					</View>
 
-					{/* 右侧 1/4 区域：菜单按钮 */}
 					{!isMultiSelectMode && (
 						<View style={{ flex: 1 }}>
 							<StopPropagation>

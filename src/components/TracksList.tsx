@@ -3,14 +3,14 @@ import { unknownTrackImageUri } from '@/constants/images'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { useQueue } from '@/store/queue'
 import { utilsStyles } from '@/styles'
+import { FlashList } from '@shopify/flash-list'
 import { router } from 'expo-router'
 import React, { useCallback, useMemo, useRef } from 'react'
-import { FlatList, FlatListProps, Text, View } from 'react-native'
+import { Text, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
-import { Track, useActiveTrack } from 'react-native-track-player'
+import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 import { QueueControls } from './QueueControls'
-export type TracksListProps = Partial<FlatListProps<Track>> & {
-	//以及所有来自 FlatListProps 的属性，且这些属性都是可选的。
+export type TracksListProps = {
 	id: string
 	tracks: Track[]
 	hideQueueControls?: boolean
@@ -37,6 +37,8 @@ const EmptyListComponent = React.memo(() => (
 	</View>
 ))
 
+const EMPTY_SET = new Set<string>()
+
 export const TracksList = React.memo(
 	({
 		id,
@@ -46,20 +48,22 @@ export const TracksList = React.memo(
 		allowDelete = false,
 		isMultiSelectMode = false,
 		onDeleteTrack,
-		selectedTracks = new Set(),
+		selectedTracks = EMPTY_SET,
 		onToggleSelection,
 		toggleMultiSelectMode,
 		numsToPlay,
-		...flatlistProps
 	}: TracksListProps) => {
 		const queueOffset = useRef(0)
 		const { activeQueueId, setActiveQueueId } = useQueue()
 		const activeTrack = useActiveTrack()
+		const { playing } = useIsPlaying()
+		const activeTrackId = activeTrack?.id
+
 		const handleTrackSelect = useCallback(
 			async (selectedTrack: Track) => {
 				const isChangingQueue = id !== activeQueueId
 				if (isChangingQueue) {
-					if (selectedTrack.id === activeTrack?.id) {
+					if (selectedTrack.id === activeTrackId) {
 						router.navigate('/player')
 					} else {
 						await myTrackPlayer.playWithReplacePlayList(
@@ -69,7 +73,7 @@ export const TracksList = React.memo(
 						setActiveQueueId(id)
 					}
 				} else {
-					if (selectedTrack.id === activeTrack?.id) {
+					if (selectedTrack.id === activeTrackId) {
 						router.navigate('/player')
 					} else {
 						await myTrackPlayer.playWithReplacePlayList(
@@ -79,14 +83,16 @@ export const TracksList = React.memo(
 					}
 				}
 			},
-			[id, activeQueueId, tracks, setActiveQueueId, activeTrack],
+			[id, activeQueueId, tracks, setActiveQueueId, activeTrackId, numsToPlay],
 		)
 
 		const renderItem = useCallback(
-			({ item: track }) => (
+			({ item: track }: { item: Track }) => (
 				<TracksListItem
 					track={track}
 					onTrackSelect={handleTrackSelect}
+					isActiveTrack={track.id === activeTrackId}
+					isPlaying={track.id === activeTrackId && !!playing}
 					isSinger={isSinger}
 					allowDelete={allowDelete}
 					onDeleteTrack={onDeleteTrack}
@@ -98,6 +104,8 @@ export const TracksList = React.memo(
 			),
 			[
 				handleTrackSelect,
+				activeTrackId,
+				playing,
 				isSinger,
 				allowDelete,
 				onDeleteTrack,
@@ -119,8 +127,10 @@ export const TracksList = React.memo(
 			[hideQueueControls, tracks, numsToPlay],
 		)
 
+		const keyExtractor = useCallback((item: Track) => item.id, [])
+
 		return (
-			<FlatList
+			<FlashList
 				data={tracks}
 				contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
 				ListHeaderComponent={ListHeaderComponent}
@@ -128,8 +138,8 @@ export const TracksList = React.memo(
 				ItemSeparatorComponent={ItemDivider}
 				ListEmptyComponent={EmptyListComponent}
 				renderItem={renderItem}
-				keyExtractor={useCallback((item: Track) => item.id, [])}
-				{...flatlistProps}
+				keyExtractor={keyExtractor}
+				estimatedItemSize={68}
 			/>
 		)
 	},

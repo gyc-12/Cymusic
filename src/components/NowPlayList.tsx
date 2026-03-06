@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { FlatList, FlatListProps, StyleSheet, Text, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Track, useActiveTrack } from 'react-native-track-player'
+import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 import TracksListItem from './TracksListItem'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
@@ -35,11 +35,13 @@ export const NowPlayList = React.memo(
 	({ id, tracks, hideQueueControls = false, ...flatlistProps }: TracksListProps) => {
 		const flatListRef = useRef<FlatList<Track>>(null)
 		const activeTrack = useActiveTrack()
+		const { playing } = useIsPlaying()
+		const activeTrackId = activeTrack?.id
 		const { top } = useSafeAreaInsets()
 
 		const initialIndex = useMemo(
-			() => (activeTrack ? tracks.findIndex((track) => track.id === activeTrack.id) : -1),
-			[activeTrack, tracks],
+			() => (activeTrackId ? tracks.findIndex((track) => track.id === activeTrackId) : -1),
+			[activeTrackId, tracks],
 		)
 
 		const getItemLayout = useCallback(
@@ -67,9 +69,14 @@ export const NowPlayList = React.memo(
 
 		const renderItem = useCallback(
 			({ item: track }: { item: Track }) => (
-				<MemoizedTracksListItem track={track} onTrackSelect={handleTrackSelect} />
+				<MemoizedTracksListItem
+					track={track}
+					onTrackSelect={handleTrackSelect}
+					isActiveTrack={track.id === activeTrackId}
+					isPlaying={track.id === activeTrackId && !!playing}
+				/>
 			),
-			[handleTrackSelect],
+			[handleTrackSelect, activeTrackId, playing],
 		)
 
 		const keyExtractor = useCallback((item: Track) => item.id, [])

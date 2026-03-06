@@ -13,7 +13,6 @@ import { getSingerMidBySingerName } from '@/helpers/userApi/getMusicSource'
 import { usePlayerBackground } from '@/hooks/usePlayerBackground'
 import { useTrackPlayerFavorite } from '@/hooks/useTrackPlayerFavorite'
 import PersistStatus from '@/store/PersistStatus'
-import usePlayerStore from '@/store/usePlayerStore'
 import { defaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { setTimingClose } from '@/utils/timingClose'
@@ -22,10 +21,10 @@ import { MenuView } from '@react-native-menu/menu'
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake'
 import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
-	ActivityIndicator,
 	Alert,
+	Dimensions,
 	Share,
 	StyleSheet,
 	Text,
@@ -33,15 +32,20 @@ import {
 	View,
 } from 'react-native'
 import FastImage from 'react-native-fast-image'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
 	Easing,
+	runOnJS,
 	useAnimatedStyle,
 	useSharedValue,
 	withSpring,
 	withTiming,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useActiveTrack, usePlaybackState, useProgress } from 'react-native-track-player'
+import { useActiveTrack, usePlaybackState } from 'react-native-track-player'
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
+const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25
 
 const LYRIC_DELAY_STEP = 0.5
 const LYRIC_DELAY_MIN = -15
@@ -52,7 +56,6 @@ const PlayerScreen = () => {
 	const { isFavorite, toggleFavorite } = useTrackPlayerFavorite()
 	const [showLyrics, setShowLyrics] = useState(false)
 	const [showLyricDelayControls, setShowLyricDelayControls] = useState(false)
-	const { duration, position } = useProgress(250)
 	const lyricDelaySeconds = PersistStatus.useValue('lyric.delaySeconds', 0) ?? 0
 	const lyricsOpacity = useSharedValue(0)
 	const lyricsTranslateY = useSharedValue(50)
@@ -66,25 +69,83 @@ const PlayerScreen = () => {
 		transform: [{ translateY: lyricsTranslateY.value }],
 	}))
 
-	const artworkAnimatedStyle = useAnimatedStyle(() => ({
-		transform: [{ scale: artworkScale.value }],
-	}))
-	const handleLyricsToggle = () => {
-		const newShowLyrics = !showLyrics
-		setShowLyrics(newShowLyrics)
-		if (newShowLyrics) {
-			lyricsOpacity.value = withTiming(1, { duration: 300 })
-			lyricsTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 })
-		} else {
-			setShowLyricDelayControls(false)
-			lyricsOpacity.value = withTiming(0, { duration: 300 })
-			lyricsTranslateY.value = withSpring(50, { damping: 15, stiffness: 100 })
+	const currentActiveTrack = useActiveTrack()
+	const prevTrackRef = useRef(currentActiveTrack)
+
+	useEffect(() => {
+		if (currentActiveTrack) {
+			prevTrackRef.current = currentActiveTrack
 		}
-	}
+	}, [currentActiveTrack])
+
+	const trackToDisplay = currentActiveTrack ?? prevTrackRef.current
+
+	const { imageColors } = usePlayerBackground(trackToDisplay?.artwork ?? unknownTrackImageUri)
+
+	const artworkTranslateX = useSharedValue(0)
+	const artworkCrossfade = useSharedValue(1)
+	const prevArtworkUri = useRef(unknownTrackImageUri)
+
+	useEffect(() => {
+		const newUri = trackToDisplay?.artwork ?? unknownTrackImageUri
+		if (newUri !== prevArtworkUri.current) {
+			artworkCrossfade.value = 0.3
+			artworkCrossfade.value = withTiming(1, { duration: 500 })
+			prevArtworkUri.current = newUri
+		}
+	}, [trackToDisplay?.artwork])
+
+	const artworkAnimatedStyle = useAnimatedStyle(() => ({
+		transform: [
+			{ scale: artworkScale.value },
+			{ translateX: artworkTranslateX.value },
+		],
+		opacity: artworkCrossfade.value,
+	}))
+
+	const handleSkipNext = useCallback(() => {
+		myTrackPlayer.skipToNext()
+	}, [])
+
+	const handleSkipPrev = useCallback(() => {
+		myTrackPlayer.skipToPrevious()
+	}, [])
+
+	const swipeGesture = Gesture.Pan()
+		.activeOffsetX([-20, 20])
+		.onUpdate((e) => {
+			artworkTranslateX.value = e.translationX * 0.5
+		})
+		.onEnd((e) => {
+			if (e.translationX < -SWIPE_THRESHOLD) {
+				artworkTranslateX.value = withTiming(-SCREEN_WIDTH * 0.3, { duration: 200 })
+				artworkCrossfade.value = withTiming(0, { duration: 200 })
+				runOnJS(handleSkipNext)()
+			} else if (e.translationX > SWIPE_THRESHOLD) {
+				artworkTranslateX.value = withTiming(SCREEN_WIDTH * 0.3, { duration: 200 })
+				artworkCrossfade.value = withTiming(0, { duration: 200 })
+				runOnJS(handleSkipPrev)()
+			}
+			artworkTranslateX.value = withSpring(0, { damping: 15, stiffness: 150 })
+		})
+
+	const handleLyricsToggle = useCallback(() => {
+		setShowLyrics((prev) => {
+			const newShowLyrics = !prev
+			if (newShowLyrics) {
+				lyricsOpacity.value = withTiming(1, { duration: 300 })
+				lyricsTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 })
+			} else {
+				setShowLyricDelayControls(false)
+				lyricsOpacity.value = withTiming(0, { duration: 300 })
+				lyricsTranslateY.value = withSpring(50, { damping: 15, stiffness: 100 })
+			}
+			return newShowLyrics
+		})
+	}, [lyricsOpacity, lyricsTranslateY])
 
 	useEffect(() => {
 		if (isPlaying) {
-			// 放大时使用 withSpring 实现弹性效果
 			artworkScale.value = withSpring(1, {
 				damping: 9,
 				stiffness: 180,
@@ -92,7 +153,6 @@ const PlayerScreen = () => {
 				velocity: 0,
 			})
 		} else {
-			// 缩小时使用 withTiming 实现线性效果
 			artworkScale.value = withTiming(0.7, {
 				duration: 300,
 				easing: Easing.linear,
@@ -100,32 +160,16 @@ const PlayerScreen = () => {
 		}
 	}, [isPlaying])
 
-	const {
-		isLoading,
-		isInitialized,
-		prevTrack,
-		activeTrack,
-		setLoading,
-		setInitialized,
-		setPrevTrack,
-		setActiveTrack,
-	} = usePlayerStore()
-	const nowLyric = nowLyricState.getValue() || '[00:00.00]暂无歌词'
-	const currentActiveTrack = useActiveTrack()
-
-	const { imageColors } = usePlayerBackground(currentActiveTrack?.artwork ?? unknownTrackImageUri)
-
-	const handleViewArtist = (artist: string) => {
+	const handleViewArtist = useCallback((artist: string) => {
 		if (!artist.includes('未知')) {
 			getSingerMidBySingerName(artist).then((singerMid) => {
 				if (singerMid) {
 					router.navigate(`/(modals)/${singerMid}`)
-				} else {
-					console.log('没有匹配到歌手')
 				}
 			})
 		}
-	}
+	}, [])
+
 	const handleArtistSelection = (artists: string) => {
 		artists = artists.trim()
 		const artistArray = artists.split('、')
@@ -143,7 +187,6 @@ const PlayerScreen = () => {
 				</TouchableOpacity>
 			)
 		} else {
-			// 使用 MenuView 显示歌手选择菜单
 			return (
 				<MenuView
 					title={i18n.t('player.selectArtist')}
@@ -168,96 +211,53 @@ const PlayerScreen = () => {
 			)
 		}
 	}
-	useEffect(() => {
-		const checkTrackLoading = async () => {
-			if (!isInitialized) {
-				setInitialized(true)
-				setActiveTrack(currentActiveTrack)
-				setPrevTrack(currentActiveTrack)
-			} else if (!currentActiveTrack && !prevTrack) {
-				// console.log('prevTrack new ', prevTrack);
-				setLoading(true)
-			} else if (currentActiveTrack && currentActiveTrack.id !== prevTrack.id) {
-				setLoading(true)
-				// Simulate a delay to ensure track is fully loaded
-				await new Promise((resolve) => setTimeout(resolve, 50))
-				setLoading(false)
-				setPrevTrack(currentActiveTrack) // Update previous track when the new track is fully loaded
-			}
-			setActiveTrack(currentActiveTrack)
-		}
-		if (currentActiveTrack !== undefined) {
-			// console.log('currentActiveTrack new :::::', currentActiveTrack);
-			checkTrackLoading()
-		}
-	}, [currentActiveTrack])
 
-	const trackToDisplay = activeTrack || prevTrack // Use previous track if active track is null
-
-	// 用于同步歌词的时间
-	const [currentLyricTime, setCurrentLyricTime] = useState(position * 1000)
-
-	// 更新当前歌词时间的函数
-	const handleSeek = (newPosition) => {
-		setCurrentLyricTime(newPosition * 1000)
-	}
-	const handleFavorite = () => {
+	const handleSeek = useCallback((newPosition: number) => {
+		// seek handled by PlayerProgressBar internally
+	}, [])
+	const handleFavorite = useCallback(() => {
 		toggleFavorite()
-	}
+	}, [toggleFavorite])
 
-	const handleShowAlbum = () => {
-		// console.log('trackToDisplay', trackToDisplay)
-		const albumId = extractAlbumId(trackToDisplay.artwork)
-		// console.log('albumId', albumId)
-		// 实现显示专辑的逻辑
-		router.push(`/(modals)/${albumId}?album=true`)
-	}
-	const extractAlbumId = (artworkUrl: string): string => {
+	const extractAlbumId = useCallback((artworkUrl: string): string => {
 		const regex = /T002R500x500M000(.+)\.jpg/
 		const match = artworkUrl.match(regex)
 		return match ? match[1] : ''
-	}
-	const handleShowLyrics = () => {
-		// 实现显示歌词的逻辑
-		handleLyricsToggle()
-	}
+	}, [])
 
-	const handleAddToPlaylist = () => {
-		// 实现添加到歌单的逻辑
+	const handleShowAlbum = useCallback(() => {
+		if (!trackToDisplay?.artwork) return
+		const albumId = extractAlbumId(trackToDisplay.artwork)
+		router.push(`/(modals)/${albumId}?album=true`)
+	}, [trackToDisplay?.artwork, extractAlbumId])
+
+	const handleShowLyrics = handleLyricsToggle
+
+	const handleAddToPlaylist = useCallback(() => {
 		const track = trackToDisplay
-		console.log('track', track)
+		if (!track) return
 		router.push(
 			`/(modals)/addToPlaylist?title=${track.title}&album=${track.album}&artwork=${track.artwork}&artist=${track.artist}&id=${track.id}&url=${track.url}&platform=${track.platform}&duration=${track.duration}`,
 		)
-	}
+	}, [trackToDisplay])
 
-	const handleDownload = async () => {
-		myTrackPlayer.cacheAndImportMusic(trackToDisplay as IMusic.IMusicItem)
-	}
-	const handleShare = async () => {
+	const handleDownload = useCallback(async () => {
+		if (trackToDisplay) {
+			myTrackPlayer.cacheAndImportMusic(trackToDisplay as IMusic.IMusicItem)
+		}
+	}, [trackToDisplay])
+
+	const handleShare = useCallback(async () => {
 		try {
-			const result = await Share.share({
+			await Share.share({
 				title: trackToDisplay?.title,
 				message: `歌曲: ${trackToDisplay?.title} by ${trackToDisplay?.artist}`,
-				url: trackToDisplay?.url, // 如果有歌曲的在线链接的话
+				url: trackToDisplay?.url,
 			})
-
-			if (result.action === Share.sharedAction) {
-				if (result.activityType) {
-					// 分享成功，并且我们知道是通过哪个应用分享的
-					console.log(`Shared via ${result.activityType}`)
-				} else {
-					// 分享成功，但我们不知道是通过哪个应用分享的
-					console.log('Shared')
-				}
-			} else if (result.action === Share.dismissedAction) {
-				// 用户取消了分享
-				console.log('Share dismissed')
-			}
 		} catch (error) {
 			console.error(error.message)
 		}
-	}
+	}, [trackToDisplay])
 	const handleTimingClose = (minutes: number) => {
 		setTimingClose(Date.now() + minutes * 60 * 1000)
 	}
@@ -293,9 +293,6 @@ const PlayerScreen = () => {
 			image: 'arrow.down.circle',
 		})
 	}
-	useEffect(() => {
-		setCurrentLyricTime(position * 1000)
-	}, [position])
 	useEffect(() => {
 		if (showLyrics) {
 			activateKeepAwakeAsync()
@@ -456,6 +453,7 @@ const PlayerScreen = () => {
 					</View>
 				) : (
 					<View style={{ flex: 1, marginTop: top + 70, marginBottom: bottom }}>
+					<GestureDetector gesture={swipeGesture}>
 						<Animated.View style={[styles.artworkImageContainer, artworkAnimatedStyle]}>
 							<TouchableOpacity style={styles.artworkTouchable} onPress={handleLyricsToggle}>
 								<FastImage
@@ -468,6 +466,7 @@ const PlayerScreen = () => {
 								/>
 							</TouchableOpacity>
 						</Animated.View>
+					</GestureDetector>
 						<View style={{ flex: 1 }}>
 							<View style={{ marginTop: 'auto' }}>
 								<View style={{ height: 60 }}>
@@ -567,11 +566,7 @@ const PlayerScreen = () => {
 					</View>
 				)}
 
-				{isLoading && (
-					<View style={styles.loaderOverlay}>
-						<ActivityIndicator size="large" color="#fff" />
-					</View>
-				)}
+			
 			</View>
 		</LinearGradient>
 	)
@@ -661,16 +656,6 @@ const styles = StyleSheet.create({
 		fontSize: fontSize.base,
 		opacity: 0.8,
 		maxWidth: '90%',
-	},
-	loaderOverlay: {
-		position: 'absolute',
-		top: 0,
-		bottom: 0,
-		left: 0,
-		right: 0,
-		justifyContent: 'center',
-		alignItems: 'center',
-		backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent background to indicate loading
 	},
 	lyricText: {
 		...defaultStyles.text,

@@ -1227,6 +1227,10 @@ PODS:
     - React-Core
     - SDWebImage (~> 5.11.1)
     - SDWebImageWebPCoder (~> 0.8.4)
+  - RNFlashList (1.7.1):
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
+    - React-Core
   - RNFS (2.20.0):
     - React-Core
   - RNGestureHandler (2.18.1):
@@ -1340,6 +1344,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNFastImage (from `../node_modules/react-native-fast-image`)
+  - "RNFlashList (from `../node_modules/@shopify/flash-list`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -1531,6 +1536,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNFastImage:
     :path: "../node_modules/react-native-fast-image"
+  RNFlashList:
+    :path: "../node_modules/@shopify/flash-list"
   RNFS:
     :path: "../node_modules/react-native-fs"
   RNGestureHandler:
@@ -1635,6 +1642,7 @@ SPEC CHECKSUMS:
   ReactCommon: 2e5492a3e3a8e72d635c266405e49d12627e5bf0
   RNCAsyncStorage: aa75595c1aefa18f868452091fa0c411a516ce11
   RNFastImage: 462a183c4b0b6b26fdfd639e1ed6ba37536c3b87
+  RNFlashList: 818cb6cff1f47cabe1acd6298c98af1a39b9b18c
   RNFS: 89de7d7f4c0f6bafa05343c578f61118c8282ed8
   RNGestureHandler: 03a2c31aea5d46f51080f1c1b6659b76a9ac78c9
   RNReanimated: 8adb252a83153bb04b99abf93a09b47d4cac8f92

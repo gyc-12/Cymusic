@@ -170,6 +170,18 @@ declare namespace IMusic {
         rawLrc?: string;
         /** 音质信息 */
         qualities?: IQuality;
+        /** 歌手头像 (搜索结果/排行榜) */
+        singerImg?: string;
+        /** QQ 音乐 songmid */
+        songmid?: string;
+        /** 专辑 mid */
+        albummid?: string;
+        /** 专辑 id */
+        albumid?: string | number;
+        /** 音乐类型标识 */
+        genre?: string;
+        /** 是否为艺术家搜索结果 */
+        isArtist?: boolean;
         /** 其他可以被序列化的信息 */
         [k: string]: any;
         /** 内部信息 */

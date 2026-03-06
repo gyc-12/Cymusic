@@ -3,7 +3,6 @@ import { SoundAsset } from '@/constants/constant'
 import Config from '@/store/config'
 import delay from '@/utils/delay'
 import { isSameMediaItem, mergeProps, sortByTimestampAndIndex } from '@/utils/mediaItem'
-import { GlobalState } from '@/utils/stateMapper'
 import * as FileSystem from 'expo-file-system'
 import { produce } from 'immer'
 import shuffle from 'lodash.shuffle'
@@ -39,29 +38,46 @@ import { showToast } from '@/utils/utils'
 import { logError, logInfo } from './logger'
 import { isLxMusicScript, reloadLxMusicScript } from './userApi/lxMusicSourceAdapter'
 
-/** 当前播放 */
-const currentMusicStore = new GlobalState<IMusic.IMusicItem | null>(null)
-/** 歌单*/
-export const playListsStore = new GlobalState<IMusic.PlayList[] | []>(null)
-/** 播放模式 */
-export const repeatModeStore = new GlobalState<MusicRepeatMode>(MusicRepeatMode.QUEUE)
+import {
+	currentMusicStore,
+	playListsStore,
+	repeatModeStore,
+	qualityStore,
+	musicApiStore,
+	musicApiSelectedStore,
+	nowApiState,
+	autoCacheLocalStore,
+	isCachedIconVisibleStore,
+	songsNumsToLoadStore,
+	importedLocalMusicStore,
+	nowLyricState,
+} from '@/player/PlayerStore'
 
-/** 音质 */
-export const qualityStore = new GlobalState<IMusic.IQualityKey>('128k')
-/** 音源 */
-export const musicApiStore = new GlobalState<IMusic.MusicApi[] | []>(null)
-/** 当前音源 */
-export const musicApiSelectedStore = new GlobalState<IMusic.MusicApi>(null)
-/** 音源状态*/
-export const nowApiState = new GlobalState<string>('正常')
-/** 是否自动缓存本地 */
-export const autoCacheLocalStore = new GlobalState<boolean>(true)
-/** 是否显示已缓存图标 */
-export const isCachedIconVisibleStore = new GlobalState<boolean>(true)
-/** 首页加载歌曲数量 */
-export const songsNumsToLoadStore = new GlobalState<number>(100)
-/** 已导入的本地音乐 */
-export const importedLocalMusicStore = new GlobalState<IMusic.IMusicItem[] | []>(null)
+import {
+	isCached,
+	downloadToCache,
+	clearCache,
+	getLocalFilePath,
+	ensureCacheDirExists,
+	ensureDirExists,
+	cacheDir,
+} from '@/player/CacheManager'
+
+import { resolveSource, preloadSource, getPreloadedUrl } from '@/player/MusicSourceResolver'
+
+export {
+	playListsStore,
+	repeatModeStore,
+	qualityStore,
+	musicApiStore,
+	musicApiSelectedStore,
+	nowApiState,
+	autoCacheLocalStore,
+	isCachedIconVisibleStore,
+	songsNumsToLoadStore,
+	importedLocalMusicStore,
+	nowLyricState,
+}
 
 export function useCurrentQuality() {
 	const currentQuality = qualityStore.useValue()
@@ -70,25 +86,15 @@ export function useCurrentQuality() {
 	}
 	return [currentQuality, setCurrentQuality] as const
 }
-// const setNowLyric = useLibraryStore.getState().setNowLyric
-export const nowLyricState = new GlobalState<string>(null)
 
 let currentIndex = -1
-// 定义缓存目录
-const cacheDir = FileSystem.documentDirectory + 'musicCache/'
-// TODO: 下个版本最大限制调大一些
-// const maxMusicQueueLength = 1500; // 当前播放最大限制
 
 let hasSetupListener = false
 
-// TODO: 删除
 function migrate() {
 	PersistStatus.set('music.rate', 1)
-	//TODO 循环方式
 	PersistStatus.set('music.repeatMode', MusicRepeatMode.QUEUE)
-	// PersistStatus.set('music.playList', []);
 	PersistStatus.set('music.progress', 0)
-	//PersistStatus.set('music.musicItem', track);
 	Config.set('status.music', undefined)
 }
 
@@ -260,17 +266,14 @@ const addAll = (
 	const now = Date.now()
 	let newPlayList: IMusic.IMusicItem[] = []
 	const currentPlayList = getPlayList()
-	const _musicItems = musicItems.map((item, index) =>
-		produce(item, (draft) => {
-			draft[timeStampSymbol] = now
-			draft[sortIndexSymbol] = index
-		}),
-	) /*draft[timeStampSymbol] = now：为 draft 对象添加或更新 timeStampSymbol 属性，值为 now。draft[sortIndexSymbol] = index：为 draft 对象添加或更新 sortIndexSymbol 属性，值为当前索引 index。*/
+	const _musicItems = musicItems.map((item, index) => ({
+		...item,
+		[timeStampSymbol]: now,
+		[sortIndexSymbol]: index,
+	}))
 	if (beforeIndex === undefined || beforeIndex < 0) {
-		// 1.1. 添加到歌单末尾，并过滤掉已有的歌曲
 		newPlayList = currentPlayList.concat(_musicItems.filter((item) => !isInPlayList(item)))
 	} else {
-		// 1.2. beforeIndex新的播放列表，插入beforeIndex
 		const indexMap = createMediaIndexMap(_musicItems)
 		const beforeDraft = currentPlayList.slice(0, beforeIndex).filter((item) => !indexMap.has(item))
 		const afterDraft = currentPlayList.slice(beforeIndex).filter((item) => !indexMap.has(item))
@@ -278,21 +281,15 @@ const addAll = (
 		newPlayList = [...beforeDraft, ..._musicItems, ...afterDraft]
 	}
 
-	// 2. 如果需要随机
 	if (shouldShuffle) {
 		newPlayList = shuffle(newPlayList)
 	}
-	// 3. 设置播放列表
 	setPlayList(newPlayList)
 	const currentMusicItem = currentMusicStore.getValue()
 
-	// 4. 重置下标
 	if (currentMusicItem) {
 		currentIndex = getMusicIndex(currentMusicItem)
 	}
-
-	// TODO: 更新播放队列信息
-	// 5. 存储更新的播放列表信息
 }
 
 /** 追加到队尾 */
@@ -762,15 +759,6 @@ const deleteMusicApiById = (musicApiId: string) => {
 		{ text: '确定', onPress: () => logInfo('Add alert closed') },
 	])
 }
-/**
- * 播放
- *
- * 当musicItem 为空时，代表暂停/播放
- *
- * @param musicItem
- * @param forcePlay
- * @returns
- */
 const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) => {
 	try {
 		if (!musicItem) {
@@ -779,18 +767,16 @@ const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) =
 		if (!musicItem) {
 			throw new Error(PlayFailReason.PLAY_LIST_IS_EMPTY)
 		}
-		// 2. 如果是当前正在播放的音频
+
+		// 1. If already playing this track
 		if (isCurrentMusic(musicItem)) {
 			const currentTrack = await ReactNativeTrackPlayer.getTrack(0)
-			// 2.1 如果当前有源
-
 			if (currentTrack?.url && isSameMediaItem(musicItem, currentTrack as IMusic.IMusicItem)) {
 				const currentActiveIndex = await ReactNativeTrackPlayer.getActiveTrackIndex()
 				if (currentActiveIndex !== 0) {
 					await ReactNativeTrackPlayer.skip(0)
 				}
 				if (forcePlay) {
-					// 2.1.1 强制重新开始
 					await ReactNativeTrackPlayer.seekTo(0)
 				}
 				const currentState = (await ReactNativeTrackPlayer.getPlaybackState()).state
@@ -798,208 +784,70 @@ const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) =
 					await setTrackSource(currentTrack)
 				}
 				if (currentState !== State.Playing) {
-					// 2.1.2 恢复播放
 					await ReactNativeTrackPlayer.play()
 				}
-				// 这种情况下，播放队列和当前歌曲都不需要变化
 				return
 			}
-			// 2.2 其他情况：重新获取源
 		}
 
-		// 3. 如果没有在播放列表中，添加到队尾；同时更新列表状态
-		const inPlayList = isInPlayList(musicItem)
-		if (!inPlayList) {
+		// 2. Add to playlist if not present
+		if (!isInPlayList(musicItem)) {
 			add(musicItem)
 		}
 
-		// 4. 更新列表状态和当前音乐
+		// 3. Update current music state immediately (UI updates instantly)
 		setCurrentMusic(musicItem)
-		//reset的时机？
-		//await ReactNativeTrackPlayer.reset();
 
-		// 5. 获取音源
-		let track: IMusic.IMusicItem
+		// 4. Resolve source (cache check + network if needed)
+		const { url: sourceUrl, wasCached } = await resolveSource(musicItem)
 
-		// 5.1 通过插件获取音源
-		// const plugin = PluginManager.getByName(musicItem.platform);
-		// 5.2 获取音质排序
-		// const qualityOrder = ['128k', 'low']
-		// const qualityOrder = getQualityOrder(
-		//     Config.get('setting.basic.defaultPlayQuality') ?? 'standard',
-		//     Config.get('setting.basic.playQualityOrder') ?? 'asc',
-		// );
-		// 5.3 插件返回的音源为source
-		let source: IPlugin.IMediaSourceResult | null = null
-		if (musicItem.url.startsWith('file://')) {
-			const isFileExit = await RNFS.exists(musicItem.url)
-			if (!isFileExit) {
-				logError('本地文件不存在:', musicItem.url)
-				showToast('错误', '本地文件不存在，请删除并重新缓存或导入。', 'error')
-				return
-			}
-		}
-		const cached = await isCached(musicItem)
-		if (cached) {
-			const localPath = getLocalFilePath(musicItem)
-			source = {
-				url: localPath,
-			}
-			logInfo('使用缓存的音频路径播放:', localPath)
-		}
+		// 5. Race condition guard
 		if (!isCurrentMusic(musicItem)) {
 			return
 		}
-		if (!source) {
-			if ((!source && musicItem.url == 'Unknown') || musicItem.url.includes('fake')) {
-				logInfo('没有url')
-				let resp_url = null
-				const nowMusicApi = musicApiSelectedStore.getValue()
-				// logInfo(nowMusicApi)
 
-				if (nowMusicApi == null) {
-					showToast('错误', '获取音乐失败，请先导入音源。', 'error')
-					// Alert.alert('错误', '获取音乐失败，请先导入音源。', [
-					//     { text: '确定', onPress: () => logInfo('Alert closed') },
-					// ])
-					return
-				} else {
-					try {
-						const timeoutPromise = new Promise((_, reject) => {
-							setTimeout(() => reject(new Error('请求超时')), 5000)
-						})
-						// 定义音质降级顺序
-						const qualityOrder: IMusic.IQualityKey[] = ['flac', '320k', '128k']
-						let currentQualityIndex = qualityOrder.indexOf(qualityStore.getValue())
-
-						// 尝试不同音质，直到获取到可用的URL或尝试完所有音质
-						while (currentQualityIndex < qualityOrder.length && !resp_url) {
-							const currentQuality = qualityOrder[currentQualityIndex]
-							try {
-								resp_url = await Promise.race([
-									nowMusicApi.getMusicUrl(
-										musicItem.title,
-										musicItem.artist,
-										musicItem.id,
-										currentQuality,
-									),
-									timeoutPromise,
-								])
-								logInfo(`音源返回:${resp_url}`)
-								if (!resp_url || resp_url == '') {
-									logInfo(`${currentQuality}音质无可用链接，尝试下一个音质`)
-									currentQualityIndex++
-									continue
-								}
-								// 如果当前音质不是原始请求的音质，显示提示
-								if (resp_url && currentQuality !== qualityStore.getValue()) {
-									showToast('提示', `已自动切换至${currentQuality}音质`, 'info')
-									// 更新当前音质设置
-									setQuality(currentQuality)
-								}
-								logInfo(`成功获取${currentQuality}音质的音乐URL:`, resp_url)
-								} catch (error) {
-									logInfo(`${currentQuality}音质无可用链接(catch),尝试下一个音质`)
-									const errMsg = error instanceof Error ? error.message : String(error)
-									logError(`(catch error): ${errMsg}`)
-									currentQualityIndex++
-								}
-							}
-						if (!resp_url) {
-							nowApiState.setValue('异常')
-							throw new Error('无法获取任何音质的音乐，请稍后重试。')
-						} else {
-							logInfo('最终的音乐 URL:', resp_url)
-							nowApiState.setValue('正常')
-						}
-						} catch (error) {
-							nowApiState.setValue('异常')
-							const errMsg = error instanceof Error ? error.message : String(error)
-							logError(`获取音乐 URL 失败: ${errMsg}`)
-							const errorMessage =
-								errMsg === '请求超时'
-									? '获取音乐超时，请稍后重试。'
-									: errMsg || '获取音乐失败，请稍后重试。'
-							showToast(errorMessage, '', 'error')
-						// showErrorMessage(errorMessage)
-						resp_url = fakeAudioMp3Uri // 使用假的音频 URL 作为后备
-					}
-				}
-				// const resp = await myGetMusicUrl(musicItem, qualityStore.getValue())
-
-				source = {
-					url: resp_url,
-				}
-			} else {
-				if (musicItem.url.startsWith('file://')) {
-					const isFileExit = await RNFS.exists(musicItem.url)
-					if (!isFileExit) {
-						musicItem.url = fakeAudioMp3Uri
-						logError('本地文件不存在:', musicItem.url)
-						showToast('错误', '本地文件不存在，请删除并重新缓存或导入。', 'error')
-						return
-					}
-				}
-				const cached = await isCached(musicItem)
-
-				if (cached) {
-					const localPath = getLocalFilePath(musicItem)
-					source = {
-						url: localPath,
-					}
-					logInfo('使用缓存的音频路径播放:', localPath)
-				} else {
-					source = {
-						url: musicItem.url,
-					}
-				}
-
-				// setQuality('128k')
-			}
-		}
-
-		// 6. 特殊类型源
-		// if (getUrlExt(source.url) === '.m3u8') {
-		//     // @ts-ignore
-		//     source.type = 'hls';
-		// }
-		// 7. 合并结果
-		// eslint-disable-next-line prefer-const
-		track = mergeProps(musicItem, source) as IMusic.IMusicItem
-
+		// 6. Build track and set source
+		const track = mergeProps(musicItem, { url: sourceUrl }) as IMusic.IMusicItem
 		logInfo('获取音源成功：', track)
-		// 9. 设置音源
 		await setTrackSource(track as Track)
-		// 4.1 刷新歌词信息
-		const lyc = await myGetLyric(musicItem)
-		// console.debug(lyc.lyric);
-		nowLyricState.setValue(lyc.lyric)
-		// 9.1 如果需要缓存,且不是假音频,且不是本地文件
+
+		// 7. Fetch lyrics in background (non-blocking)
+		myGetLyric(musicItem)
+			.then((lyc) => {
+				if (isCurrentMusic(musicItem)) {
+					nowLyricState.setValue(lyc.lyric)
+				}
+			})
+			.catch((err) => logError('获取歌词失败:', err))
+
+		// 8. Auto-cache in background
 		if (
-			track.url !== fakeAudioMp3Uri &&
-			!track.url.includes('fake') &&
-			!cached &&
+			sourceUrl !== fakeAudioMp3Uri &&
+			!sourceUrl.includes('fake') &&
+			!wasCached &&
 			autoCacheLocalStore.getValue() &&
-			!track.url.startsWith('file://')
+			!sourceUrl.startsWith('file://')
 		) {
-			// 下载到缓存，延迟5秒后执行
-			logInfo('将在5秒后下载缓存:', track.url)
 			setTimeout(() => {
 				downloadToCache(track)
 					.then((localUri) => {
 						logInfo('音乐已缓存到本地:', localUri)
-						// 更新url,为了删除能够正常删除
 						const newTrack = { ...track, url: localUri }
 						addImportedLocalMusic([newTrack], false)
 					})
 					.catch((error) => {
 						logError('缓存音乐时出错:', error)
 					})
-			}, 5000) // 延迟5000毫秒（5秒）
+			}, 5000)
 		}
 
-		// 10. 获取补充信息
-		// const info: Partial<IMusic.IMusicItem> | null = null
+		// 9. Preload next track source in background
+		const nextTrack = getPlayListMusicAt(currentIndex + 1)
+		if (nextTrack && !isSameMediaItem(nextTrack, musicItem)) {
+			setTimeout(() => {
+				preloadSource(nextTrack).catch(() => {})
+			}, 3000)
+		}
 	} catch (e: any) {
 		const message = e?.message
 		if (message === 'The player is not initialized. Call setupPlayer first.') {
@@ -1011,7 +859,7 @@ const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) =
 			logError('音源为空，播放失败')
 			await failToPlay()
 		} else if (message === PlayFailReason.PLAY_LIST_IS_EMPTY) {
-			// 队列是空的，不应该出现这种情况
+			// empty queue
 		}
 	}
 }
@@ -1064,22 +912,17 @@ const playWithReplacePlayList = async (
 ) => {
 	if (newPlayList.length !== 0) {
 		const now = Date.now()
-		// if (newPlayList.length > maxMusicQueueLength) {
-		//     newPlayList = shrinkPlayListToSize(
-		//         newPlayList,
-		//         newPlayList.findIndex(it => isSameMediaItem(it, musicItem)),
-		//     );
-		// }
-		const playListItems = newPlayList.map((item, index) =>
-			produce(item, (draft) => {
-				draft[timeStampSymbol] = now
-				draft[sortIndexSymbol] = index
-			}),
-		)
+		const playListItems = newPlayList.map((item, index) => ({
+			...item,
+			[timeStampSymbol]: now,
+			[sortIndexSymbol]: index,
+		}))
 		setPlayList(
 			repeatModeStore.getValue() === MusicRepeatMode.SHUFFLE
 				? shuffle(playListItems)
 				: playListItems,
+			true,
+			true, // lazy index build - defer to first query
 		)
 		await play(musicItem, true)
 	}
@@ -1227,96 +1070,6 @@ const isExistImportedLocalMusic = (musicItemName: string) => {
 	// todo 检查文件存在？
 	const importedLocalMusic = importedLocalMusicStore.getValue() || []
 	return importedLocalMusic.some((item) => item.genre === musicItemName)
-}
-/**
- * 确保缓存目录存在
- */
-const ensureCacheDirExists = async () => {
-	const dirInfo = await FileSystem.getInfoAsync(cacheDir)
-	if (!dirInfo.exists) {
-		await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true })
-	}
-}
-/**
- * 确保目录存在
- */
-const ensureDirExists = async (dirPath: string) => {
-	const dirInfo = await FileSystem.getInfoAsync(dirPath)
-	if (!dirInfo.exists) {
-		await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true })
-	}
-}
-
-/**
- * 获取音频文件的本地路径
- * @param musicItem 音乐项
- * @returns 本地文件路径
- */
-const getLocalFilePath = (musicItem: IMusic.IMusicItem): string => {
-	const format = qualityStore.getValue() === 'flac' ? 'flac' : 'mp3'
-	return `${cacheDir}${musicItem.title}-${musicItem.artist}.${format}`
-}
-
-/**
- * 检查本地是否存在音频缓存
- * @param musicItem 音乐项
- * @returns 是否存在
- */
-const isCached = async (musicItem: IMusic.IMusicItem): Promise<boolean> => {
-	const filePath = getLocalFilePath(musicItem)
-	const fileInfo = await FileSystem.getInfoAsync(filePath)
-	return fileInfo.exists
-}
-/**
- * 下载音频文件并保存到本地
- * @param musicItem 音乐项
- * @returns 本地文件路径
- */
-const downloadToCache = async (musicItem: IMusic.IMusicItem): Promise<string> => {
-	try {
-		await ensureCacheDirExists()
-		const localPath = getLocalFilePath(musicItem)
-		const downloadResult = await RNFS.downloadFile({
-			fromUrl: musicItem.url,
-			toFile: localPath,
-			progressDivider: 1,
-			progress: (res) => {
-				const progress = res.bytesWritten / res.contentLength
-				logInfo(`下载进度: ${(progress * 100).toFixed(2)}%`)
-			},
-		}).promise
-
-		if (downloadResult.statusCode === 200) {
-			logInfo('音频文件已缓存到本地:', localPath)
-			return localPath
-		} else {
-			throw new Error(`下载失败，状态码: ${downloadResult.statusCode}`)
-		}
-	} catch (error) {
-		logError('下载音频文件时出错:', error)
-		throw error
-	}
-}
-/**
- * 清理所有缓存的音频文件
- */
-const clearCache = async () => {
-	const dirInfo = await FileSystem.getInfoAsync(cacheDir)
-	if (dirInfo.exists) {
-		await FileSystem.deleteAsync(cacheDir, { idempotent: true })
-		const importedLocalMusic = importedLocalMusicStore.getValue() || []
-		const updatedImportedLocalMusic = importedLocalMusic.filter((item) => {
-			if (item.url.startsWith(cacheDir)) {
-				return false
-			}
-			return true
-		})
-		importedLocalMusicStore.setValue(updatedImportedLocalMusic)
-		PersistStatus.set('music.importedLocalMusic', updatedImportedLocalMusic)
-		logInfo('缓存已清理')
-	} else {
-		logInfo('缓存目录不存在，无需清理')
-	}
 }
 const toggleAutoCacheLocal = (bool: boolean) => {
 	PersistStatus.set('music.autoCacheLocal', bool)
