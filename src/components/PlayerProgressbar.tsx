@@ -1,5 +1,4 @@
 import { colors, fontSize } from '@/constants/tokens'
-import { durationStore } from '@/helpers/lyricManager'
 import { formatSecondsToMinutes } from '@/helpers/miscellaneous'
 import { defaultStyles, utilsStyles } from '@/styles'
 import React, { useCallback, useEffect } from 'react'
@@ -26,15 +25,14 @@ export const PlayerProgressBar = React.memo(({
 	style,
 	onSeek,
 }: ViewProps & { onSeek?: (position: number) => void }) => {
-	const { position } = useProgress(250)
-	const duration = durationStore.useValue()
+	const { position, duration } = useProgress(250)
 	const isSliding = useSharedValue(false)
 	const progress = useSharedValue(0)
 	const min = useSharedValue(0)
 	const max = useSharedValue(1)
 
 	const trackElapsedTime = formatSecondsToMinutes(position)
-	const trackRemainingTime = formatSecondsToMinutes(duration - position)
+	const trackRemainingTime = formatSecondsToMinutes(Math.max(0, duration - position))
 
 	useEffect(() => {
 		if (!isSliding.value) {
@@ -50,20 +48,16 @@ export const PlayerProgressBar = React.memo(({
 		if (!isSliding.value) return
 		isSliding.value = false
 		const newPosition = value * duration
-		await TrackPlayer.seekTo(newPosition)
-		const actualPosition = await TrackPlayer.getPosition()
-		if (onSeek) {
-			onSeek(actualPosition)
-		}
-	}, [duration, onSeek])
-
-	const handleValueChange = useCallback(async (value: number) => {
-		const newPosition = value * duration
+		progress.value = value
 		await TrackPlayer.seekTo(newPosition)
 		if (onSeek) {
 			onSeek(newPosition)
 		}
 	}, [duration, onSeek])
+
+	const handleValueChange = useCallback((value: number) => {
+		progress.value = value
+	}, [progress])
 
 	const renderThumb = useCallback(() => <AnimatedThumb isSliding={isSliding} />, [isSliding])
 	const renderBubble = useCallback(() => null, [])

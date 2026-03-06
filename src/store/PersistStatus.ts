@@ -12,6 +12,8 @@ interface IPersistConfig {
 	'music.repeatMode': string
 	//播放列表
 	'music.play-list': IMusic.IMusicItem[]
+	// Legacy key for older versions, used only for migration.
+	'music.playList': IMusic.IMusicItem[]
 	'music.favorites': IMusic.IMusicItem[]
 	'music.rate': number
 	'music.quality': IMusic.IQualityKey

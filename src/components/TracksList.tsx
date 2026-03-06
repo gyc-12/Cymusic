@@ -6,14 +6,17 @@ import { utilsStyles } from '@/styles'
 import { FlashList } from '@shopify/flash-list'
 import { router } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
-import { Text, View } from 'react-native'
+import { StyleProp, Text, View, ViewStyle } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 import { QueueControls } from './QueueControls'
 export type TracksListProps = {
 	id: string
 	tracks: Track[]
+	scrollEnabled?: boolean
 	hideQueueControls?: boolean
+	ListHeaderComponent?: React.ReactNode
+	ListHeaderComponentStyle?: StyleProp<ViewStyle>
 	isSinger?: boolean
 	allowDelete?: boolean
 	onDeleteTrack?: (trackId: string) => void
@@ -43,7 +46,10 @@ export const TracksList = React.memo(
 	({
 		id,
 		tracks,
+		scrollEnabled = true,
 		hideQueueControls = false,
+		ListHeaderComponent,
+		ListHeaderComponentStyle,
 		isSinger = false,
 		allowDelete = false,
 		isMultiSelectMode = false,
@@ -115,7 +121,7 @@ export const TracksList = React.memo(
 			],
 		)
 
-		const ListHeaderComponent = useMemo(
+		const queueControlsHeader = useMemo(
 			() =>
 				!hideQueueControls ? (
 					<QueueControls
@@ -126,13 +132,27 @@ export const TracksList = React.memo(
 			[hideQueueControls, tracks, numsToPlay],
 		)
 
+		const combinedListHeader = useMemo(() => {
+			if (!ListHeaderComponent && !queueControlsHeader) {
+				return undefined
+			}
+
+			return (
+				<View style={ListHeaderComponentStyle}>
+					{ListHeaderComponent}
+					{queueControlsHeader}
+				</View>
+			)
+		}, [ListHeaderComponent, ListHeaderComponentStyle, queueControlsHeader])
+
 		const keyExtractor = useCallback((item: Track) => item.id, [])
 
 		return (
 			<FlashList
 				data={tracks}
+				scrollEnabled={scrollEnabled}
 				contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
-				ListHeaderComponent={ListHeaderComponent}
+				ListHeaderComponent={combinedListHeader}
 				ListFooterComponent={ItemDivider}
 				ItemSeparatorComponent={ItemDivider}
 				ListEmptyComponent={EmptyListComponent}

@@ -31,7 +31,7 @@ export function setTrackViewList(
     });
     playListIndexMap = newIndexMap;
     if (shouldSave) {
-        PersistStatus.set('music.playList', newPlayList);
+        PersistStatus.set('music.play-list', newPlayList);
     }
 }
 

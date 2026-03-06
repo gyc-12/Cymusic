@@ -47,7 +47,7 @@ export function setPlayList(
         indexMapDirty = false;
     }
     if (shouldSave) {
-        PersistStatus.set('music.playList', newPlayList);
+        PersistStatus.set('music.play-list', newPlayList);
     }
 }
 

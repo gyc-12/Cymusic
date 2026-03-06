@@ -102,6 +102,7 @@ async function setupTrackPlayer() {
 	migrate()
 	const rate = PersistStatus.get('music.rate')
 	const musicQueue = PersistStatus.get('music.play-list')
+	const legacyMusicQueue = PersistStatus.get('music.playList')
 	const repeatMode = PersistStatus.get('music.repeatMode')
 	const progress = PersistStatus.get('music.progress')
 	const track = PersistStatus.get('music.musicItem')
@@ -114,6 +115,12 @@ async function setupTrackPlayer() {
 	const language = PersistStatus.get('app.language') ?? 'zh'
 	const isCachedIconVisible = PersistStatus.get('music.isCachedIconVisible') ?? true
 	const songsNumsToLoad = PersistStatus.get('music.songsNumsToLoad') ?? 100
+	const restoredQueue = musicQueue ?? legacyMusicQueue
+
+	if (!musicQueue && legacyMusicQueue) {
+		PersistStatus.set('music.play-list', legacyMusicQueue)
+		PersistStatus.set('music.playList', undefined)
+	}
 	// 状态恢复
 	if (rate) {
 		await ReactNativeTrackPlayer.setRate(+rate)
@@ -138,8 +145,8 @@ async function setupTrackPlayer() {
 	if (importedLocalMusic) {
 		importedLocalMusicStore.setValue(importedLocalMusic)
 	}
-	if (musicQueue && Array.isArray(musicQueue)) {
-		addAll(musicQueue, undefined, repeatMode === MusicRepeatMode.SHUFFLE)
+	if (restoredQueue && Array.isArray(restoredQueue)) {
+		addAll(restoredQueue, undefined, repeatMode === MusicRepeatMode.SHUFFLE)
 	}
 	if (autoCacheLocal == true || autoCacheLocal == false) {
 		autoCacheLocalStore.setValue(autoCacheLocal)
@@ -748,7 +755,7 @@ const setMusicApiAsSelectedById = async (musicApiId: string) => {
 const deleteMusicApiById = (musicApiId: string) => {
 	const selectedMusicApi = musicApiSelectedStore.getValue()
 	const musicApis = musicApiStore.getValue() || []
-	if (selectedMusicApi.id == musicApiId) {
+	if (selectedMusicApi?.id === musicApiId) {
 		musicApiSelectedStore.setValue(null)
 	}
 	const musicApisFiltered = musicApis.filter((musicApi) => musicApi.id !== musicApiId)
@@ -1035,7 +1042,7 @@ const addImportedLocalMusic = async (musicItem: IMusic.IMusicItem[], isAlert: bo
 				}
 			}
 		}
-		const updatedImportedLocalMusic = [...importedLocalMusic, ...musicItem]
+		const updatedImportedLocalMusic = [...importedLocalMusic, ...newMusicItems]
 		importedLocalMusicStore.setValue(updatedImportedLocalMusic)
 		PersistStatus.set('music.importedLocalMusic', updatedImportedLocalMusic)
 		if (isAlert) {

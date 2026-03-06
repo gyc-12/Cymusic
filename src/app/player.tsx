@@ -8,7 +8,7 @@ import { ShowPlayerListToggle } from '@/components/ShowPlayerListToggle'
 import { unknownTrackImageUri } from '@/constants/images'
 import { colors, fontSize, screenPadding } from '@/constants/tokens'
 import LyricManager from '@/helpers/lyricManager'
-import myTrackPlayer, { nowLyricState } from '@/helpers/trackPlayerIndex'
+import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { getSingerMidBySingerName } from '@/helpers/userApi/getMusicSource'
 import { usePlayerBackground } from '@/hooks/usePlayerBackground'
 import { useTrackPlayerFavorite } from '@/hooks/useTrackPlayerFavorite'
@@ -51,6 +51,73 @@ const LYRIC_DELAY_STEP = 0.5
 const LYRIC_DELAY_MIN = -15
 const LYRIC_DELAY_MAX = 15
 
+type ArtistDisplayProps = {
+	artists: string
+	onViewArtist: (artist: string) => void
+}
+
+const ArtistDisplay = React.memo(({ artists, onViewArtist }: ArtistDisplayProps) => {
+	const normalizedArtists = artists.trim()
+	const artistArray = React.useMemo(
+		() => normalizedArtists.split('、').map((artist) => artist.trim()).filter(Boolean),
+		[normalizedArtists],
+	)
+
+	const artistActions = React.useMemo(
+		() =>
+			artistArray.map((artist) => ({
+				id: artist,
+				title: artist,
+			})),
+		[artistArray],
+	)
+
+	const handleArtistAction = useCallback(
+		({ nativeEvent }: { nativeEvent: { event: string } }) => {
+			onViewArtist(nativeEvent.event)
+		},
+		[onViewArtist],
+	)
+
+	const displayArtist = artistArray[0] ?? normalizedArtists
+	if (!displayArtist) {
+		return null
+	}
+
+	if (artistArray.length <= 1) {
+		return (
+			<TouchableOpacity
+				activeOpacity={0.6}
+				onPress={() => onViewArtist(displayArtist)}
+				accessibilityRole="button"
+				accessibilityHint={`View artist ${displayArtist}`}
+			>
+				<Text numberOfLines={1} style={[styles.trackArtistText, { marginTop: 6 }]}>
+					{displayArtist}
+				</Text>
+			</TouchableOpacity>
+		)
+	}
+
+	return (
+		<MenuView
+			title={i18n.t('player.selectArtist')}
+			onPressAction={handleArtistAction}
+			actions={artistActions}
+		>
+			<TouchableOpacity
+				activeOpacity={0.6}
+				accessibilityRole="button"
+				accessibilityHint={`View artist ${normalizedArtists}`}
+			>
+				<Text numberOfLines={1} style={[styles.trackArtistText, { marginTop: 6 }]}>
+					{normalizedArtists}
+				</Text>
+			</TouchableOpacity>
+		</MenuView>
+	)
+})
+
 const PlayerScreen = () => {
 	const { top, bottom } = useSafeAreaInsets()
 	const { isFavorite, toggleFavorite } = useTrackPlayerFavorite()
@@ -89,8 +156,8 @@ const PlayerScreen = () => {
 	useEffect(() => {
 		const newUri = trackToDisplay?.artwork ?? unknownTrackImageUri
 		if (newUri !== prevArtworkUri.current) {
-			artworkCrossfade.value = 0.3
-			artworkCrossfade.value = withTiming(1, { duration: 500 })
+			artworkCrossfade.value = 0
+			artworkCrossfade.value = withTiming(1, { duration: 420 })
 			prevArtworkUri.current = newUri
 		}
 	}, [trackToDisplay?.artwork])
@@ -99,7 +166,7 @@ const PlayerScreen = () => {
 		transform: [
 			{ scale: artworkScale.value },
 			{ translateX: artworkTranslateX.value },
-		],
+		] as [{ scale: number }, { translateX: number }],
 		opacity: artworkCrossfade.value,
 	}))
 
@@ -169,48 +236,6 @@ const PlayerScreen = () => {
 			})
 		}
 	}, [])
-
-	const handleArtistSelection = (artists: string) => {
-		artists = artists.trim()
-		const artistArray = artists.split('、')
-		if (artistArray.length === 1) {
-			return (
-				<TouchableOpacity
-					activeOpacity={0.6}
-					onPress={() => handleViewArtist(artists)}
-					accessibilityRole="button"
-					accessibilityHint={`View artist ${artists}`}
-				>
-					<Text numberOfLines={1} style={[styles.trackArtistText, { marginTop: 6 }]}>
-						{artists}
-					</Text>
-				</TouchableOpacity>
-			)
-		} else {
-			return (
-				<MenuView
-					title={i18n.t('player.selectArtist')}
-					onPressAction={({ nativeEvent }) => {
-						handleViewArtist(nativeEvent.event)
-					}}
-					actions={artistArray.map((artist) => ({
-						id: artist,
-						title: artist,
-					}))}
-				>
-					<TouchableOpacity
-						activeOpacity={0.6}
-						accessibilityRole="button"
-						accessibilityHint={`View artist ${artists}`}
-					>
-						<Text numberOfLines={1} style={[styles.trackArtistText, { marginTop: 6 }]}>
-							{artists}
-						</Text>
-					</TouchableOpacity>
-				</MenuView>
-			)
-		}
-	}
 
 	
 	const handleFavorite = useCallback(() => {
@@ -342,7 +367,7 @@ const PlayerScreen = () => {
 	function toggleLyricDelayControls(): void {
 		setShowLyricDelayControls((prev) => !prev)
 	}
-	function setCustomTimingClose(arg0: null) {
+	function setCustomTimingClose() {
 		Alert.prompt(
 			i18n.t('player.setTimingClose'),
 			i18n.t('player.inputMinutes'),
@@ -520,7 +545,7 @@ const PlayerScreen = () => {
 														handleTimingClose(30)
 														break
 													case 'timing_cus':
-														setCustomTimingClose(null)
+														setCustomTimingClose()
 														break
 												}
 											}}
@@ -533,7 +558,9 @@ const PlayerScreen = () => {
 									</View>
 
 									{/* Track artist */}
-									{trackToDisplay?.artist && handleArtistSelection(trackToDisplay.artist)}
+								{trackToDisplay?.artist ? (
+									<ArtistDisplay artists={trackToDisplay.artist} onViewArtist={handleViewArtist} />
+								) : null}
 								</View>
 
 								<PlayerProgressBar style={{ marginTop: 32 }} />

@@ -11,7 +11,7 @@ import React, { memo, useCallback, useMemo } from 'react'
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Track } from 'react-native-track-player'
+import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 import TracksListItem from './TracksListItem'
 
 export type SearchListProps = {
@@ -77,6 +77,10 @@ export const SearchList: React.FC<SearchListProps> = ({
 	hasMore,
 	isLoading,
 }) => {
+	const activeTrack = useActiveTrack()
+	const { playing } = useIsPlaying()
+	const activeTrackId = activeTrack?.id
+
 	const handleTrackSelect = useCallback(async (selectedTrack: Track) => {
 		if (selectedTrack.isArtist) {
 			if (!selectedTrack.artist.includes('未知')) {
@@ -104,9 +108,16 @@ export const SearchList: React.FC<SearchListProps> = ({
 					</TouchableOpacity>
 				)
 			}
-			return <TracksListItem track={track} onTrackSelect={handleTrackSelect} />
+			return (
+				<TracksListItem
+					track={track}
+					onTrackSelect={handleTrackSelect}
+					isActiveTrack={track.id === activeTrackId}
+					isPlaying={track.id === activeTrackId && !!playing}
+				/>
+			)
 		},
-		[handleTrackSelect],
+		[handleTrackSelect, activeTrackId, playing],
 	)
 
 	const keyExtractor = useCallback((item: Track, index: number) => `${item.id}-${index}`, [])

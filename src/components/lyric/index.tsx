@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ActivityIndicator, LayoutRectangle, StyleSheet, Text, View } from 'react-native'
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 
 import LyricManager from '@/helpers/lyricManager'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
@@ -11,6 +11,8 @@ import { FlatList } from 'react-native-gesture-handler'
 import rpx from '../../utils/rpx'
 import LyricItemComponent from './lyricItem'
 const ITEM_HEIGHT = rpx(92)
+const AUTO_SCROLL_THROTTLE_MS = 900
+const AUTO_SCROLL_MIN_INDEX_DELTA = 2
 
 interface IItemHeights {
 	blankHeight?: number
@@ -28,8 +30,8 @@ const fontSizeMap = {
 	3: rpx(42),
 } as Record<number, number>
 
-export default function Lyric(props: IProps) {
-	const { onTurnPageClick } = props
+export default function Lyric(_props: IProps) {
+	void _props
 	// const lrcSource = {
 	// 	rawLrc: nowLyricState.useValue() || '[00:00.00]暂无歌词',
 	// } as ILyric.ILyricSource
@@ -37,7 +39,7 @@ export default function Lyric(props: IProps) {
 	// const parser = new LyricParser(lrcSource, musicItem, {})
 	// const lyrics = parser.getLyric()
 	// console.log('lyrics', lyrics)
-	const [loading, setisLoading] = useState(false)
+	const [loading] = useState(false)
 	const { meta, lyrics } = LyricManager.useLyricState()
 	// console.log('lyrics', lyrics)
 	const currentLrcItem = LyricManager.useCurrentLyric()
@@ -50,28 +52,18 @@ export default function Lyric(props: IProps) {
 		[fontSizeKey],
 	)
 
-	const [draggingIndex, setDraggingIndex, setDraggingIndexImmi] = useDelayFalsy<number | undefined>(
-		undefined,
-		2000,
-	)
+	const [draggingIndex, setDraggingIndex] = useDelayFalsy<number | undefined>(undefined, 2000)
 	const musicState = myTrackPlayer.useMusicState()
 
-	const [layout, setLayout] = useState<LayoutRectangle>()
+	const listRef = useRef<FlatList<ILyric.IParsedLrcItem> | null>(null)
 
-	const listRef = useRef<FlatList<ILyric.IParsedLrcItem> | null>()
-
-	const currentMusicItem = myTrackPlayer.useCurrentMusic()
-	// const associateMusicItem = currentMusicItem
-	// 	? MediaExtra.get(currentMusicItem)?.associatedLrc
-	// 	: null
 	// 是否展示拖拽
 	const dragShownRef = useRef(false)
 
-	// 组件是否挂载
-	const isMountedRef = useRef(true)
-
 	// 用来缓存高度
 	const itemHeightsRef = useRef<IItemHeights>({})
+	const lastAutoScrollAtRef = useRef(0)
+	const lastAutoScrollIndexRef = useRef(-1)
 
 	// 设置空白组件，获取组件高度
 	const blankComponent = useMemo(() => {
@@ -89,25 +81,50 @@ export default function Lyric(props: IProps) {
 		itemHeightsRef.current[index] = height
 	}, [])
 
+	const clampLyricIndex = useCallback((index: number, listLength: number) => {
+		if (listLength <= 0) {
+			return 0
+		}
+		return Math.min(Math.max(index, 0), listLength - 1)
+	}, [])
+
+	const scrollToLyricIndex = useCallback(
+		(index: number, listLength: number, force = false) => {
+			if (!listRef.current || listLength <= 0) {
+				return
+			}
+			const targetIndex = clampLyricIndex(index, listLength)
+			const now = Date.now()
+			const indexDelta = Math.abs(targetIndex - lastAutoScrollIndexRef.current)
+			const shouldSkip =
+				!force &&
+				now - lastAutoScrollAtRef.current < AUTO_SCROLL_THROTTLE_MS &&
+				indexDelta < AUTO_SCROLL_MIN_INDEX_DELTA
+			if (shouldSkip) {
+				return
+			}
+
+			listRef.current.scrollToIndex({
+				index: targetIndex,
+				viewPosition: 0.5,
+			})
+			lastAutoScrollAtRef.current = now
+			lastAutoScrollIndexRef.current = targetIndex
+		},
+		[clampLyricIndex],
+	)
+
 	// 滚到当前item
 	const scrollToCurrentLrcItem = useCallback(() => {
-		if (!listRef.current) {
+		const lyricState = LyricManager.getLyricState()
+		const lyricItems = lyricState.lyrics
+		if (lyricItems.length === 0) {
 			return
 		}
 		const currentLrcItem = LyricManager.getCurrentLyric()
-		const lyrics = LyricManager.getLyricState().lyrics
-		if (currentLrcItem?.index === -1 || !currentLrcItem) {
-			listRef.current?.scrollToIndex({
-				index: 0,
-				viewPosition: 0.5,
-			})
-		} else {
-			listRef.current?.scrollToIndex({
-				index: Math.min(currentLrcItem.index ?? 0, lyrics.length - 1),
-				viewPosition: 0.5,
-			})
-		}
-	}, [])
+		const targetIndex = currentLrcItem?.index === -1 || !currentLrcItem ? 0 : currentLrcItem.index ?? 0
+		scrollToLyricIndex(targetIndex, lyricItems.length, true)
+	}, [scrollToLyricIndex])
 
 	// const delayedScrollToCurrentLrcItem = useMemo(() => {
 	// 	let sto: number
@@ -134,23 +151,26 @@ export default function Lyric(props: IProps) {
 		) {
 			return
 		}
-		if (currentLrcItem?.index === -1 || !currentLrcItem) {
-			listRef.current?.scrollToIndex({
-				index: 0,
-				viewPosition: 0.5,
-			})
-		} else {
-			listRef.current?.scrollToIndex({
-				index: Math.min(currentLrcItem.index ?? 0, lyrics.length - 1),
-				viewPosition: 0.5,
-			})
-		}
-	}, [currentLrcItem, lyrics, draggingIndex])
+		const targetIndex = currentLrcItem?.index === -1 || !currentLrcItem ? 0 : currentLrcItem.index ?? 0
+		scrollToLyricIndex(targetIndex, lyrics.length)
+	}, [currentLrcItem?.index, lyrics.length, draggingIndex, musicState, scrollToLyricIndex])
 
 	useEffect(() => {
 		scrollToCurrentLrcItem()
-		return () => {
-			isMountedRef.current = false
+	}, [scrollToCurrentLrcItem])
+
+	const getItemLayout = useCallback((_: unknown, index: number) => {
+		const itemHeights = itemHeightsRef.current
+		const headerHeight = itemHeights.blankHeight ?? 0
+		let offset = headerHeight
+		for (let i = 0; i < index; i++) {
+			offset += itemHeights[i] ?? ITEM_HEIGHT
+		}
+		const length = itemHeights[index] ?? ITEM_HEIGHT
+		return {
+			length,
+			offset,
+			index,
 		}
 	}, [])
 
@@ -231,18 +251,12 @@ export default function Lyric(props: IProps) {
 						ref={(_) => {
 							listRef.current = _
 						}}
-						onLayout={(e) => {
-							setLayout(e.nativeEvent.layout)
-						}}
 						viewabilityConfig={{
 							itemVisiblePercentThreshold: 100,
 						}}
 						onScrollToIndexFailed={({ index }) => {
 							delay(120).then(() => {
-								listRef.current?.scrollToIndex({
-									index: Math.min(index ?? 0, lyrics.length - 1),
-									viewPosition: 0.5,
-								})
+								scrollToLyricIndex(index ?? 0, lyrics.length, true)
 							})
 						}}
 						fadingEdgeLength={120}
@@ -256,7 +270,8 @@ export default function Lyric(props: IProps) {
 					data={lyrics}
 					initialNumToRender={30}
 					overScrollMode="never"
-					extraData={currentLrcItem}
+					extraData={currentLrcItem?.index ?? -1}
+					getItemLayout={getItemLayout}
 					renderItem={renderLyricItem}
 					/>
 				) : (
