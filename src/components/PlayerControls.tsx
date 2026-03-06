@@ -1,8 +1,8 @@
-import { colors } from '@/constants/tokens'
-import myTrackPlayer from '@/helpers/trackPlayerIndex'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import myTrackPlayer, { trackSkipLoadingStore } from '@/helpers/trackPlayerIndex'
 import { FontAwesome6 } from '@expo/vector-icons'
 import React from 'react'
-import { StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native'
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native'
 import TrackPlayer, { useIsPlaying } from 'react-native-track-player'
 
 type PlayerControlsProps = {
@@ -28,6 +28,7 @@ export const PlayerControls = React.memo(({ style }: PlayerControlsProps) => {
 
 export const PlayPauseButton = React.memo(({ style, iconSize = 48 }: PlayerButtonProps) => {
 	const { playing } = useIsPlaying()
+	const colors = useThemeColors()
 
 	return (
 		<View style={[{ height: iconSize }, style]}>
@@ -42,17 +43,43 @@ export const PlayPauseButton = React.memo(({ style, iconSize = 48 }: PlayerButto
 })
 
 export const SkipToNextButton = React.memo(({ iconSize = 30 }: PlayerButtonProps) => {
+	const colors = useThemeColors()
+	const trackSkipLoading = trackSkipLoadingStore.useValue()
+	const isLoading = trackSkipLoading === 'next'
+	const isDisabled = trackSkipLoading !== null
+
 	return (
-		<TouchableOpacity activeOpacity={0.7} onPress={myTrackPlayer.skipToNext}>
-			<FontAwesome6 name="forward" size={iconSize} color={colors.text} />
+		<TouchableOpacity activeOpacity={0.7} disabled={isDisabled} onPress={myTrackPlayer.skipToNext}>
+			<View style={styles.iconContainer}>
+				{isLoading ? (
+					<ActivityIndicator size="small" color={colors.text} />
+				) : (
+					<FontAwesome6 name="forward" size={iconSize} color={colors.text} />
+				)}
+			</View>
 		</TouchableOpacity>
 	)
 })
 
 export const SkipToPreviousButton = React.memo(({ iconSize = 30 }: PlayerButtonProps) => {
+	const colors = useThemeColors()
+	const trackSkipLoading = trackSkipLoadingStore.useValue()
+	const isLoading = trackSkipLoading === 'previous'
+	const isDisabled = trackSkipLoading !== null
+
 	return (
-		<TouchableOpacity activeOpacity={0.7} onPress={myTrackPlayer.skipToPrevious}>
-			<FontAwesome6 name={'backward'} size={iconSize} color={colors.text} />
+		<TouchableOpacity
+			activeOpacity={0.7}
+			disabled={isDisabled}
+			onPress={myTrackPlayer.skipToPrevious}
+		>
+			<View style={styles.iconContainer}>
+				{isLoading ? (
+					<ActivityIndicator size="small" color={colors.text} />
+				) : (
+					<FontAwesome6 name={'backward'} size={iconSize} color={colors.text} />
+				)}
+			</View>
 		</TouchableOpacity>
 	)
 })
@@ -65,5 +92,11 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'space-evenly',
 		alignItems: 'center',
+	},
+	iconContainer: {
+		minWidth: 32,
+		minHeight: 32,
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
 })

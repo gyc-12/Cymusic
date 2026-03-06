@@ -3,13 +3,14 @@ import { screenPadding } from '@/constants/tokens'
 import myTrackPlayer, { playListsStore } from '@/helpers/trackPlayerIndex'
 import { Playlist } from '@/helpers/types'
 
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
 import { Redirect, useLocalSearchParams } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { ScrollView, View } from 'react-native'
 import { Track } from 'react-native-track-player'
 
 const PlaylistScreen = () => {
+	const defaultStyles = useDefaultStyles()
 	const { name: playlistID } = useLocalSearchParams<{ name: string }>()
 	const playlists = playListsStore.useValue() as Playlist[] | null
 
@@ -25,7 +26,7 @@ const PlaylistScreen = () => {
 		(trackId: string) => {
 			myTrackPlayer.deleteSongFromStoredPlayList(playlist as Playlist, trackId)
 		},
-		[playlistID],
+		[playlist],
 	)
 
 	if (!playlist) {

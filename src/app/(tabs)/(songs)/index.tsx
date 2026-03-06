@@ -1,16 +1,19 @@
 import { TracksList } from '@/components/TracksList'
-import { colors, screenPadding } from '@/constants/tokens'
+import { screenPadding } from '@/constants/tokens'
 import { trackTitleFilter } from '@/helpers/filter'
 import { generateTracksListId } from '@/helpers/miscellaneous'
 import { songsNumsToLoadStore } from '@/helpers/trackPlayerIndex'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { useLibraryStore, useTracks, useTracksLoading } from '@/store/library'
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { useCallback, useMemo } from 'react'
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
 
 const SongsScreen = () => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
 	const search = useNavigationSearch({
 		searchBarOptions: {
 			placeholder: i18n.t('find.inSongs'),
@@ -34,7 +37,7 @@ const SongsScreen = () => {
 	if (!tracks.length && isLoading) {
 		return (
 			<View style={[defaultStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-				<ActivityIndicator size="large" />
+				<ActivityIndicator size="large" color={colors.loading} />
 			</View>
 		)
 	}
@@ -74,7 +77,7 @@ const SongsScreen = () => {
 				/>
 				{isLoading && tracks.length > 0 && (
 					<View style={{ paddingVertical: 20, alignItems: 'center' }}>
-						<ActivityIndicator size="small" />
+						<ActivityIndicator size="small" color={colors.loading} />
 					</View>
 				)}
 			</ScrollView>

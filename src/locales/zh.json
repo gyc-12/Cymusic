@@ -23,6 +23,7 @@
 			"importSource": "导入音源",
 			"currentQuality": "当前音质",
 			"changeLanguage": "切换语言",
+			"theme": "主题",
 			"normal": "正常",
 			"exception": "异常",
 			"test": "测试",
@@ -43,6 +44,11 @@
 			"isCachedIconVisible": {
 				"yes": "是",
 				"no": "否"
+			},
+			"theme": {
+				"system": "跟随系统",
+				"light": "浅色",
+				"dark": "深色"
 			},
 			"clearPlaylist": {
 				"title": "清空待播清单",

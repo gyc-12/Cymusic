@@ -4,13 +4,14 @@ import { screenPadding } from '@/constants/tokens'
 import { playListsStore } from '@/helpers/trackPlayerIndex'
 import { Playlist } from '@/helpers/types'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { router } from 'expo-router'
 import { useMemo } from 'react'
 import { Image, ScrollView, View } from 'react-native'
 
 const FavoritesScreen = () => {
+	const defaultStyles = useDefaultStyles()
 	const search = useNavigationSearch({
 		searchBarOptions: {
 			placeholder: i18n.t('find.inFavorites'),
@@ -18,25 +19,29 @@ const FavoritesScreen = () => {
 		},
 	})
 
-	const favoritePlayListItem = {
-		name: 'Favorites',
-		id: 'favorites',
-		tracks: [],
-		title: i18n.t('appTab.favoritesSongs'),
-		coverImg: 'https://y.qq.com/mediastyle/global/img/cover_like.png?max_age=2592000',
-		description: i18n.t('appTab.favoritesSongs'),
-	}
-
-	const localPlayListItem = {
-		name: 'Local',
-		id: 'local',
-		tracks: [],
-		title: i18n.t('appTab.localOrCachedSongs'),
-		coverImg: Image.resolveAssetSource(localImage).uri,
-		description: i18n.t('appTab.localOrCachedSongs'),
-	}
-	const storedPlayLists = playListsStore.useValue() || []
-	const playLists = [favoritePlayListItem, localPlayListItem, ...storedPlayLists]
+	const storedPlayLists = playListsStore.useValue()
+	const playLists = useMemo(
+		() => [
+			{
+				name: 'Favorites',
+				id: 'favorites',
+				tracks: [],
+				title: i18n.t('appTab.favoritesSongs'),
+				coverImg: 'https://y.qq.com/mediastyle/global/img/cover_like.png?max_age=2592000',
+				description: i18n.t('appTab.favoritesSongs'),
+			},
+			{
+				name: 'Local',
+				id: 'local',
+				tracks: [],
+				title: i18n.t('appTab.localOrCachedSongs'),
+				coverImg: Image.resolveAssetSource(localImage).uri,
+				description: i18n.t('appTab.localOrCachedSongs'),
+			},
+			...(storedPlayLists ?? []),
+		],
+		[storedPlayLists],
+	)
 
 	const filteredPlayLists = useMemo(() => {
 		if (!search) return playLists as Playlist[]
@@ -44,7 +49,7 @@ const FavoritesScreen = () => {
 		return playLists.filter((playlist: Playlist) =>
 			playlist.name.toLowerCase().includes(search.toLowerCase()),
 		) as Playlist[]
-	}, [search, playLists, storedPlayLists])
+	}, [playLists, search])
 	const handlePlaylistPress = (playlist: Playlist) => {
 		if (playlist.name == 'Favorites') {
 			router.push(`/(tabs)/favorites/favoriteMusic`)

@@ -33,6 +33,7 @@ interface IPersistConfig {
 	'music.importedLocalMusic': IMusic.IMusicItem[]
 	'music.autoCacheLocal': boolean
 	'app.language': string
+	'app.themeMode': 'system' | 'light' | 'dark'
 	'music.isCachedIconVisible': boolean
 	'music.songsNumsToLoad': number
 }

@@ -1,7 +1,8 @@
-import { colors } from '@/constants/tokens'
+import { ThemeColors } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import rpx from '@/utils/rpx'
 import * as Haptics from 'expo-haptics'
-import React, { memo, useCallback, useRef } from 'react'
+import React, { memo, useCallback, useMemo, useRef } from 'react'
 import { Animated, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native'
 interface ILyricItemComponentProps {
 	// 行号
@@ -19,7 +20,9 @@ interface ILyricItemComponentProps {
 }
 
 function _LyricItemComponent(props: ILyricItemComponentProps) {
-	const { light, highlight, text, onLayout, index, fontSize, onPress } = props
+	const { highlight, text, onLayout, index, fontSize, onPress } = props
+	const colors = useThemeColors()
+	const lyricStyles = useMemo(() => createStyles(colors), [colors])
 	const animatedOpacity = useRef(new Animated.Value(0)).current
 
 	const handlePress = useCallback(() => {
@@ -96,12 +99,13 @@ const LyricItemComponent = memo(
 
 export default LyricItemComponent
 
-const lyricStyles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
 	highlightItem: {
 		opacity: 1,
 	},
 	item: {
-		color: 'white',
+		color: colors.text,
 		opacity: 0.6,
 		paddingHorizontal: rpx(64),
 		paddingVertical: rpx(24),
@@ -111,7 +115,7 @@ const lyricStyles = StyleSheet.create({
 	},
 	draggingItem: {
 		opacity: 1,
-		color: 'white',
+		color: colors.text,
 	},
 	background: {
 		position: 'absolute',
@@ -119,7 +123,7 @@ const lyricStyles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 0,
-		backgroundColor: 'rgba(255, 255, 255, 0.2)',
+		backgroundColor: colors.overlaySoft,
 		borderRadius: rpx(10),
 	},
-})
+	})

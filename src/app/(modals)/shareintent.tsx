@@ -1,4 +1,5 @@
-import { colors } from '@/constants/tokens'
+import { ThemeColors } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import { logError, logInfo } from '@/helpers/logger'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import {
@@ -14,6 +15,8 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 const ShareIntent = () => {
+	const colors = useThemeColors()
+	const styles = useMemo(() => createStyles(colors), [colors])
 	const { hasShareIntent, shareIntent, error, resetShareIntent } = useShareIntentContext()
 	const [importing, setImporting] = useState(false)
 
@@ -167,18 +170,19 @@ const ShareIntent = () => {
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: colors.background,
 		padding: 16,
 	},
 	card: {
-		backgroundColor: colors.background,
+		backgroundColor: colors.surfaceElevated,
 		borderRadius: 10,
 		padding: 16,
 		marginTop: 16,
-		shadowColor: '#000',
+		shadowColor: colors.shadow,
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.1,
 		shadowRadius: 8,
@@ -239,6 +243,6 @@ const styles = StyleSheet.create({
 	cancelButtonText: {
 		color: colors.primary,
 	},
-})
+	})
 
 export default ShareIntent

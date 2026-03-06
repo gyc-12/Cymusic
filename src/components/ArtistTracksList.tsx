@@ -4,7 +4,7 @@ import { trackTitleFilter } from '@/helpers/filter'
 import { generateTracksListId } from '@/helpers/miscellaneous'
 import { Artist } from '@/helpers/types'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
@@ -12,6 +12,8 @@ import FastImage from 'react-native-fast-image'
 import { QueueControls } from './QueueControls'
 import { TracksList } from './TracksList'
 export const ArtistTracksList = ({ artist }: { artist: Artist }) => {
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(defaultStyles), [defaultStyles])
 	const search = useNavigationSearch({
 		searchBarOptions: {
 			hideWhenScrolling: true,
@@ -56,7 +58,8 @@ export const ArtistTracksList = ({ artist }: { artist: Artist }) => {
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (defaultStyles: ReturnType<typeof useDefaultStyles>) =>
+	StyleSheet.create({
 	artistHeaderContainer: {
 		flex: 1,
 		marginBottom: 32,
@@ -79,4 +82,4 @@ const styles = StyleSheet.create({
 		fontSize: fontSize.lg,
 		fontWeight: '800',
 	},
-})
+	})

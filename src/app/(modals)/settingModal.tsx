@@ -1,5 +1,5 @@
 // src/app/modals/settingModal.tsx
-import { colors } from '@/constants/tokens'
+import { ThemeColors } from '@/constants/tokens'
 import { logError, logInfo } from '@/helpers/logger'
 import myTrackPlayer, {
 	autoCacheLocalStore,
@@ -10,6 +10,7 @@ import myTrackPlayer, {
 	songsNumsToLoadStore,
 	useCurrentQuality,
 } from '@/helpers/trackPlayerIndex'
+import { useThemeColors, useThemeMode } from '@/hooks/useAppTheme'
 import { createMusicApiFromScript, fetchScriptFromUrl } from '@/helpers/userApi/importMusicSource'
 import PersistStatus from '@/store/PersistStatus'
 import i18n, { changeLanguage, nowLanguage } from '@/utils/i18n'
@@ -19,7 +20,7 @@ import { MenuView } from '@react-native-menu/menu'
 import Constants from 'expo-constants'
 import * as DocumentPicker from 'expo-document-picker'
 import { useRouter } from 'expo-router'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
 	ActivityIndicator,
 	Alert,
@@ -46,6 +47,9 @@ const sourceStatusStore = new GlobalState<
 
 // eslint-disable-next-line react/prop-types
 const MusicQualityMenu = ({ currentQuality, onSelectQuality }) => {
+	const colors = useThemeColors()
+	const styles = useMemo(() => createStyles(colors), [colors])
+
 	const handlePressAction = async (id: string) => {
 		if (QUALITY_OPTIONS.includes(id)) {
 			onSelectQuality(id)
@@ -69,6 +73,8 @@ const MusicQualityMenu = ({ currentQuality, onSelectQuality }) => {
 }
 // eslint-disable-next-line react/prop-types
 const MusicSourceMenu = ({ isDelete, onSelectSource }) => {
+	const colors = useThemeColors()
+	const styles = useMemo(() => createStyles(colors), [colors])
 	const [sources, setSources] = useState([])
 	const [isLoading, setIsLoading] = useState(false) // 测试状态
 	const cooldown = cooldownStore.useValue() // 使用useValue获取当前值
@@ -357,15 +363,27 @@ const importMusicSourceFromFile = async () => {
 	}
 }
 const SettingModal = () => {
+	const colors = useThemeColors()
+	const { themeMode, setThemeMode } = useThemeMode()
+	const styles = useMemo(() => createStyles(colors), [colors])
 	const router = useRouter()
 	const [currentQuality, setCurrentQuality] = useCurrentQuality()
-	const [isQualitySelectorVisible, setIsQualitySelectorVisible] = useState(false)
 	const [isLoading, setIsLoading] = useState(false)
 	const apiState = nowApiState.useValue()
 	const language = nowLanguage.useValue()
 	const autoCacheLocal = autoCacheLocalStore.useValue()
 	const isCachedIconVisible = isCachedIconVisibleStore.useValue()
 	const songsNumsToLoad = songsNumsToLoadStore.useValue()
+	const themeLabel = useMemo(() => {
+		switch (themeMode) {
+			case 'light':
+				return i18n.t('settings.actions.theme.light')
+			case 'dark':
+				return i18n.t('settings.actions.theme.dark')
+			default:
+				return i18n.t('settings.actions.theme.system')
+		}
+	}, [themeMode])
 	const settingsData = [
 		{
 			title: i18n.t('settings.sections.appInfo'),
@@ -382,6 +400,7 @@ const SettingModal = () => {
 					type: 'value',
 					value: '',
 				},
+				{ id: '18', title: i18n.t('settings.items.theme'), type: 'value', value: '' },
 				{ id: '16', title: i18n.t('settings.items.isCachedIconVisible'), type: 'value', value: '' },
 				{
 					id: '17',
@@ -565,6 +584,36 @@ const SettingModal = () => {
 			</TouchableOpacity>
 		</MenuView>
 	)
+	const themeMenu = (
+		<MenuView
+			onPressAction={({ nativeEvent: { event } }) => {
+				if (event === 'system' || event === 'light' || event === 'dark') {
+					setThemeMode(event)
+				}
+			}}
+			actions={[
+				{
+					id: 'system',
+					title: i18n.t('settings.actions.theme.system'),
+					state: themeMode === 'system' ? 'on' : 'off',
+				},
+				{
+					id: 'light',
+					title: i18n.t('settings.actions.theme.light'),
+					state: themeMode === 'light' ? 'on' : 'off',
+				},
+				{
+					id: 'dark',
+					title: i18n.t('settings.actions.theme.dark'),
+					state: themeMode === 'dark' ? 'on' : 'off',
+				},
+			]}
+		>
+			<TouchableOpacity style={styles.menuTrigger}>
+				<Text style={styles.menuTriggerText}>{themeLabel}</Text>
+			</TouchableOpacity>
+		</MenuView>
+	)
 
 	const handleDeleteSource = (sourceId) => {
 		myTrackPlayer.deleteMusicApiById(sourceId)
@@ -640,8 +689,6 @@ const SettingModal = () => {
 						Linking.openURL('https://github.com/gyc-12/Cymusic').catch((err) =>
 							logError("Couldn't load page", err),
 						)
-					} else if (item.title === i18n.t('settings.items.currentQuality')) {
-						setIsQualitySelectorVisible(true)
 					} else if (item.type === 'link') {
 						if (item.title === i18n.t('settings.items.clearPlaylist')) {
 							Alert.alert(
@@ -694,6 +741,7 @@ const SettingModal = () => {
 						!item.icon && <Text style={styles.arrowRight}>{'>'}</Text>}
 					{item.title === i18n.t('settings.items.autoCacheLocal') && toggleAutoCacheLocalMenu}
 					{item.title === i18n.t('settings.items.changeLanguage') && changeLanguageMenu}
+					{item.title === i18n.t('settings.items.theme') && themeMenu}
 					{item.title === i18n.t('settings.items.isCachedIconVisible') &&
 						toggleIsCachedIconVisibleMenu}
 					{item.title === i18n.t('settings.items.songsNumsToLoad') && toggleSongsNumsToLoadMenu}
@@ -718,12 +766,15 @@ const SettingModal = () => {
 		success: (props) => (
 			<BaseToast
 				{...props}
-				style={{ borderLeftColor: 'rgb(252,87,59)', backgroundColor: 'rgb(251,231,227)' }}
+				style={{
+					borderLeftColor: colors.toastAccent,
+					backgroundColor: colors.toastBackground,
+				}}
 				contentContainerStyle={{ paddingHorizontal: 15 }}
 				text1Style={{
 					fontSize: 15,
 					fontWeight: '400',
-					color: 'rgb(252,87,59)',
+					color: colors.toastAccent,
 				}}
 			/>
 		),
@@ -734,12 +785,15 @@ const SettingModal = () => {
 		error: (props) => (
 			<ErrorToast
 				{...props}
-				style={{ borderLeftColor: 'rgb(252,87,59)', backgroundColor: 'rgb(251,231,227)' }}
+				style={{
+					borderLeftColor: colors.toastAccent,
+					backgroundColor: colors.toastBackground,
+				}}
 				contentContainerStyle={{ paddingHorizontal: 15 }}
 				text1Style={{
 					fontSize: 15,
 					fontWeight: '400',
-					color: 'rgb(252,87,59)',
+					color: colors.toastAccent,
 				}}
 			/>
 		),
@@ -769,7 +823,8 @@ const SettingModal = () => {
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: colors.background,
@@ -786,7 +841,7 @@ const styles = StyleSheet.create({
 		width: 50,
 		height: 8,
 		borderRadius: 8,
-		backgroundColor: '#fff',
+		backgroundColor: colors.dismissBar,
 		opacity: 0.7,
 	},
 	header: {
@@ -828,7 +883,7 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.maximumTrackTintColor,
 	},
 	sectionContent: {
-		backgroundColor: 'rgb(32,32,32)',
+		backgroundColor: colors.surfaceElevated,
 		borderRadius: 10,
 		marginHorizontal: 16,
 		overflow: 'hidden', // 确保圆角不被分隔线覆盖
@@ -873,8 +928,8 @@ const styles = StyleSheet.create({
 		bottom: 0,
 		alignItems: 'center',
 		justifyContent: 'center',
-		backgroundColor: 'rgba(0, 0, 0, 0.5)',
+		backgroundColor: colors.overlay,
 	},
-})
+	})
 
 export default SettingModal

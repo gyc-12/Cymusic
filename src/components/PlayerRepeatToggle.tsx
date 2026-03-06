@@ -1,4 +1,4 @@
-import { colors } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import React, { useCallback } from 'react'
 import { ComponentProps } from 'react'
@@ -10,6 +10,7 @@ type IconName = ComponentProps<typeof MaterialCommunityIcons>['name']
 
 export const PlayerRepeatToggle = React.memo(({ ...iconProps }: IconProps) => {
 	const repeatMode = repeatModeStore.useValue()
+	const colors = useThemeColors()
 
 	const toggleRepeatMode = useCallback(() => {
 		myTrackPlayer.toggleRepeatMode()

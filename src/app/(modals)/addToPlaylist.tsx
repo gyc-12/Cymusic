@@ -2,14 +2,17 @@ import { PlaylistsListModal } from '@/components/PlaylistsListModal'
 import { screenPadding } from '@/constants/tokens'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { useFavorites } from '@/store/library'
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useMemo } from 'react'
 import { Alert, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Track } from 'react-native-track-player'
 
 const AddToPlaylistModal = () => {
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(defaultStyles), [defaultStyles])
 	const router = useRouter()
 	const params = useLocalSearchParams()
 
@@ -59,11 +62,12 @@ const AddToPlaylistModal = () => {
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (defaultStyles: ReturnType<typeof useDefaultStyles>) =>
+	StyleSheet.create({
 	modalContainer: {
 		...defaultStyles.container,
 		paddingHorizontal: screenPadding.horizontal,
 	},
-})
+	})
 
 export default AddToPlaylistModal

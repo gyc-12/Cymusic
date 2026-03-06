@@ -25,3 +25,5 @@ export const songsNumsToLoadStore = new GlobalState<number>(100)
 export const importedLocalMusicStore = new GlobalState<IMusic.IMusicItem[] | []>(null)
 /** 当前歌词 */
 export const nowLyricState = new GlobalState<string>(null)
+/** 切歌中的按钮方向 */
+export const trackSkipLoadingStore = new GlobalState<'next' | 'previous' | null>(null)

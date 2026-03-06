@@ -51,6 +51,7 @@ import {
 	songsNumsToLoadStore,
 	importedLocalMusicStore,
 	nowLyricState,
+	trackSkipLoadingStore,
 } from '@/player/PlayerStore'
 
 import {
@@ -76,6 +77,7 @@ export {
 	songsNumsToLoadStore,
 	importedLocalMusicStore,
 	nowLyricState,
+	trackSkipLoadingStore,
 }
 
 export function useCurrentQuality() {
@@ -938,23 +940,45 @@ const playWithReplacePlayList = async (
 	}
 }
 
-const skipToNext = async () => {
-	if (isPlayListEmpty()) {
-		setCurrentMusic(null)
+const runWithTrackSkipLoading = async (
+	direction: 'next' | 'previous',
+	action: () => Promise<void>,
+) => {
+	if (trackSkipLoadingStore.getValue()) {
 		return
 	}
 
-	// TrackPlayer.load(getPlayListMusicAt(currentIndex + 1) as Track)
-	await play(getPlayListMusicAt(currentIndex + 1), true)
+	trackSkipLoadingStore.setValue(direction)
+	try {
+		await action()
+	} finally {
+		if (trackSkipLoadingStore.getValue() === direction) {
+			trackSkipLoadingStore.setValue(null)
+		}
+	}
+}
+
+const skipToNext = async () => {
+	await runWithTrackSkipLoading('next', async () => {
+		if (isPlayListEmpty()) {
+			setCurrentMusic(null)
+			return
+		}
+
+		// TrackPlayer.load(getPlayListMusicAt(currentIndex + 1) as Track)
+		await play(getPlayListMusicAt(currentIndex + 1), true)
+	})
 }
 
 const skipToPrevious = async () => {
-	if (isPlayListEmpty()) {
-		setCurrentMusic(null)
-		return
-	}
+	await runWithTrackSkipLoading('previous', async () => {
+		if (isPlayListEmpty()) {
+			setCurrentMusic(null)
+			return
+		}
 
-	await play(getPlayListMusicAt(currentIndex === -1 ? 0 : currentIndex - 1), true)
+		await play(getPlayListMusicAt(currentIndex === -1 ? 0 : currentIndex - 1), true)
+	})
 }
 
 /** 修改当前播放的音质 */

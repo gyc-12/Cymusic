@@ -1,8 +1,9 @@
 import { SingerTracksList } from '@/components/SingerTracksList'
-import { colors, screenPadding } from '@/constants/tokens'
+import { screenPadding } from '@/constants/tokens'
 import { logInfo } from '@/helpers/logger'
 import { getAlbumSongList, getSingerDetail } from '@/helpers/userApi/getMusicSource'
-import { defaultStyles } from '@/styles'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { useDefaultStyles } from '@/styles'
 import { useLocalSearchParams, usePathname } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, ScrollView, View } from 'react-native'
@@ -11,6 +12,8 @@ import { Track } from 'react-native-track-player'
 import ShareIntent from './shareintent'
 // 专辑页面or歌手页面
 const SingerListScreen = () => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
 	const pathname = usePathname()
 	logInfo('pathname', pathname)
 	const isShareIntentPath = pathname.includes('cymusic')
@@ -59,7 +62,7 @@ const SingerListScreen = () => {
 					backgroundColor: colors.background,
 				}}
 			>
-				<ActivityIndicator size="large" color="#fff" />
+				<ActivityIndicator size="large" color={colors.loading} />
 			</View>
 		)
 	}
@@ -83,7 +86,7 @@ const SingerListScreen = () => {
 						width: 65,
 						height: 8,
 						borderRadius: 8,
-						backgroundColor: '#fff',
+						backgroundColor: colors.dismissBar,
 						opacity: 0.7,
 					}}
 				/>

@@ -1,31 +1,27 @@
-// src/components/GlobalButton.tsx
 import { router } from 'expo-router'
 import React from 'react'
-import { Button, StyleSheet, View } from 'react-native'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { colors } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { View } from 'react-native'
 
 const GlobalButton = () => {
+	const colors = useThemeColors()
 
 	const showPlayList = () => {
 		router.navigate('/(modals)/settingModal')
 	}
 
 	return (
-		<View style={styles.container}>
-				<MaterialCommunityIcons
-			name='menu'
-			size={27}
-			onPress={showPlayList}
-			color={colors.icon}
+		<View>
+			<MaterialCommunityIcons
+				name="menu"
+				size={27}
+				onPress={showPlayList}
+				color={colors.icon}
 				style={{ marginRight: 6 }}
-		/>
+			/>
 		</View>
 	)
 }
-
-const styles = StyleSheet.create({
-	container: {},
-})
 
 export default GlobalButton

@@ -1,10 +1,11 @@
-import { colors } from '@/constants/tokens'
+import { ThemeColors } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import myTrackPlayer, { MusicRepeatMode, repeatModeStore } from '@/helpers/trackPlayerIndex'
-import { setPlayList } from '@/store/playList'
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { Ionicons } from '@expo/vector-icons'
 import shuffle from 'lodash.shuffle'
+import { useMemo } from 'react'
 import { StyleSheet, Text, View, ViewProps } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { Track } from 'react-native-track-player'
@@ -32,6 +33,9 @@ export const QueueControls = ({
 	exportSelectedTracks,
 	...viewProps
 }: QueueControlsProps) => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
 	const handlePlay = async () => {
 		await myTrackPlayer.playWithReplacePlayList(
 			tracks[0] as IMusic.IMusicItem,
@@ -122,10 +126,14 @@ export const QueueControls = ({
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (
+	colors: ThemeColors,
+	defaultStyles: ReturnType<typeof useDefaultStyles>,
+) =>
+	StyleSheet.create({
 	button: {
 		padding: 12,
-		backgroundColor: 'rgba(47, 47, 47, 0.5)',
+		backgroundColor: colors.surfaceMuted,
 		borderRadius: 8,
 		flexDirection: 'row',
 		justifyContent: 'center',
@@ -139,4 +147,4 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		textAlign: 'center',
 	},
-})
+	})

@@ -1,8 +1,9 @@
 import { TrackShortcutsMenu } from '@/components/TrackShortcutsMenu'
 import { unknownTrackImageUri } from '@/constants/images'
-import { colors, fontSize } from '@/constants/tokens'
+import { ThemeColors, fontSize } from '@/constants/tokens'
 import myTrackPlayer, { isCachedIconVisibleStore } from '@/helpers/trackPlayerIndex'
-import { defaultStyles } from '@/styles'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { useDefaultStyles } from '@/styles'
 import { getThumbnailArtwork } from '@/utils/imageUtils'
 import rpx from '@/utils/rpx'
 import { Entypo, Ionicons } from '@expo/vector-icons'
@@ -40,6 +41,9 @@ const TracksListItem = ({
 	onDeleteTrack,
 	toggleMultiSelectMode,
 }: TracksListItemProps) => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
 	const isCachedIconVisible = isCachedIconVisibleStore.useValue()
 	const [isCachedTrack, setIsCachedTrack] = useState(
 		typeof track.url === 'string' && track.url.includes('/musicCache/'),
@@ -98,6 +102,7 @@ const TracksListItem = ({
 		<TouchableHighlight
 			onPress={() => (isMultiSelectMode ? onToggleSelection?.(track.id) : handleTrackSelect(track))}
 			onLongPress={toggleMultiSelectMode}
+			underlayColor={colors.surfaceMuted}
 		>
 			<View style={styles.trackItemContainer}>
 				{isMultiSelectMode && (
@@ -108,7 +113,7 @@ const TracksListItem = ({
 						<Ionicons
 							name={selectedTracks?.has(track.id) ? 'checkbox' : 'square-outline'}
 							size={24}
-							color={selectedTracks?.has(track.id) ? colors.primary : 'gray'}
+							color={selectedTracks?.has(track.id) ? colors.primary : colors.textMuted}
 						/>
 					</TouchableOpacity>
 				)}
@@ -200,7 +205,11 @@ const TracksListItem = ({
 	)
 }
 export default memo(TracksListItem)
-const styles = StyleSheet.create({
+const createStyles = (
+	colors: ThemeColors,
+	defaultStyles: ReturnType<typeof useDefaultStyles>,
+) =>
+	StyleSheet.create({
 	trackItemContainer: {
 		flexDirection: 'row',
 		columnGap: 14,
@@ -245,4 +254,4 @@ const styles = StyleSheet.create({
 		marginTop: 4,
 		maxWidth: '80%',
 	},
-})
+	})

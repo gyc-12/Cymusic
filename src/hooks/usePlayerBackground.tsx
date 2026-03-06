@@ -1,4 +1,4 @@
-import { colors } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import { useEffect, useRef, useState } from 'react'
 import { getColors } from 'react-native-image-colors'
 import { IOSImageColors } from 'react-native-image-colors/build/types'
@@ -6,6 +6,7 @@ import { IOSImageColors } from 'react-native-image-colors/build/types'
 const colorCache = new Map<string, IOSImageColors>()
 
 export const usePlayerBackground = (imageUrl: string) => {
+	const colors = useThemeColors()
 	const [imageColors, setImageColors] = useState<IOSImageColors | null>(
 		() => colorCache.get(imageUrl) ?? null,
 	)
@@ -35,7 +36,7 @@ export const usePlayerBackground = (imageUrl: string) => {
 				setImageColors(iosColors)
 			}
 		})
-	}, [imageUrl])
+	}, [colors.background, imageUrl])
 
 	return { imageColors }
 }

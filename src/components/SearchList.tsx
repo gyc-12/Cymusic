@@ -1,7 +1,8 @@
 import { unknownTrackImageUri } from '@/constants/images'
-import { colors, screenPadding } from '@/constants/tokens'
+import { ThemeColors, screenPadding } from '@/constants/tokens'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
-import { defaultStyles, utilsStyles } from '@/styles'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { useDefaultStyles, useUtilsStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { isSameMediaItem } from '@/utils/mediaItem'
 
@@ -24,20 +25,26 @@ export type SearchListProps = {
 	isLoading: boolean
 }
 
-const ItemDivider = memo(() => (
-	<View style={{ ...utilsStyles.itemSeparator, marginVertical: 9, marginLeft: 60 }} />
-))
+const ItemDivider = memo(() => {
+	const utilsStyles = useUtilsStyles()
+	return <View style={{ ...utilsStyles.itemSeparator, marginVertical: 9, marginLeft: 60 }} />
+})
 
-const EmptyComponent = memo(() => (
-	<View>
-		<FastImage
-			source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
-			style={utilsStyles.emptyContentImage}
-		/>
-	</View>
-))
+const EmptyComponent = memo(() => {
+	const utilsStyles = useUtilsStyles()
+	return (
+		<View>
+			<FastImage
+				source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
+				style={utilsStyles.emptyContentImage}
+			/>
+		</View>
+	)
+})
 
 const FooterComponent = memo(({ isLoading, hasMore }: { isLoading: boolean; hasMore: boolean }) => {
+	const utilsStyles = useUtilsStyles()
+
 	if (isLoading) {
 		return (
 			<View style={{ paddingVertical: 20 }}>
@@ -55,7 +62,8 @@ const FooterComponent = memo(({ isLoading, hasMore }: { isLoading: boolean; hasM
 	return null
 })
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
 	artistItem: {
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -70,7 +78,7 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		color: colors.text,
 	},
-})
+	})
 
 export const SearchList: React.FC<SearchListProps> = ({
 	tracks,
@@ -78,6 +86,9 @@ export const SearchList: React.FC<SearchListProps> = ({
 	hasMore,
 	isLoading,
 }) => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(colors), [colors])
 	const currentMusic = myTrackPlayer.useCurrentMusic()
 	const { playing } = useIsPlaying()
 
@@ -121,7 +132,7 @@ export const SearchList: React.FC<SearchListProps> = ({
 				/>
 			)
 		},
-		[handleTrackSelect, currentMusic, playing],
+		[handleTrackSelect, currentMusic, playing, styles.artistAvatar, styles.artistItem, styles.artistName],
 	)
 
 	const keyExtractor = useCallback((item: Track, index: number) => `${item.id}-${index}`, [])

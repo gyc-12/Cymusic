@@ -1,19 +1,23 @@
 import localImage from '@/assets/local.png'
 import { PlaylistTracksList } from '@/components/PlaylistTracksList'
 import { unknownTrackImageUri } from '@/constants/images'
-import { screenPadding } from '@/constants/tokens'
+import { ThemeColors, screenPadding } from '@/constants/tokens'
 import { logError, logInfo } from '@/helpers/logger'
 import myTrackPlayer, { importedLocalMusicStore } from '@/helpers/trackPlayerIndex'
 import { Playlist } from '@/helpers/types'
 import { searchMusicInfoByName } from '@/helpers/userApi/getMusicSource'
-import { defaultStyles } from '@/styles'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { useDefaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import MusicInfo from '@/utils/musicInfo'
 import * as DocumentPicker from 'expo-document-picker'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, View } from 'react-native'
 import { Track } from 'react-native-track-player'
 const LocalMusicScreen = () => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(colors), [colors])
 	const localTracks = importedLocalMusicStore.useValue() || []
 	const [isLoading, setIsLoading] = useState(false)
 	const playListItem = {
@@ -177,7 +181,7 @@ const LocalMusicScreen = () => {
 		<View style={defaultStyles.container}>
 			{isLoading && (
 				<View style={styles.loadingOverlay}>
-					<ActivityIndicator size="large" color="#fff" />
+					<ActivityIndicator size="large" color={colors.loading} />
 				</View>
 			)}
 			<ScrollView
@@ -203,7 +207,8 @@ const LocalMusicScreen = () => {
 		</View>
 	)
 }
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
 	loadingOverlay: {
 		position: 'absolute',
 		left: 0,
@@ -212,7 +217,7 @@ const styles = StyleSheet.create({
 		bottom: 0,
 		alignItems: 'center',
 		justifyContent: 'center',
-		backgroundColor: 'rgba(0,0,0,0.5)',
+		backgroundColor: colors.overlay,
 		zIndex: 1000,
 	},
 	header: {
@@ -221,5 +226,5 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		padding: 10,
 	},
-})
+	})
 export default LocalMusicScreen

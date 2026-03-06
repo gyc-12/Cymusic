@@ -1,14 +1,9 @@
-import { colors } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import { nowLanguage } from '@/utils/i18n'
 import { useNavigation } from 'expo-router'
 import { debounce } from 'lodash'
-import { useCallback, useLayoutEffect, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react'
 import { SearchBarProps } from 'react-native-screens'
-
-const defaultSearchOptions: SearchBarProps = {
-	tintColor: colors.primary,
-	hideWhenScrolling: false,
-}
 
 export const useNavigationSearch = ({
 	searchBarOptions,
@@ -22,9 +17,20 @@ export const useNavigationSearch = ({
 	onCancel?: () => void
 }) => {
 	const [search, setSearch] = useState('')
-
 	const navigation = useNavigation()
 	const language = nowLanguage.useValue()
+	const colors = useThemeColors()
+
+	const defaultSearchOptions = useMemo<SearchBarProps>(
+		() => ({
+			tintColor: colors.primary,
+			barTintColor: colors.surface,
+			textColor: colors.text,
+			hintTextColor: colors.placeholder,
+			hideWhenScrolling: false,
+		}),
+		[colors],
+	)
 
 	const debouncedSetSearch = useCallback(
 		debounce((text) => {
@@ -51,7 +57,7 @@ export const useNavigationSearch = ({
 				},
 			},
 		})
-	}, [navigation, searchBarOptions, onFocus, onBlur, onCancel])
+	}, [defaultSearchOptions, language, navigation, onBlur, onCancel, onFocus, searchBarOptions])
 
 	return search
 }

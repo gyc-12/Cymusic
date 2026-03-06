@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
 
+import { ThemeColors } from '@/constants/tokens'
 import LyricManager from '@/helpers/lyricManager'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import useDelayFalsy from '@/hooks/useDelayFalsy'
 import PersistStatus from '@/store/PersistStatus'
 import delay from '@/utils/delay'
@@ -32,6 +34,8 @@ const fontSizeMap = {
 
 export default function Lyric(_props: IProps) {
 	void _props
+	const colors = useThemeColors()
+	const styles = useMemo(() => createStyles(colors), [colors])
 	// const lrcSource = {
 	// 	rawLrc: nowLyricState.useValue() || '[00:00.00]暂无歌词',
 	// } as ILyric.ILyricSource
@@ -244,7 +248,7 @@ export default function Lyric(_props: IProps) {
 			<View style={styles.fwflex1}>
 				{loading ? (
 					<View style={styles.fwflex1}>
-						<ActivityIndicator size="large" color="#fff" />
+						<ActivityIndicator size="large" color={colors.loading} />
 					</View>
 				) : lyrics?.length ? (
 					<FlatList
@@ -284,7 +288,8 @@ export default function Lyric(_props: IProps) {
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
 	wrapper: {
 		width: '100%',
 		marginVertical: rpx(48),
@@ -298,7 +303,7 @@ const styles = StyleSheet.create({
 		paddingTop: '70%',
 	},
 	white: {
-		color: 'white',
+		color: colors.text,
 	},
 	lyricMeta: {
 		position: 'absolute',
@@ -311,12 +316,12 @@ const styles = StyleSheet.create({
 		bottom: rpx(48),
 	},
 	lyricMetaText: {
-		color: 'white',
+		color: colors.text,
 		opacity: 0.8,
 		maxWidth: '80%',
 	},
 	linkText: {
-		color: '#66ccff',
+		color: colors.primary,
 		textDecorationLine: 'underline',
 	},
 	fullCenter: {
@@ -329,13 +334,13 @@ const styles = StyleSheet.create({
 	singleLine: {
 		width: '67%',
 		height: 1,
-		backgroundColor: '#cccccc',
+		backgroundColor: colors.separator,
 		opacity: 0.4,
 	},
 	playIcon: {
 		width: rpx(90),
 		textAlign: 'right',
-		color: 'white',
+		color: colors.text,
 	},
 	searchLyric: {
 		width: rpx(180),
@@ -343,7 +348,7 @@ const styles = StyleSheet.create({
 		paddingVertical: rpx(10),
 		textAlign: 'center',
 		alignSelf: 'center',
-		color: '#66eeff',
+		color: colors.primary,
 		textDecorationLine: 'underline',
 	},
-})
+	})

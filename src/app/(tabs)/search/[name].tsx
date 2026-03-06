@@ -1,10 +1,11 @@
 import { screenPadding } from '@/constants/tokens'
 import { usePlaylists } from '@/store/library'
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
 import { Redirect, useLocalSearchParams } from 'expo-router'
 import { ScrollView, View } from 'react-native'
 
 const PlaylistScreen = () => {
+	const defaultStyles = useDefaultStyles()
 	const { name: playlistName } = useLocalSearchParams<{ name: string }>()
 
 	const { playlists } = usePlaylists()

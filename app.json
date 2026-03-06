@@ -5,7 +5,7 @@
 		"version": "1.1.9",
 		"orientation": "portrait",
 		"icon": "./assets/1024.png",
-		"userInterfaceStyle": "dark",
+		"userInterfaceStyle": "automatic",
 		"scheme": "cymusic",
 		"splash": {
 			"image": "./assets/splash.png",

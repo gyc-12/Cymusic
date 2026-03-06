@@ -1,9 +1,11 @@
 import { TrackShortcutsMenu } from '@/components/TrackShortcutsMenu'
 import { StopPropagation } from '@/components/utils/StopPropagation'
 import { unknownTrackImageUri } from '@/constants/images'
-import { colors, fontSize } from '@/constants/tokens'
-import { defaultStyles } from '@/styles'
+import { ThemeColors, fontSize } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { useDefaultStyles } from '@/styles'
 import { Entypo, Ionicons } from '@expo/vector-icons'
+import { useMemo } from 'react'
 import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
 import FastImage from 'react-native-fast-image' //导入默认导出时，不需要使用大括号 {}，并且可以使用任意名称来引用导入的值。
 import LoaderKit from 'react-native-loader-kit'
@@ -22,12 +24,15 @@ export const SearchListItem = ({
 	track,
 	onTrackSelect: handleTrackSelect, //解构赋值：通过解构赋值从 props 对象中提取 track 和 onTrackSelect 属性，并将 onTrackSelect 重新命名为 handleTrackSelect。
 }: TracksListItemProps) => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
 	const { playing } = useIsPlaying()
 
 	const isActiveTrack = useActiveTrack()?.id === track.id
 
 	return (
-		<TouchableHighlight onPress={() => handleTrackSelect(track)}>
+		<TouchableHighlight onPress={() => handleTrackSelect(track)} underlayColor={colors.surfaceMuted}>
 			<View style={styles.trackItemContainer}>
 				<View>
 					<FastImage
@@ -96,7 +101,11 @@ export const SearchListItem = ({
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (
+	colors: ThemeColors,
+	defaultStyles: ReturnType<typeof useDefaultStyles>,
+) =>
+	StyleSheet.create({
 	trackItemContainer: {
 		flexDirection: 'row',
 		columnGap: 14,
@@ -132,4 +141,4 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 		marginTop: 4,
 	},
-})
+	})

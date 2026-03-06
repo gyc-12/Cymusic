@@ -1,5 +1,5 @@
-import { colors } from '@/constants/tokens'
-import { utilsStyles } from '@/styles'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { useUtilsStyles } from '@/styles'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useCallback, useEffect } from 'react'
 import { View, ViewProps } from 'react-native'
@@ -8,6 +8,8 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { VolumeManager } from 'react-native-volume-manager'
 
 export const PlayerVolumeBar = React.memo(({ style }: ViewProps) => {
+	const colors = useThemeColors()
+	const utilsStyles = useUtilsStyles()
 	const progress = useSharedValue(0)
 	const min = useSharedValue(0)
 	const max = useSharedValue(1)

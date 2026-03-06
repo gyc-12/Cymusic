@@ -1,7 +1,9 @@
-import { colors } from '@/constants/tokens'
+import { ThemeColors } from '@/constants/tokens'
 import { Playlist } from '@/helpers/types'
-import { defaultStyles } from '@/styles'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { useDefaultStyles } from '@/styles'
 import { AntDesign } from '@expo/vector-icons'
+import { useMemo } from 'react'
 import { StyleSheet, Text, TouchableHighlight, TouchableHighlightProps, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
 
@@ -10,8 +12,12 @@ type PlaylistListItemProps = {
 } & TouchableHighlightProps
 
 export const PlaylistListItem = ({ playlist, ...props }: PlaylistListItemProps) => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
+
 	return (
-		<TouchableHighlight activeOpacity={0.8} {...props}>
+		<TouchableHighlight activeOpacity={0.8} underlayColor={colors.surfaceMuted} {...props}>
 			<View style={styles.playlistItemContainer}>
 				<View>
 					<FastImage
@@ -42,7 +48,11 @@ export const PlaylistListItem = ({ playlist, ...props }: PlaylistListItemProps) 
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (
+	colors: ThemeColors,
+	defaultStyles: ReturnType<typeof useDefaultStyles>,
+) =>
+	StyleSheet.create({
 	playlistItemContainer: {
 		flexDirection: 'row',
 		columnGap: 14,
@@ -60,4 +70,4 @@ const styles = StyleSheet.create({
 		fontWeight: '600',
 		maxWidth: '80%',
 	},
-})
+	})

@@ -1,11 +1,13 @@
 import { PlayPauseButton, SkipToNextButton } from '@/components/PlayerControls'
 import { unknownTrackImageUri } from '@/constants/images'
+import { ThemeColors } from '@/constants/tokens'
+import { useAppTheme, useThemeColors } from '@/hooks/useAppTheme'
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack'
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
 import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { StyleSheet, TouchableOpacity, View, ViewProps } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import Animated, {
@@ -19,6 +21,8 @@ import { MovingText } from './MovingText'
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage)
 
 const ProgressIndicator = React.memo(() => {
+	const colors = useThemeColors()
+	const styles = useMemo(() => createStyles(colors), [colors])
 	const { position, duration } = useProgress(1000)
 	const progress = duration > 0 ? position / duration : 0
 	return (
@@ -29,6 +33,10 @@ const ProgressIndicator = React.memo(() => {
 })
 
 export const FloatingPlayer = React.memo(({ style }: ViewProps) => {
+	const { blurTint } = useAppTheme()
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
 	const router = useRouter()
 	const activeTrack = useActiveTrack()
 	const lastActiveTrack = useLastActiveTrack()
@@ -58,7 +66,7 @@ export const FloatingPlayer = React.memo(({ style }: ViewProps) => {
 
 	return (
 		<TouchableOpacity onPress={handlePress} activeOpacity={0.9} style={[styles.container, style]}>
-			<BlurView intensity={80} tint="dark" style={styles.blurContainer}>
+			<BlurView intensity={80} tint={blurTint} style={styles.blurContainer}>
 				<AnimatedFastImage
 					source={{
 						uri: displayedTrack.artwork ?? unknownTrackImageUri,
@@ -85,7 +93,11 @@ export const FloatingPlayer = React.memo(({ style }: ViewProps) => {
 	)
 })
 
-const styles = StyleSheet.create({
+const createStyles = (
+	colors: ThemeColors,
+	defaultStyles?: ReturnType<typeof useDefaultStyles>,
+) =>
+	StyleSheet.create({
 	container: {
 		borderRadius: 12,
 		overflow: 'hidden',
@@ -107,7 +119,7 @@ const styles = StyleSheet.create({
 		marginLeft: 10,
 	},
 	trackTitle: {
-		...defaultStyles.text,
+		...(defaultStyles?.text ?? {}),
 		fontSize: 18,
 		fontWeight: '600',
 		paddingLeft: 10,
@@ -125,12 +137,12 @@ const styles = StyleSheet.create({
 		left: 8,
 		right: 8,
 		height: 2,
-		backgroundColor: 'rgba(255,255,255,0.1)',
+		backgroundColor: colors.overlaySoft,
 		borderRadius: 1,
 	},
 	progressBar: {
 		height: '100%',
-		backgroundColor: 'rgba(255,255,255,0.6)',
+		backgroundColor: colors.minimumTrackTintColor,
 		borderRadius: 1,
 	},
-})
+	})

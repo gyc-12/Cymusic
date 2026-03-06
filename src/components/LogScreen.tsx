@@ -1,8 +1,9 @@
-import { colors, fontSize, screenPadding } from '@/constants/tokens'
+import { ThemeColors, fontSize, screenPadding } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import { logError, useLoggerHook } from '@/helpers/logger'
 import i18n from '@/utils/i18n'
 import { Ionicons } from '@expo/vector-icons'
-import React, { useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import {
 	Alert,
 	Animated,
@@ -20,10 +21,10 @@ import {
 	View,
 } from 'react-native'
 const LogScreen = () => {
+	const colors = useThemeColors()
+	const styles = useMemo(() => createStyles(colors), [colors])
 	const { logs, clearLogs } = useLoggerHook()
 	const [selectedLog, setSelectedLog] = useState<null | any>(null)
-
-	const [longPressedId, setLongPressedId] = useState<string | null>(null)
 	const fadeAnim = useRef(new Animated.Value(0)).current
 	const handleShare = async () => {
 		const logText = logs.map((log) => `[${log.timestamp}] [${log.level}] ${log.message}`).join('\n')
@@ -36,7 +37,6 @@ const LogScreen = () => {
 		}
 	}
 	const handleLongPress = (item: any) => {
-		setLongPressedId(item.id)
 		handleCopy(item)
 	}
 
@@ -45,7 +45,6 @@ const LogScreen = () => {
 		Clipboard.setString(logText)
 		// 可以添加一个提示，告诉用户日志已复制
 		Alert.alert(i18n.t('logScreen.copy'), i18n.t('logScreen.copyMessage'))
-		setLongPressedId(null)
 		Animated.timing(fadeAnim, {
 			toValue: 0,
 			duration: 500,
@@ -81,7 +80,7 @@ const LogScreen = () => {
 				return '#FFA500' // 橙色
 			case 'INFO':
 			default:
-				return '#00FF00' // 绿色
+				return colors.success
 		}
 	}
 
@@ -149,7 +148,8 @@ const LogScreen = () => {
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
 	safeArea: {
 		flex: 1,
 		backgroundColor: colors.background,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
 	logItem: {
 		paddingVertical: 12,
 		borderBottomWidth: 1,
-		borderBottomColor: '#333',
+		borderBottomColor: colors.separator,
 	},
 	logHeader: {
 		flexDirection: 'row',
@@ -221,11 +221,11 @@ const styles = StyleSheet.create({
 	},
 	modalOverlay: {
 		flex: 1,
-		backgroundColor: 'rgba(0,0,0,0.5)',
+		backgroundColor: colors.overlay,
 		justifyContent: 'flex-end',
 	},
 	modalContainer: {
-		backgroundColor: '#1e1e1e',
+		backgroundColor: colors.surface,
 		borderTopLeftRadius: 20,
 		borderTopRightRadius: 20,
 		maxHeight: '80%',
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
 		marginBottom: 12,
 	},
 	modalDetails: {
-		backgroundColor: '#2e2e2e',
+		backgroundColor: colors.surfaceMuted,
 		padding: 10,
 		borderRadius: 8,
 		marginBottom: 16,
@@ -301,9 +301,9 @@ const styles = StyleSheet.create({
 		fontSize: fontSize.sm,
 	},
 	pressed: {
-		backgroundColor: 'rgba(0, 0, 0, 0.1)',
+		backgroundColor: colors.overlaySoft,
 		opacity: 0.5,
 	},
-})
+	})
 
 export default LogScreen

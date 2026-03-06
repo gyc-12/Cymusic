@@ -3,7 +3,7 @@ import { unknownTrackImageUri } from '@/constants/images'
 import { playListsStore } from '@/helpers/trackPlayerIndex'
 import { Playlist } from '@/helpers/types'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
-import { utilsStyles } from '@/styles'
+import { useUtilsStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { useMemo } from 'react'
 import { FlatList, FlatListProps, Text, View } from 'react-native'
@@ -12,14 +12,11 @@ type PlaylistsListProps = {
 	onPlaylistPress: (playlist: IMusic.PlayList) => void
 } & Partial<FlatListProps<Playlist>>
 
-const ItemDivider = () => (
-	<View style={{ ...utilsStyles.itemSeparator, marginLeft: 80, marginVertical: 12 }} />
-)
-
 export const PlaylistsListModal = ({
 	onPlaylistPress: handlePlaylistPress,
 	...flatListProps
 }: PlaylistsListProps) => {
+	const utilsStyles = useUtilsStyles()
 	const search = useNavigationSearch({
 		searchBarOptions: {
 			placeholder: i18n.t('find.inPlaylist'),
@@ -37,9 +34,9 @@ export const PlaylistsListModal = ({
 		}),
 		[],
 	)
-	const storedPlayLists = playListsStore.useValue() || []
+	const storedPlayLists = playListsStore.useValue()
 	const filteredPlayLists = useMemo(() => {
-		const playLists = [favoritePlayListItem, ...storedPlayLists]
+		const playLists = [favoritePlayListItem, ...(storedPlayLists ?? [])]
 
 		if (!search) return playLists
 
@@ -47,21 +44,29 @@ export const PlaylistsListModal = ({
 			playlist.name.toLowerCase().includes(search.toLowerCase()),
 		)
 	}, [search, favoritePlayListItem, storedPlayLists])
+	const itemDivider = useMemo(
+		() => () => <View style={{ ...utilsStyles.itemSeparator, marginLeft: 80, marginVertical: 12 }} />,
+		[utilsStyles],
+	)
+	const emptyListComponent = useMemo(
+		() => (
+			<View>
+				<Text style={utilsStyles.emptyContentText}>No playlist found</Text>
+
+				<FastImage
+					source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
+					style={utilsStyles.emptyContentImage}
+				/>
+			</View>
+		),
+		[utilsStyles],
+	)
 	return (
 		<FlatList
 			contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
-			ItemSeparatorComponent={ItemDivider}
-			ListFooterComponent={ItemDivider}
-			ListEmptyComponent={
-				<View>
-					<Text style={utilsStyles.emptyContentText}>No playlist found</Text>
-
-					<FastImage
-						source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
-						style={utilsStyles.emptyContentImage}
-					/>
-				</View>
-			}
+			ItemSeparatorComponent={itemDivider}
+			ListFooterComponent={itemDivider}
+			ListEmptyComponent={emptyListComponent}
 			data={filteredPlayLists}
 			renderItem={({ item: playlist }) => (
 				<PlaylistListItem

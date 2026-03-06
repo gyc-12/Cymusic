@@ -4,12 +4,13 @@ import { playlistNameFilter } from '@/helpers/filter'
 import { Playlist } from '@/helpers/types'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { usePlaylists } from '@/store/library'
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { useRouter } from 'expo-router'
 import { useMemo } from 'react'
 import { ScrollView, View } from 'react-native'
 const RadiolistsScreen = () => {
+	const defaultStyles = useDefaultStyles()
 	const router = useRouter()
 
 	const search = useNavigationSearch({
@@ -19,7 +20,7 @@ const RadiolistsScreen = () => {
 		},
 	})
 
-	const { playlists, setPlayList } = usePlaylists()
+	const { playlists } = usePlaylists()
 	const filteredPlayLists = useMemo(() => {
 		if (!search) return playlists
 		return playlists.filter(playlistNameFilter(search))

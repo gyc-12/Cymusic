@@ -1,10 +1,11 @@
 import { SearchList } from '@/components/SearchList'
-import { colors } from '@/constants/tokens'
+import { ThemeColors } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import searchAll from '@/helpers/searchAll'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import i18n from '@/utils/i18n'
 import debounce from 'lodash/debounce'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
 	Animated,
 	Dimensions,
@@ -27,6 +28,8 @@ const SEARCH_OFFSET = Platform.select({
 })
 
 const SearchlistsScreen = () => {
+	const colors = useThemeColors()
+	const styles = useMemo(() => createStyles(colors), [colors])
 	// const router = useRouter()
 	const [searchResults, setSearchResults] = useState<Track[]>([])
 	const [page, setPage] = useState(1)
@@ -192,7 +195,8 @@ const SearchlistsScreen = () => {
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: colors.background,
@@ -226,9 +230,9 @@ const styles = StyleSheet.create({
 		zIndex: 1,
 	},
 	activeSegment: {
-		backgroundColor: '#252525',
+		backgroundColor: colors.surfaceElevated,
 		borderRadius: 6,
-		shadowColor: '#000',
+		shadowColor: colors.shadow,
 		shadowOffset: {
 			width: 0,
 			height: 1,
@@ -243,12 +247,12 @@ const styles = StyleSheet.create({
 	},
 	segmentText: {
 		fontSize: 15,
-		color: '#666',
+		color: colors.textMuted,
 	},
 	activeSegmentText: {
 		color: colors.primary,
 		fontWeight: '500',
 	},
-})
+	})
 
 export default SearchlistsScreen

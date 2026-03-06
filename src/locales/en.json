@@ -23,6 +23,7 @@
 			"importSource": "Import Source",
 			"currentQuality": "Current Quality",
 			"changeLanguage": "Change Language",
+			"theme": "Theme",
 			"normal": "Normal",
 			"exception": "Exception",
 			"test": "Test",
@@ -43,6 +44,11 @@
 			"isCachedIconVisible": {
 				"yes": "Yes",
 				"no": "No"
+			},
+			"theme": {
+				"system": "Follow System",
+				"light": "Light",
+				"dark": "Dark"
 			},
 			"clearPlaylist": {
 				"title": "Clear Playlist",

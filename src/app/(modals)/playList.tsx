@@ -1,14 +1,16 @@
 import { NowPlayList } from '@/components/NowPlayList'
-import { colors, screenPadding } from '@/constants/tokens'
+import { ThemeColors, screenPadding } from '@/constants/tokens'
+import { useThemeColors } from '@/hooks/useAppTheme'
 import { usePlayList } from '@/store/playList'
-import { defaultStyles } from '@/styles'
 import { useHeaderHeight } from '@react-navigation/elements'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Track } from 'react-native-track-player'
 
 const PlayListScreen = () => {
+	const colors = useThemeColors()
+	const styles = useMemo(() => createStyles(colors), [colors])
 	const headerHeight = useHeaderHeight()
 	const tracks = usePlayList()
 
@@ -19,11 +21,12 @@ const PlayListScreen = () => {
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) =>
+	StyleSheet.create({
 	modalContainer: {
 		flex: 1,
 		paddingHorizontal: screenPadding.horizontal,
-		backgroundColor: defaultStyles.container.backgroundColor, // 设置默认背景颜色
+		backgroundColor: colors.background,
 	},
 	header: {
 		fontSize: 28,
@@ -33,6 +36,6 @@ const styles = StyleSheet.create({
 		paddingTop: 0,
 		color: colors.text,
 	},
-})
+	})
 
 export default PlayListScreen

@@ -1,7 +1,8 @@
 import { fontSize } from '@/constants/tokens'
 import { generateTracksListId } from '@/helpers/miscellaneous'
 import { Playlist } from '@/helpers/types'
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
+import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import { Track } from 'react-native-track-player'
@@ -39,6 +40,8 @@ export const PlaylistTracksList = ({
 	deleteSelectedTracks,
 	exportSelectedTracks,
 }: PlaylistTracksListProps) => {
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(defaultStyles), [defaultStyles])
 	// const filteredPlaylistTracks = useMemo(() => {
 	// 	return playlist.tracks.filter(trackTitleFilter(search))
 	// }, [playlist.tracks, search])
@@ -89,7 +92,8 @@ export const PlaylistTracksList = ({
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (defaultStyles: ReturnType<typeof useDefaultStyles>) =>
+	StyleSheet.create({
 	playlistHeaderContainer: {
 		flex: 1,
 		marginBottom: 32,
@@ -112,4 +116,4 @@ const styles = StyleSheet.create({
 		fontSize: fontSize.lg,
 		fontWeight: '800',
 	},
-})
+	})

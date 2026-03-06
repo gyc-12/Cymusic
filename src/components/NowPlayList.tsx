@@ -1,7 +1,8 @@
 import { unknownTrackImageUri } from '@/constants/images'
-import { colors } from '@/constants/tokens'
+import { ThemeColors } from '@/constants/tokens'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
-import { utilsStyles } from '@/styles'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { useUtilsStyles } from '@/styles'
 import { isSameMediaItem } from '@/utils/mediaItem'
 import { FlashList } from '@shopify/flash-list'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
@@ -19,20 +20,33 @@ export type TracksListProps = {
 
 const ITEM_HEIGHT = 68
 
-const ItemDivider = React.memo(() => <View style={styles.itemDivider} />)
+const ItemDivider = React.memo(() => {
+	const colors = useThemeColors()
+	const utilsStyles = useUtilsStyles()
+	const styles = useMemo(() => createStyles(colors, utilsStyles), [colors, utilsStyles])
 
-const EmptyListComponent = React.memo(() => (
-	<View>
-		<Text style={utilsStyles.emptyContentText}>No songs</Text>
-		<FastImage
-			source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
-			style={utilsStyles.emptyContentImage}
-		/>
-	</View>
-))
+	return <View style={styles.itemDivider} />
+})
+
+const EmptyListComponent = React.memo(() => {
+	const utilsStyles = useUtilsStyles()
+
+	return (
+		<View>
+			<Text style={utilsStyles.emptyContentText}>No songs</Text>
+			<FastImage
+				source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
+				style={utilsStyles.emptyContentImage}
+			/>
+		</View>
+	)
+})
 
 export const NowPlayList = React.memo(
 	({ tracks }: TracksListProps) => {
+		const colors = useThemeColors()
+		const utilsStyles = useUtilsStyles()
+		const styles = useMemo(() => createStyles(colors, utilsStyles), [colors, utilsStyles])
 		const listRef = useRef<FlashList<Track>>(null)
 		const currentMusic = myTrackPlayer.useCurrentMusic()
 		const { playing } = useIsPlaying()
@@ -94,7 +108,7 @@ export const NowPlayList = React.memo(
 					<Text style={styles.header}>播放列表</Text>
 				</View>
 			),
-			[top],
+			[top, styles.dismissPlayerBar, styles.dismissPlayerSymbol, styles.header],
 		)
 
 		const listExtraData = useMemo(
@@ -126,7 +140,11 @@ export const NowPlayList = React.memo(
 	},
 )
 
-const styles = StyleSheet.create({
+const createStyles = (
+	colors: ThemeColors,
+	utilsStyles: ReturnType<typeof useUtilsStyles>,
+) =>
+	StyleSheet.create({
 	contentContainer: {
 		paddingTop: 60,
 		paddingBottom: 128,
@@ -142,7 +160,7 @@ const styles = StyleSheet.create({
 		right: 0,
 		zIndex: 1000,
 		paddingTop: 10,
-		backgroundColor: 'rgba(0, 0, 0, 0.8)',
+		backgroundColor: colors.overlayStrong,
 	},
 	dismissPlayerBar: {
 		width: 50,
@@ -160,4 +178,4 @@ const styles = StyleSheet.create({
 		paddingLeft: 20,
 		color: colors.text,
 	},
-})
+	})

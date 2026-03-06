@@ -2,7 +2,7 @@ import TracksListItem from '@/components/TracksListItem'
 import { unknownTrackImageUri } from '@/constants/images'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { useQueue } from '@/store/queue'
-import { utilsStyles } from '@/styles'
+import { useUtilsStyles } from '@/styles'
 import { isSameMediaItem } from '@/utils/mediaItem'
 import { FlashList } from '@shopify/flash-list'
 import { router } from 'expo-router'
@@ -27,19 +27,6 @@ export type TracksListProps = {
 	toggleMultiSelectMode?: () => void
 	numsToPlay?: number
 }
-const ItemDivider = React.memo(() => (
-	<View style={{ ...utilsStyles.itemSeparator, marginVertical: 9, marginLeft: 60 }} />
-))
-
-const EmptyListComponent = React.memo(() => (
-	<View>
-		<Text style={utilsStyles.emptyContentText}>No songs found</Text>
-		<FastImage
-			source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
-			style={utilsStyles.emptyContentImage}
-		/>
-	</View>
-))
 
 const EMPTY_SET = new Set<string>()
 
@@ -60,9 +47,27 @@ export const TracksList = React.memo(
 		toggleMultiSelectMode,
 		numsToPlay,
 	}: TracksListProps) => {
+		const utilsStyles = useUtilsStyles()
 		const { activeQueueId, setActiveQueueId } = useQueue()
 		const currentMusic = myTrackPlayer.useCurrentMusic()
 		const { playing } = useIsPlaying()
+
+		const ItemDivider = useCallback(
+			() => <View style={{ ...utilsStyles.itemSeparator, marginVertical: 9, marginLeft: 60 }} />,
+			[utilsStyles],
+		)
+		const emptyListComponent = useMemo(
+			() => (
+				<View>
+					<Text style={utilsStyles.emptyContentText}>No songs found</Text>
+					<FastImage
+						source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
+						style={utilsStyles.emptyContentImage}
+					/>
+				</View>
+			),
+			[utilsStyles],
+		)
 
 		const handleTrackSelect = useCallback(
 			async (selectedTrack: Track) => {
@@ -177,7 +182,7 @@ export const TracksList = React.memo(
 				ListHeaderComponent={combinedListHeader}
 				ListFooterComponent={ItemDivider}
 				ItemSeparatorComponent={ItemDivider}
-				ListEmptyComponent={EmptyListComponent}
+				ListEmptyComponent={emptyListComponent}
 				renderItem={renderItem}
 				keyExtractor={keyExtractor}
 				estimatedItemSize={68}

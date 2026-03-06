@@ -1,7 +1,8 @@
-import { colors, fontSize } from '@/constants/tokens'
+import { fontSize } from '@/constants/tokens'
 import { generateTracksListId } from '@/helpers/miscellaneous'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
-import { defaultStyles } from '@/styles'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { useDefaultStyles } from '@/styles'
 import { FontAwesome } from '@expo/vector-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
@@ -11,6 +12,9 @@ import { QueueControls } from './QueueControls'
 import { TracksList } from './TracksList'
 
 export const SingerTracksList = ({ playlist, tracks }: { playlist: any; tracks: Track[] }) => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(defaultStyles), [defaultStyles])
 	const [isFavorite, setIsFavorite] = useState(false)
 
 	const singerPlayList = useMemo(
@@ -88,7 +92,8 @@ export const SingerTracksList = ({ playlist, tracks }: { playlist: any; tracks: 
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (defaultStyles: ReturnType<typeof useDefaultStyles>) =>
+	StyleSheet.create({
 	playlistHeaderContainer: {
 		flex: 1,
 		marginBottom: 32,
@@ -125,4 +130,4 @@ const styles = StyleSheet.create({
 		top: '40%', // 垂直居中
 		transform: [{ translateY: -10 }], // 微调垂直位置（图标大小的一半）
 	},
-})
+	})

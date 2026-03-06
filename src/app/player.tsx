@@ -6,14 +6,15 @@ import { PlayerRepeatToggle } from '@/components/PlayerRepeatToggle'
 import { PlayerVolumeBar } from '@/components/PlayerVolumeBar'
 import { ShowPlayerListToggle } from '@/components/ShowPlayerListToggle'
 import { unknownTrackImageUri } from '@/constants/images'
-import { colors, fontSize, screenPadding } from '@/constants/tokens'
+import { ThemeColors, fontSize, screenPadding } from '@/constants/tokens'
 import LyricManager from '@/helpers/lyricManager'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { getSingerMidBySingerName } from '@/helpers/userApi/getMusicSource'
+import { ThemeOverrideProvider, useThemeColors } from '@/hooks/useAppTheme'
 import { usePlayerBackground } from '@/hooks/usePlayerBackground'
 import { useTrackPlayerFavorite } from '@/hooks/useTrackPlayerFavorite'
 import PersistStatus from '@/store/PersistStatus'
-import { defaultStyles } from '@/styles'
+import { useDefaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { setTimingClose } from '@/utils/timingClose'
 import { Entypo, MaterialCommunityIcons } from '@expo/vector-icons'
@@ -21,7 +22,8 @@ import { MenuView } from '@react-native-menu/menu'
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake'
 import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { StatusBar } from 'expo-status-bar'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
 	Alert,
 	Dimensions,
@@ -57,6 +59,9 @@ type ArtistDisplayProps = {
 }
 
 const ArtistDisplay = React.memo(({ artists, onViewArtist }: ArtistDisplayProps) => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = React.useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
 	const normalizedArtists = artists.trim()
 	const artistArray = React.useMemo(
 		() => normalizedArtists.split('、').map((artist) => artist.trim()).filter(Boolean),
@@ -118,7 +123,10 @@ const ArtistDisplay = React.memo(({ artists, onViewArtist }: ArtistDisplayProps)
 	)
 })
 
-const PlayerScreen = () => {
+const PlayerScreenContent = () => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
 	const { top, bottom } = useSafeAreaInsets()
 	const { isFavorite, toggleFavorite } = useTrackPlayerFavorite()
 	const [showLyrics, setShowLyrics] = useState(false)
@@ -318,7 +326,7 @@ const PlayerScreen = () => {
 			})
 		}
 		return actions
-	}, [isFavorite, trackToDisplay?.platform])
+	}, [colors.primary, isFavorite, trackToDisplay?.platform])
 	useEffect(() => {
 		if (showLyrics) {
 			activateKeepAwakeAsync()
@@ -393,211 +401,221 @@ const PlayerScreen = () => {
 	}
 
 	return (
-		<LinearGradient
-			style={{ flex: 1 }}
-			colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.background]}
-		>
-			<View style={styles.overlayContainer}>
-				<DismissPlayerSymbol />
-				{showLyrics ? (
-					<View style={{ flex: 1, marginTop: top + 40, marginBottom: bottom }}>
-						<Animated.View style={[styles.lyricContainer, lyricsAnimatedStyle]}>
-							{/* <Pressable style={styles.artworkTouchable} onPress={handleLyricsToggle}> */}
-							<Lyric onTurnPageClick={handleLyricsToggle} />
-							{/* </Pressable> */}
-						</Animated.View>
-						<View style={styles.container}>
-							<View style={styles.leftItem}>
-								<MaterialCommunityIcons
-									name="tooltip-minus-outline"
-									size={27}
-									color="white"
-									onPress={handleLyricsToggle}
-									style={{ marginBottom: 4 }}
-								/>
-							</View>
-							<View style={styles.centeredItem}>
-								<MaterialCommunityIcons
-									name="format-font-size-decrease"
-									size={30}
-									color="white"
-									onPress={handleLyricsFontSizeDecrease}
-									style={{ marginBottom: 4 }}
-								/>
-							</View>
-							<View style={styles.centeredItem}>
-								<MaterialCommunityIcons
-									name="format-font-size-increase"
-									size={30}
-									color="white"
-									onPress={handleLyricsFontSizeIncrease}
-									style={{ marginBottom: 4 }}
-								/>
-							</View>
-							<View style={styles.rightItem}>
-								<TouchableOpacity
-									style={styles.lyricDelayToggleButton}
-									onPress={toggleLyricDelayControls}
-								>
-									<MaterialCommunityIcons
-										name="timer-outline"
-										size={26}
-										color={showLyricDelayControls ? colors.primary : 'white'}
-									/>
-								</TouchableOpacity>
-							</View>
-						</View>
-						{showLyricDelayControls ? (
-							<View style={[styles.container, styles.lyricDelayContainer]}>
-								<View style={styles.leftItem}>
-									<TouchableOpacity
-										style={styles.delayAdjustButton}
-										onPress={handleLyricDelayDecrease}
-									>
-										<Text style={styles.delayAdjustText}>-0.5s</Text>
-									</TouchableOpacity>
-								</View>
-								<View style={styles.centeredItem}>
-									<TouchableOpacity style={styles.delayValueButton} onPress={handleLyricDelayReset}>
-										<Text style={styles.delayLabel}>{i18n.t('player.lyricDelay')}</Text>
-										<Text style={styles.delayValueText}>{formatLyricDelay(lyricDelaySeconds)}</Text>
-									</TouchableOpacity>
-								</View>
-								<View style={styles.rightItem}>
-									<TouchableOpacity
-										style={styles.delayAdjustButton}
-										onPress={handleLyricDelayIncrease}
-									>
-										<Text style={styles.delayAdjustText}>+0.5s</Text>
-									</TouchableOpacity>
-								</View>
-							</View>
-						) : null}
-					</View>
-				) : (
-					<View style={{ flex: 1, marginTop: top + 70, marginBottom: bottom }}>
-					<GestureDetector gesture={swipeGesture}>
-						<Animated.View style={[styles.artworkImageContainer, artworkAnimatedStyle]}>
-							<TouchableOpacity style={styles.artworkTouchable} onPress={handleLyricsToggle}>
-								<FastImage
-									source={{
-										uri: trackToDisplay?.artwork ?? unknownTrackImageUri,
-										priority: FastImage.priority.high,
-									}}
-									resizeMode="cover"
-									style={styles.artworkImage}
-								/>
-							</TouchableOpacity>
-						</Animated.View>
-					</GestureDetector>
-						<View style={{ flex: 1 }}>
-							<View style={{ marginTop: 'auto' }}>
-								<View style={{ height: 60 }}>
-									<View
-										style={{
-											flexDirection: 'row',
-											justifyContent: 'space-between',
-											alignItems: 'center',
-										}}
-									>
-										{/* Track title */}
-										<View style={styles.trackTitleContainer}>
-											<MovingText
-												text={trackToDisplay?.title ?? ''}
-												animationThreshold={30}
-												style={styles.trackTitleText}
-											/>
-										</View>
-
-										{/* Favorite button icon */}
-										<MenuView
-											title={i18n.t('player.songOptions')}
-											onPressAction={({ nativeEvent }) => {
-												switch (nativeEvent.event) {
-													case 'favorite':
-														handleFavorite()
-														break
-													case 'album':
-														handleShowAlbum()
-														break
-													case 'lyrics':
-														handleShowLyrics()
-														break
-													case 'playlist':
-														handleAddToPlaylist()
-														break
-													case 'download':
-														handleDownload()
-														break
-													case 'share':
-														handleShare()
-														break
-													case 'timing_10':
-														handleTimingClose(10)
-														break
-													case 'timing_15':
-														handleTimingClose(15)
-														break
-													case 'timing_20':
-														handleTimingClose(20)
-														break
-													case 'timing_30':
-														handleTimingClose(30)
-														break
-													case 'timing_cus':
-														setCustomTimingClose()
-														break
-												}
-											}}
-											actions={menuActions}
-										>
-											<TouchableOpacity style={styles.menuButton}>
-												<Entypo name="dots-three-horizontal" size={18} color={colors.icon} />
-											</TouchableOpacity>
-										</MenuView>
-									</View>
-
-									{/* Track artist */}
-								{trackToDisplay?.artist ? (
-									<ArtistDisplay artists={trackToDisplay.artist} onViewArtist={handleViewArtist} />
-								) : null}
-								</View>
-
-								<PlayerProgressBar style={{ marginTop: 32 }} />
-
-								<PlayerControls style={{ marginTop: 40 }} />
-							</View>
-
-							<PlayerVolumeBar style={{ marginTop: 'auto', marginBottom: 30 }} />
-
+		<>
+			<StatusBar style="light" />
+			<LinearGradient
+				style={{ flex: 1 }}
+				colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.background]}
+			>
+				<View style={styles.overlayContainer}>
+					<DismissPlayerSymbol />
+					{showLyrics ? (
+						<View style={{ flex: 1, marginTop: top + 40, marginBottom: bottom }}>
+							<Animated.View style={[styles.lyricContainer, lyricsAnimatedStyle]}>
+								{/* <Pressable style={styles.artworkTouchable} onPress={handleLyricsToggle}> */}
+								<Lyric onTurnPageClick={handleLyricsToggle} />
+								{/* </Pressable> */}
+							</Animated.View>
 							<View style={styles.container}>
 								<View style={styles.leftItem}>
 									<MaterialCommunityIcons
 										name="tooltip-minus-outline"
 										size={27}
-										color="white"
+										color={colors.text}
 										onPress={handleLyricsToggle}
-										style={{ marginBottom: 2 }}
+										style={{ marginBottom: 4 }}
 									/>
 								</View>
 								<View style={styles.centeredItem}>
-									<PlayerRepeatToggle size={30} style={{ marginBottom: 6 }} />
+									<MaterialCommunityIcons
+										name="format-font-size-decrease"
+										size={30}
+										color={colors.text}
+										onPress={handleLyricsFontSizeDecrease}
+										style={{ marginBottom: 4 }}
+									/>
+								</View>
+								<View style={styles.centeredItem}>
+									<MaterialCommunityIcons
+										name="format-font-size-increase"
+										size={30}
+										color={colors.text}
+										onPress={handleLyricsFontSizeIncrease}
+										style={{ marginBottom: 4 }}
+									/>
 								</View>
 								<View style={styles.rightItem}>
-									<ShowPlayerListToggle size={30} style={{ marginBottom: 6 }} />
+									<TouchableOpacity
+										style={styles.lyricDelayToggleButton}
+										onPress={toggleLyricDelayControls}
+									>
+										<MaterialCommunityIcons
+											name="timer-outline"
+											size={26}
+											color={showLyricDelayControls ? colors.primary : colors.text}
+										/>
+									</TouchableOpacity>
+								</View>
+							</View>
+							{showLyricDelayControls ? (
+								<View style={[styles.container, styles.lyricDelayContainer]}>
+									<View style={styles.leftItem}>
+										<TouchableOpacity
+											style={styles.delayAdjustButton}
+											onPress={handleLyricDelayDecrease}
+										>
+											<Text style={styles.delayAdjustText}>-0.5s</Text>
+										</TouchableOpacity>
+									</View>
+									<View style={styles.centeredItem}>
+										<TouchableOpacity style={styles.delayValueButton} onPress={handleLyricDelayReset}>
+											<Text style={styles.delayLabel}>{i18n.t('player.lyricDelay')}</Text>
+											<Text style={styles.delayValueText}>{formatLyricDelay(lyricDelaySeconds)}</Text>
+										</TouchableOpacity>
+									</View>
+									<View style={styles.rightItem}>
+										<TouchableOpacity
+											style={styles.delayAdjustButton}
+											onPress={handleLyricDelayIncrease}
+										>
+											<Text style={styles.delayAdjustText}>+0.5s</Text>
+										</TouchableOpacity>
+									</View>
+								</View>
+							) : null}
+						</View>
+					) : (
+						<View style={{ flex: 1, marginTop: top + 70, marginBottom: bottom }}>
+						<GestureDetector gesture={swipeGesture}>
+							<Animated.View style={[styles.artworkImageContainer, artworkAnimatedStyle]}>
+								<TouchableOpacity style={styles.artworkTouchable} onPress={handleLyricsToggle}>
+									<FastImage
+										source={{
+											uri: trackToDisplay?.artwork ?? unknownTrackImageUri,
+											priority: FastImage.priority.high,
+										}}
+										resizeMode="cover"
+										style={styles.artworkImage}
+									/>
+								</TouchableOpacity>
+							</Animated.View>
+						</GestureDetector>
+							<View style={{ flex: 1 }}>
+								<View style={{ marginTop: 'auto' }}>
+									<View style={{ height: 60 }}>
+										<View
+											style={{
+												flexDirection: 'row',
+												justifyContent: 'space-between',
+												alignItems: 'center',
+											}}
+										>
+											{/* Track title */}
+											<View style={styles.trackTitleContainer}>
+												<MovingText
+													text={trackToDisplay?.title ?? ''}
+													animationThreshold={30}
+													style={styles.trackTitleText}
+												/>
+											</View>
+
+											{/* Favorite button icon */}
+											<MenuView
+												title={i18n.t('player.songOptions')}
+												onPressAction={({ nativeEvent }) => {
+													switch (nativeEvent.event) {
+														case 'favorite':
+															handleFavorite()
+															break
+														case 'album':
+															handleShowAlbum()
+															break
+														case 'lyrics':
+															handleShowLyrics()
+															break
+														case 'playlist':
+															handleAddToPlaylist()
+															break
+														case 'download':
+															handleDownload()
+															break
+														case 'share':
+															handleShare()
+															break
+														case 'timing_10':
+															handleTimingClose(10)
+															break
+														case 'timing_15':
+															handleTimingClose(15)
+															break
+														case 'timing_20':
+															handleTimingClose(20)
+															break
+														case 'timing_30':
+															handleTimingClose(30)
+															break
+														case 'timing_cus':
+															setCustomTimingClose()
+															break
+													}
+												}}
+												actions={menuActions}
+											>
+												<TouchableOpacity style={styles.menuButton}>
+													<Entypo name="dots-three-horizontal" size={18} color={colors.icon} />
+												</TouchableOpacity>
+											</MenuView>
+										</View>
+
+										{/* Track artist */}
+									{trackToDisplay?.artist ? (
+										<ArtistDisplay artists={trackToDisplay.artist} onViewArtist={handleViewArtist} />
+									) : null}
+									</View>
+
+									<PlayerProgressBar style={{ marginTop: 32 }} />
+
+									<PlayerControls style={{ marginTop: 40 }} />
+								</View>
+
+								<PlayerVolumeBar style={{ marginTop: 'auto', marginBottom: 30 }} />
+
+								<View style={styles.container}>
+									<View style={styles.leftItem}>
+										<MaterialCommunityIcons
+											name="tooltip-minus-outline"
+											size={27}
+											color={colors.text}
+											onPress={handleLyricsToggle}
+											style={{ marginBottom: 2 }}
+										/>
+									</View>
+									<View style={styles.centeredItem}>
+										<PlayerRepeatToggle size={30} style={{ marginBottom: 6 }} />
+									</View>
+									<View style={styles.rightItem}>
+										<ShowPlayerListToggle size={30} style={{ marginBottom: 6 }} />
+									</View>
 								</View>
 							</View>
 						</View>
-					</View>
-				)}
+					)}
+				</View>
+			</LinearGradient>
+		</>
+	)
+}
 
-			
-			</View>
-		</LinearGradient>
+const PlayerScreen = () => {
+	return (
+		<ThemeOverrideProvider resolvedTheme="dark">
+			<PlayerScreenContent />
+		</ThemeOverrideProvider>
 	)
 }
 
 const DismissPlayerSymbol = React.memo(() => {
+	const colors = useThemeColors()
 	const { top } = useSafeAreaInsets()
 
 	return (
@@ -616,7 +634,7 @@ const DismissPlayerSymbol = React.memo(() => {
 					width: 50,
 					height: 8,
 					borderRadius: 8,
-					backgroundColor: '#fff',
+					backgroundColor: colors.dismissBar,
 					opacity: 0.7,
 				}}
 			/>
@@ -624,19 +642,23 @@ const DismissPlayerSymbol = React.memo(() => {
 	)
 })
 
-const styles = StyleSheet.create({
+const createStyles = (
+	colors: ThemeColors,
+	defaultStyles: ReturnType<typeof useDefaultStyles>,
+) =>
+	StyleSheet.create({
 	menuButton: {
 		width: 32, // 增加按钮宽度
 		height: 32, // 增加按钮高度
 		borderRadius: 16, // 保持圆形（宽度/高度的一半）
-		backgroundColor: 'rgba(128, 128, 128, 0.3)', // 半透明的灰色
+		backgroundColor: colors.overlaySoft, // 半透明的灰色
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
 	overlayContainer: {
 		...defaultStyles.container,
 		paddingHorizontal: screenPadding.horizontal,
-		backgroundColor: 'rgba(0,0,0,0.5)',
+		backgroundColor: colors.overlay,
 	},
 	artworkImageContainer: {
 		aspectRatio: 1, // 保持正方形比例
@@ -645,8 +667,8 @@ const styles = StyleSheet.create({
 		alignSelf: 'center',
 		borderRadius: 12,
 		overflow: 'hidden',
-		backgroundColor: 'grey',
-		shadowColor: '#000',
+		backgroundColor: colors.artworkPlaceholder,
+		shadowColor: colors.shadow,
 		shadowOffset: {
 			width: 0,
 			height: 8,
@@ -713,7 +735,7 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 	},
 	delayAdjustButton: {
-		backgroundColor: 'rgba(255,255,255,0.12)',
+		backgroundColor: colors.overlaySoft,
 		paddingVertical: 8,
 		paddingHorizontal: 12,
 		borderRadius: 8,
@@ -726,7 +748,7 @@ const styles = StyleSheet.create({
 	delayValueButton: {
 		alignItems: 'center',
 		justifyContent: 'center',
-		backgroundColor: 'rgba(255,255,255,0.12)',
+		backgroundColor: colors.overlaySoft,
 		paddingVertical: 8,
 		paddingHorizontal: 12,
 		borderRadius: 8,
@@ -745,6 +767,6 @@ const styles = StyleSheet.create({
 	lyricContainer: {
 		flex: 1,
 	},
-})
+	})
 
 export default PlayerScreen

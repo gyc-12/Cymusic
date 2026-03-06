@@ -1,14 +1,15 @@
 import { unknownTrackImageUri } from '@/constants/images'
-import { colors, screenPadding } from '@/constants/tokens'
+import { ThemeColors, screenPadding } from '@/constants/tokens'
 import { logError } from '@/helpers/logger'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { getPlayListFromQ } from '@/helpers/userApi/getMusicSource'
-import { defaultStyles } from '@/styles'
+import { useThemeColors } from '@/hooks/useAppTheme'
+import { useDefaultStyles } from '@/styles'
 import { Ionicons } from '@expo/vector-icons'
 import { useHeaderHeight } from '@react-navigation/elements'
 import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
-import React, { useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import {
 	ActivityIndicator,
 	Image,
@@ -24,6 +25,9 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const ImportPlayList = () => {
+	const colors = useThemeColors()
+	const defaultStyles = useDefaultStyles()
+	const styles = useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
 	const [playlistUrl, setPlaylistUrl] = useState('')
 	const [playlistData, setPlaylistData] = useState(null)
 	const [isLoading, setIsLoading] = useState(false)
@@ -151,7 +155,7 @@ const ImportPlayList = () => {
 											value={customName}
 											onChangeText={setCustomName}
 											placeholder="输入歌单名称"
-											placeholderTextColor="#999"
+											placeholderTextColor={colors.placeholder}
 											autoCapitalize="none"
 											autoCorrect={false}
 											keyboardType="default"
@@ -172,7 +176,7 @@ const ImportPlayList = () => {
 								disabled={isLoading}
 							>
 								{isLoading ? (
-									<ActivityIndicator color="#fff" />
+									<ActivityIndicator color={colors.loading} />
 								) : (
 									<>
 										<Ionicons name="add-circle-outline" size={24} color={colors.primary} />
@@ -195,7 +199,7 @@ const ImportPlayList = () => {
 									value={playlistUrl}
 									onChangeText={setPlaylistUrl}
 									placeholder='🔗输入企鹅音乐歌单链接要有"id="字样'
-									placeholderTextColor="#999"
+									placeholderTextColor={colors.placeholder}
 									autoCapitalize="none"
 									autoCorrect={false}
 									keyboardType="url"
@@ -214,7 +218,7 @@ const ImportPlayList = () => {
 								disabled={isLoading}
 							>
 								{isLoading ? (
-									<ActivityIndicator color="#fff" />
+									<ActivityIndicator color={colors.loading} />
 								) : (
 									<>
 										<Ionicons name="cloud-download-outline" size={24} color={colors.primary} />
@@ -235,7 +239,11 @@ const ImportPlayList = () => {
 	)
 }
 
-const styles = StyleSheet.create({
+const createStyles = (
+	colors: ThemeColors,
+	defaultStyles: ReturnType<typeof useDefaultStyles>,
+) =>
+	StyleSheet.create({
 	modalContainer: {
 		...defaultStyles.container,
 		paddingHorizontal: screenPadding.horizontal,
@@ -251,7 +259,7 @@ const styles = StyleSheet.create({
 	},
 	divider: {
 		height: 1,
-		backgroundColor: 'rgba(255, 255, 255, 0.1)',
+		backgroundColor: colors.separator,
 		marginVertical: 24,
 	},
 	buttonContainer: {
@@ -269,7 +277,7 @@ const styles = StyleSheet.create({
 		width: 50,
 		height: 5,
 		borderRadius: 2.5,
-		backgroundColor: '#c7c7cc',
+		backgroundColor: colors.dismissBar,
 	},
 	inputContainer: {
 		width: '100%',
@@ -290,11 +298,11 @@ const styles = StyleSheet.create({
 	},
 	input: {
 		height: 44,
-		backgroundColor: '#2C2C2F',
+		backgroundColor: colors.surfaceMuted,
 		borderRadius: 8,
 		paddingHorizontal: 16,
 		fontSize: 16,
-		color: '#fff',
+		color: colors.text,
 		width: '100%',
 	},
 	coverContainer: {
@@ -305,7 +313,7 @@ const styles = StyleSheet.create({
 		height: 100,
 		borderRadius: 8,
 		overflow: 'hidden',
-		backgroundColor: '#2C2C2F',
+		backgroundColor: colors.surfaceMuted,
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
@@ -326,16 +334,16 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 	},
 	error: {
-		color: '#ff3b30',
+		color: colors.error,
 		marginTop: 10,
 	},
 	successText: {
-		color: '#34c759',
+		color: colors.success,
 		marginTop: 10,
 	},
 	button: {
 		padding: 12,
-		backgroundColor: '#2C2C2F',
+		backgroundColor: colors.surfaceMuted,
 		borderRadius: 8,
 		flexDirection: 'row',
 		justifyContent: 'center',
@@ -351,7 +359,7 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 	},
 	createPlaylistCard: {
-		backgroundColor: '#1C1C1F',
+		backgroundColor: colors.surface,
 		borderRadius: 12,
 		padding: 16,
 		gap: 16,
@@ -369,6 +377,6 @@ const styles = StyleSheet.create({
 	importContainer: {
 		width: '100%',
 	},
-})
+	})
 
 export default ImportPlayList

@@ -1,6 +1,7 @@
 import { FloatingPlayer } from '@/components/FloatingPlayer'
-import { colors, fontSize } from '@/constants/tokens'
-import i18n, { nowLanguage } from '@/utils/i18n'
+import { BlurTint, fontSize } from '@/constants/tokens'
+import { useAppTheme } from '@/hooks/useAppTheme'
+import i18n from '@/utils/i18n'
 import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
 import { Tabs } from 'expo-router'
@@ -10,9 +11,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const TAB_BAR_HEIGHT = 49
 
-const TabBarBackground = () => (
+const TabBarBackground = ({ tint }: { tint: BlurTint }) => (
 	<BlurView
 		intensity={90}
+		tint={tint}
 		style={{
 			...StyleSheet.absoluteFillObject,
 			overflow: 'hidden',
@@ -23,8 +25,8 @@ const TabBarBackground = () => (
 )
 
 const TabsNavigation = () => {
-	const language = nowLanguage.useValue()
 	const { bottom } = useSafeAreaInsets()
+	const { blurTint, colors } = useAppTheme()
 
 	const floatingPlayerStyle = useMemo(() => ({
 		position: 'absolute' as const,
@@ -38,6 +40,7 @@ const TabsNavigation = () => {
 			<Tabs
 				screenOptions={{
 					tabBarActiveTintColor: colors.primary,
+					tabBarInactiveTintColor: colors.textMuted,
 					tabBarLabelStyle: {
 						fontSize: fontSize.xs,
 						fontWeight: '500',
@@ -49,8 +52,9 @@ const TabsNavigation = () => {
 						borderTopRightRadius: 20,
 						borderTopWidth: 0,
 						paddingTop: 8,
+						backgroundColor: 'transparent',
 					},
-					tabBarBackground: () => <TabBarBackground />,
+					tabBarBackground: () => <TabBarBackground tint={blurTint} />,
 				}}
 			>
 				<Tabs.Screen
