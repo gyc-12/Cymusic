@@ -1,5 +1,6 @@
 import { fakeAudioMp3Uri } from '@/constants/images'
 import { logError, logInfo } from '@/helpers/logger'
+import PersistStatus from '@/store/PersistStatus'
 import { showToast } from '@/utils/utils'
 import RNFS from 'react-native-fs'
 import { isCached, getLocalFilePath } from './CacheManager'
@@ -38,7 +39,6 @@ export const preloadSource = async (item: IMusic.IMusicItem): Promise<void> => {
 }
 
 const setQuality = (quality: IMusic.IQualityKey) => {
-	const PersistStatus = require('@/store/PersistStatus').default
 	qualityStore.setValue(quality)
 	PersistStatus.set('music.quality', quality)
 }

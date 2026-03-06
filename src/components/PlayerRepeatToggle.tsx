@@ -1,25 +1,21 @@
 import { colors } from '@/constants/tokens'
-import { useTrackPlayerRepeatMode } from '@/hooks/useTrackPlayerRepeatMode'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+import React, { useCallback } from 'react'
 import { ComponentProps } from 'react'
-import { RepeatMode } from 'react-native-track-player'
 import { match } from 'ts-pattern'
 import myTrackPlayer, { MusicRepeatMode, repeatModeStore } from '@/helpers/trackPlayerIndex'
-import { GlobalState } from '@/utils/stateMapper'
 
 type IconProps = Omit<ComponentProps<typeof MaterialCommunityIcons>, 'name'>
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name']
 
-// const repeatOrder = [RepeatMode.Off, RepeatMode.Track, RepeatMode.Queue] as const
+export const PlayerRepeatToggle = React.memo(({ ...iconProps }: IconProps) => {
+	const repeatMode = repeatModeStore.useValue()
 
-export const PlayerRepeatToggle = ({ ...iconProps }: IconProps) => {
-
-
-	const toggleRepeatMode = () => {
+	const toggleRepeatMode = useCallback(() => {
 		myTrackPlayer.toggleRepeatMode()
-	}
+	}, [])
 
-	const icon = match(myTrackPlayer.getRepeatMode())
+	const icon = match(repeatMode)
 		.returnType<IconName>()
 		.with(MusicRepeatMode.SHUFFLE, () => 'shuffle')
 		.with(MusicRepeatMode.SINGLE, () => 'repeat-once')
@@ -34,4 +30,4 @@ export const PlayerRepeatToggle = ({ ...iconProps }: IconProps) => {
 			{...iconProps}
 		/>
 	)
-}
+})

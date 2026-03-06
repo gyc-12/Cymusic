@@ -5,9 +5,10 @@ import { defaultStyles, utilsStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 
 import { getSingerMidBySingerName } from '@/helpers/userApi/getMusicSource'
+import { FlashList } from '@shopify/flash-list'
 import { router } from 'expo-router'
-import React, { memo, useCallback } from 'react'
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { memo, useCallback, useMemo } from 'react'
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Track } from 'react-native-track-player'
@@ -27,7 +28,7 @@ const ItemDivider = memo(() => (
 ))
 
 const EmptyComponent = memo(() => (
-	<View style={{}}>
+	<View>
 		<FastImage
 			source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
 			style={utilsStyles.emptyContentImage}
@@ -78,14 +79,10 @@ export const SearchList: React.FC<SearchListProps> = ({
 }) => {
 	const handleTrackSelect = useCallback(async (selectedTrack: Track) => {
 		if (selectedTrack.isArtist) {
-			// TODO: Navigate to artist page
-			console.log('Navigate to artist:', selectedTrack)
 			if (!selectedTrack.artist.includes('未知')) {
 				getSingerMidBySingerName(selectedTrack.artist).then((singerMid) => {
 					if (singerMid) {
 						router.navigate(`/(modals)/${singerMid}`)
-					} else {
-						console.log('没有匹配到歌手')
 					}
 				})
 			}
@@ -112,7 +109,6 @@ export const SearchList: React.FC<SearchListProps> = ({
 		[handleTrackSelect],
 	)
 
-	// 修改这里的 keyExtractor 函数
 	const keyExtractor = useCallback((item: Track, index: number) => `${item.id}-${index}`, [])
 
 	const handleEndReached = useCallback(() => {
@@ -122,15 +118,18 @@ export const SearchList: React.FC<SearchListProps> = ({
 	}, [hasMore, isLoading, tracks.length, onLoadMore])
 	const insets = useSafeAreaInsets()
 
+	const footerComponent = useMemo(
+		() => <FooterComponent isLoading={isLoading} hasMore={hasMore} />,
+		[isLoading, hasMore],
+	)
+
 	return (
 		<View style={[defaultStyles.container]}>
-			<FlatList
+			<FlashList
 				data={tracks}
 				contentContainerStyle={{
 					paddingTop: 60,
 					paddingBottom: 128 + insets.bottom,
-					flexGrow: 1,
-					justifyContent: tracks.length === 0 ? 'center' : 'flex-start',
 					paddingHorizontal: screenPadding.horizontal,
 				}}
 				ItemSeparatorComponent={ItemDivider}
@@ -139,12 +138,8 @@ export const SearchList: React.FC<SearchListProps> = ({
 				keyExtractor={keyExtractor}
 				onEndReached={handleEndReached}
 				onEndReachedThreshold={0.1}
-				ListFooterComponent={<FooterComponent isLoading={isLoading} hasMore={hasMore} />}
-				removeClippedSubviews={true}
-				maxToRenderPerBatch={10}
-				updateCellsBatchingPeriod={50}
-				initialNumToRender={10}
-				windowSize={21}
+				ListFooterComponent={footerComponent}
+				estimatedItemSize={68}
 				keyboardDismissMode="on-drag"
 				keyboardShouldPersistTaps="handled"
 			/>

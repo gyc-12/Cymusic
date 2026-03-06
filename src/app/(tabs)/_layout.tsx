@@ -4,10 +4,35 @@ import i18n, { nowLanguage } from '@/utils/i18n'
 import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
 import { Tabs } from 'expo-router'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+const TAB_BAR_HEIGHT = 49
+
+const TabBarBackground = () => (
+	<BlurView
+		intensity={90}
+		style={{
+			...StyleSheet.absoluteFillObject,
+			overflow: 'hidden',
+			borderTopLeftRadius: 20,
+			borderTopRightRadius: 20,
+		}}
+	/>
+)
+
 const TabsNavigation = () => {
 	const language = nowLanguage.useValue()
+	const { bottom } = useSafeAreaInsets()
+
+	const floatingPlayerStyle = useMemo(() => ({
+		position: 'absolute' as const,
+		left: 8,
+		right: 8,
+		bottom: TAB_BAR_HEIGHT + bottom + 8,
+	}), [bottom])
+
 	return (
 		<>
 			<Tabs
@@ -25,17 +50,7 @@ const TabsNavigation = () => {
 						borderTopWidth: 0,
 						paddingTop: 8,
 					},
-					tabBarBackground: () => (
-						<BlurView
-							intensity={90}
-							style={{
-								...StyleSheet.absoluteFillObject, //相当于position: 'absolute', left: 0, right: 0, top: 0, bottom: 0
-								overflow: 'hidden',
-								borderTopLeftRadius: 20,
-								borderTopRightRadius: 20,
-							}}
-						/>
-					),
+					tabBarBackground: () => <TabBarBackground />,
 				}}
 			>
 				<Tabs.Screen
@@ -58,7 +73,7 @@ const TabsNavigation = () => {
 					name="favorites"
 					options={{
 						title: i18n.t('appTab.favorites'),
-						tabBarIcon: ({ color }) => <FontAwesome name="heart" size={20} color={color} />, //当你定义 tabBarIcon 时，React Navigation 会自动传递一些参数给你，其中包括 color、focused 和 size。这些参数会根据当前 Tab 的选中状态和主题来动态变化。
+						tabBarIcon: ({ color }) => <FontAwesome name="heart" size={20} color={color} />,
 					}}
 				/>
 				<Tabs.Screen
@@ -72,14 +87,7 @@ const TabsNavigation = () => {
 				/>
 			</Tabs>
 
-			<FloatingPlayer
-				style={{
-					position: 'absolute',
-					left: 8,
-					right: 8,
-					bottom: 78,
-				}}
-			/>
+			<FloatingPlayer style={floatingPlayerStyle} />
 		</>
 	)
 }

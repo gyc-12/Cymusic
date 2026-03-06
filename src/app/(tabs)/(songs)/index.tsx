@@ -1,5 +1,5 @@
 import { TracksList } from '@/components/TracksList'
-import { screenPadding } from '@/constants/tokens'
+import { colors, screenPadding } from '@/constants/tokens'
 import { trackTitleFilter } from '@/helpers/filter'
 import { generateTracksListId } from '@/helpers/miscellaneous'
 import { songsNumsToLoadStore } from '@/helpers/trackPlayerIndex'
@@ -7,8 +7,9 @@ import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { useLibraryStore, useTracks, useTracksLoading } from '@/store/library'
 import { defaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
-import { useMemo } from 'react'
-import { ActivityIndicator, ScrollView, View } from 'react-native'
+import { useCallback, useMemo } from 'react'
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
+
 const SongsScreen = () => {
 	const search = useNavigationSearch({
 		searchBarOptions: {
@@ -19,15 +20,16 @@ const SongsScreen = () => {
 
 	const tracks = useTracks()
 	const songsNumsToLoad = songsNumsToLoadStore.useValue()
-	const isLoading = useTracksLoading() // 添加加载状态
+	const isLoading = useTracksLoading()
 	const { fetchTracks } = useLibraryStore()
 	const filteredTracks = useMemo(() => {
 		if (!search) return tracks
 		return tracks.filter(trackTitleFilter(search))
 	}, [search, tracks])
-	const handleLoadMore = () => {
+
+	const handleLoadMore = useCallback(() => {
 		fetchTracks()
-	}
+	}, [fetchTracks])
 
 	if (!tracks.length && isLoading) {
 		return (
@@ -36,6 +38,17 @@ const SongsScreen = () => {
 			</View>
 		)
 	}
+
+	if (!tracks.length && !isLoading) {
+		return (
+			<View style={[defaultStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+				<Text style={{ color: colors.textMuted, fontSize: 16 }}>
+					{i18n.t('find.noMoreResults')}
+				</Text>
+			</View>
+		)
+	}
+
 	return (
 		<View style={defaultStyles.container}>
 			<ScrollView
@@ -43,7 +56,7 @@ const SongsScreen = () => {
 				style={{ paddingHorizontal: screenPadding.horizontal }}
 				onScroll={({ nativeEvent }) => {
 					const { layoutMeasurement, contentOffset, contentSize } = nativeEvent
-					const paddingToBottom = 20
+					const paddingToBottom = 60
 					const isCloseToBottom =
 						layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom
 
@@ -59,17 +72,11 @@ const SongsScreen = () => {
 					scrollEnabled={false}
 					numsToPlay={songsNumsToLoad}
 				/>
-				{/* {isLoading && tracks.length > 0 && (
-					<View
-						style={{
-							paddingVertical: 0,
-							alignItems: 'center',
-							justifyContent: 'center',
-						}}
-					>
-						<ActivityIndicator size="large" />
+				{isLoading && tracks.length > 0 && (
+					<View style={{ paddingVertical: 20, alignItems: 'center' }}>
+						<ActivityIndicator size="small" />
 					</View>
-				)} */}
+				)}
 			</ScrollView>
 		</View>
 	)

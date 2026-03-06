@@ -1,9 +1,14 @@
 import { logError, logInfo } from '@/helpers/logger'
-import { qualityStore } from './PlayerStore'
+import { importedLocalMusicStore, qualityStore } from './PlayerStore'
+import PersistStatus from '@/store/PersistStatus'
 import * as FileSystem from 'expo-file-system'
 import RNFS from 'react-native-fs'
 
 const cacheDir = FileSystem.documentDirectory + 'musicCache/'
+
+function sanitizeFilename(str: string): string {
+	return str.replace(/[/\\?%*:|"<>]/g, '-')
+}
 
 export const ensureCacheDirExists = async () => {
 	const dirInfo = await FileSystem.getInfoAsync(cacheDir)
@@ -21,7 +26,12 @@ export const ensureDirExists = async (dirPath: string) => {
 
 export const getLocalFilePath = (musicItem: IMusic.IMusicItem): string => {
 	const format = qualityStore.getValue() === 'flac' ? 'flac' : 'mp3'
-	return `${cacheDir}${musicItem.title}-${musicItem.artist}.${format}`
+	const safeTitle = sanitizeFilename(musicItem.title)
+	const safeArtist = sanitizeFilename(musicItem.artist)
+	const platformId = musicItem.platform && musicItem.id
+		? `${musicItem.platform}_${musicItem.id}`
+		: `${safeTitle}-${safeArtist}`
+	return `${cacheDir}${platformId}.${format}`
 }
 
 export const isCached = async (musicItem: IMusic.IMusicItem): Promise<boolean> => {
@@ -57,14 +67,14 @@ export const downloadToCache = async (musicItem: IMusic.IMusicItem): Promise<str
 }
 
 export const clearCache = async () => {
-	const { importedLocalMusicStore } = require('./PlayerStore')
-	const PersistStatus = require('@/store/PersistStatus').default
 	const dirInfo = await FileSystem.getInfoAsync(cacheDir)
 	if (dirInfo.exists) {
 		await FileSystem.deleteAsync(cacheDir, { idempotent: true })
 		const importedLocalMusic = importedLocalMusicStore.getValue() || []
 		const updatedImportedLocalMusic = importedLocalMusic.filter((item: IMusic.IMusicItem) => {
-			return !item.url.startsWith(cacheDir)
+			const url = item.url || ''
+			const normalizedUrl = url.replace(/^file:\/\//, '')
+			return !normalizedUrl.startsWith(cacheDir)
 		})
 		importedLocalMusicStore.setValue(updatedImportedLocalMusic)
 		PersistStatus.set('music.importedLocalMusic', updatedImportedLocalMusic)

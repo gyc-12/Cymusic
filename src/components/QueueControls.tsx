@@ -41,11 +41,11 @@ export const QueueControls = ({
 	}
 
 	const handleShufflePlay = async () => {
+		if (tracks.length === 0) return
 		const shuffledTracks = shuffle(tracks)
-		setPlayList(shuffledTracks as IMusic.IMusicItem[])
 		repeatModeStore.setValue(MusicRepeatMode.SHUFFLE)
 		await myTrackPlayer.playWithReplacePlayList(
-			shuffledTracks[1] as IMusic.IMusicItem,
+			shuffledTracks[0] as IMusic.IMusicItem,
 			shuffledTracks as IMusic.IMusicItem[],
 		)
 	}

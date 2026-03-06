@@ -154,19 +154,18 @@ export default function Lyric(props: IProps) {
 		}
 	}, [])
 
-	// 开始滚动时拖拽生效
-	const onScrollBeginDrag = () => {
+	const onScrollBeginDrag = useCallback(() => {
 		dragShownRef.current = true
-	}
+	}, [])
 
-	const onScrollEndDrag = async () => {
+	const onScrollEndDrag = useCallback(async () => {
 		if (draggingIndex !== undefined) {
 			setDraggingIndex(undefined)
 		}
 		dragShownRef.current = false
-	}
+	}, [draggingIndex, setDraggingIndex])
 
-	const onScroll = (e: any) => {
+	const onScroll = useCallback((e: any) => {
 		if (dragShownRef.current) {
 			const offset = e.nativeEvent.contentOffset.y + e.nativeEvent.layoutMeasurement.height / 2
 
@@ -184,7 +183,7 @@ export default function Lyric(props: IProps) {
 				}
 			}
 		}
-	}
+	}, [lyrics.length, setDraggingIndex])
 
 	const handleLyricItemPress = useCallback(
 		async (index: number) => {
@@ -198,6 +197,27 @@ export default function Lyric(props: IProps) {
 		},
 		[lyrics, meta?.offset],
 	)
+
+	const listHeader = useMemo(() => (
+		<>
+			{blankComponent}
+			<View style={styles.lyricMeta}></View>
+		</>
+	), [blankComponent])
+
+	const renderLyricItem = useCallback(({ item, index }: { item: ILyric.IParsedLrcItem; index: number }) => {
+		return (
+			<LyricItemComponent
+				index={index}
+				text={item.lrc}
+				fontSize={fontSizeStyle.fontSize}
+				onLayout={handleLyricItemLayout}
+				light={draggingIndex === index}
+				highlight={currentLrcItem?.index === index}
+				onPress={() => handleLyricItemPress(index)}
+			/>
+		)
+	}, [fontSizeStyle.fontSize, handleLyricItemLayout, draggingIndex, currentLrcItem?.index, handleLyricItemPress])
 
 	return (
 		<>
@@ -226,37 +246,18 @@ export default function Lyric(props: IProps) {
 							})
 						}}
 						fadingEdgeLength={120}
-						ListHeaderComponent={
-							<>
-								{blankComponent}
-								<View style={styles.lyricMeta}></View>
-							</>
-						}
-						ListFooterComponent={blankComponent}
-						onScrollBeginDrag={onScrollBeginDrag}
-						onMomentumScrollEnd={onScrollEndDrag}
-						onScroll={onScroll}
-						scrollEventThrottle={32}
-						style={styles.wrapper}
-						data={lyrics}
-						initialNumToRender={30}
-						overScrollMode="never"
-						extraData={currentLrcItem}
-						renderItem={({ item, index }) => {
-							const text = item.lrc
-
-							return (
-								<LyricItemComponent
-									index={index}
-									text={text}
-									fontSize={fontSizeStyle.fontSize}
-									onLayout={handleLyricItemLayout}
-									light={draggingIndex === index}
-									highlight={currentLrcItem?.index === index}
-									onPress={() => handleLyricItemPress(index)}
-								/>
-							)
-						}}
+					ListHeaderComponent={listHeader}
+					ListFooterComponent={blankComponent}
+					onScrollBeginDrag={onScrollBeginDrag}
+					onMomentumScrollEnd={onScrollEndDrag}
+					onScroll={onScroll}
+					scrollEventThrottle={32}
+					style={styles.wrapper}
+					data={lyrics}
+					initialNumToRender={30}
+					overScrollMode="never"
+					extraData={currentLrcItem}
+					renderItem={renderLyricItem}
 					/>
 				) : (
 					<View style={styles.fullCenter}>

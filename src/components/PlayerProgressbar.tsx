@@ -2,14 +2,13 @@ import { colors, fontSize } from '@/constants/tokens'
 import { durationStore } from '@/helpers/lyricManager'
 import { formatSecondsToMinutes } from '@/helpers/miscellaneous'
 import { defaultStyles, utilsStyles } from '@/styles'
-import PropTypes from 'prop-types'
-import { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { StyleSheet, Text, View, ViewProps } from 'react-native'
 import { Slider } from 'react-native-awesome-slider'
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
+import Animated, { SharedValue, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import TrackPlayer, { useProgress } from 'react-native-track-player'
 
-const AnimatedThumb = ({ isSliding }) => {
+const AnimatedThumb = React.memo(({ isSliding }: { isSliding: SharedValue<boolean> }) => {
 	const animatedStyle = useAnimatedStyle(() => {
 		return {
 			width: withSpring(isSliding.value ? 24 : 12),
@@ -21,15 +20,9 @@ const AnimatedThumb = ({ isSliding }) => {
 	})
 
 	return <Animated.View style={animatedStyle} />
-}
+})
 
-AnimatedThumb.propTypes = {
-	isSliding: PropTypes.shape({
-		value: PropTypes.bool.isRequired,
-	}).isRequired,
-}
-
-export const PlayerProgressBar = ({
+export const PlayerProgressBar = React.memo(({
 	style,
 	onSeek,
 }: ViewProps & { onSeek?: (position: number) => void }) => {
@@ -47,22 +40,33 @@ export const PlayerProgressBar = ({
 		if (!isSliding.value) {
 			progress.value = duration > 0 ? position / duration : 0
 		}
-	}, [position, duration, isSliding])
+	}, [position, duration])
 
-	const handleSlidingComplete = async (value) => {
+	const handleSlidingStart = useCallback(() => {
+		isSliding.value = true
+	}, [])
+
+	const handleSlidingComplete = useCallback(async (value: number) => {
 		if (!isSliding.value) return
-
 		isSliding.value = false
-
 		const newPosition = value * duration
 		await TrackPlayer.seekTo(newPosition)
-		// 增加一个短暂的延迟，确保音频解码器有足够的时间处理新的位置
-
 		const actualPosition = await TrackPlayer.getPosition()
 		if (onSeek) {
 			onSeek(actualPosition)
 		}
-	}
+	}, [duration, onSeek])
+
+	const handleValueChange = useCallback(async (value: number) => {
+		const newPosition = value * duration
+		await TrackPlayer.seekTo(newPosition)
+		if (onSeek) {
+			onSeek(newPosition)
+		}
+	}, [duration, onSeek])
+
+	const renderThumb = useCallback(() => <AnimatedThumb isSliding={isSliding} />, [isSliding])
+	const renderBubble = useCallback(() => null, [])
 
 	return (
 		<View style={style}>
@@ -71,21 +75,14 @@ export const PlayerProgressBar = ({
 				minimumValue={min}
 				maximumValue={max}
 				containerStyle={utilsStyles.slider}
-				renderThumb={() => <AnimatedThumb isSliding={isSliding} />}
-				renderBubble={() => null}
+				renderThumb={renderThumb}
+				renderBubble={renderBubble}
 				theme={{
 					minimumTrackTintColor: colors.minimumTrackTintColor,
 					maximumTrackTintColor: colors.maximumTrackTintColor,
 				}}
-				onSlidingStart={() => (isSliding.value = true)}
-				onValueChange={async (value) => {
-					const newPosition = value * duration
-					await TrackPlayer.seekTo(newPosition)
-
-					if (onSeek) {
-						onSeek(newPosition)
-					}
-				}}
+				onSlidingStart={handleSlidingStart}
+				onValueChange={handleValueChange}
 				onSlidingComplete={handleSlidingComplete}
 			/>
 
@@ -98,12 +95,7 @@ export const PlayerProgressBar = ({
 			</View>
 		</View>
 	)
-}
-
-PlayerProgressBar.propTypes = {
-	style: PropTypes.object,
-	onSeek: PropTypes.func,
-}
+})
 
 const styles = StyleSheet.create({
 	timeRow: {

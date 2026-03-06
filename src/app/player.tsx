@@ -111,7 +111,7 @@ const PlayerScreen = () => {
 		myTrackPlayer.skipToPrevious()
 	}, [])
 
-	const swipeGesture = Gesture.Pan()
+	const swipeGesture = React.useMemo(() => Gesture.Pan()
 		.activeOffsetX([-20, 20])
 		.onUpdate((e) => {
 			artworkTranslateX.value = e.translationX * 0.5
@@ -127,7 +127,7 @@ const PlayerScreen = () => {
 				runOnJS(handleSkipPrev)()
 			}
 			artworkTranslateX.value = withSpring(0, { damping: 15, stiffness: 150 })
-		})
+		}), [handleSkipNext, handleSkipPrev])
 
 	const handleLyricsToggle = useCallback(() => {
 		setShowLyrics((prev) => {
@@ -212,9 +212,7 @@ const PlayerScreen = () => {
 		}
 	}
 
-	const handleSeek = useCallback((newPosition: number) => {
-		// seek handled by PlayerProgressBar internally
-	}, [])
+	
 	const handleFavorite = useCallback(() => {
 		toggleFavorite()
 	}, [toggleFavorite])
@@ -258,41 +256,44 @@ const PlayerScreen = () => {
 			console.error(error.message)
 		}
 	}, [trackToDisplay])
-	const handleTimingClose = (minutes: number) => {
+	const handleTimingClose = useCallback((minutes: number) => {
 		setTimingClose(Date.now() + minutes * 60 * 1000)
-	}
-	const menuActions = [
-		{
-			id: 'favorite',
-			title: isFavorite ? i18n.t('player.like') : i18n.t('player.like'),
-			titleColor: isFavorite ? colors.primary : undefined,
-			image: isFavorite ? 'heart.fill' : 'heart',
-		},
-		{ id: 'album', title: i18n.t('player.showAlbum'), image: 'music.note.list' },
-		{ id: 'lyrics', title: i18n.t('player.showLyrics'), image: 'text.quote' },
-		{ id: 'playlist', title: i18n.t('player.addToPlaylist'), image: 'plus.circle' },
+	}, [])
 
-		{ id: 'share', title: i18n.t('player.share'), image: 'square.and.arrow.up' },
-		{
-			id: 'timing',
-			title: i18n.t('player.closeAfter'),
-			image: 'timer',
-			subactions: [
-				{ id: 'timing_10', title: '10 ' + i18n.t('player.minutes') },
-				{ id: 'timing_15', title: '15 ' + i18n.t('player.minutes') },
-				{ id: 'timing_20', title: '20 ' + i18n.t('player.minutes') },
-				{ id: 'timing_30', title: '30 ' + i18n.t('player.minutes') },
-				{ id: 'timing_cus', title: i18n.t('player.custom') },
-			],
-		},
-	]
-	if (trackToDisplay?.platform !== 'local') {
-		menuActions.splice(4, 0, {
-			id: 'download',
-			title: i18n.t('player.download'),
-			image: 'arrow.down.circle',
-		})
-	}
+	const menuActions = React.useMemo(() => {
+		const actions = [
+			{
+				id: 'favorite',
+				title: i18n.t('player.like'),
+				titleColor: isFavorite ? colors.primary : undefined,
+				image: isFavorite ? 'heart.fill' : 'heart',
+			},
+			{ id: 'album', title: i18n.t('player.showAlbum'), image: 'music.note.list' },
+			{ id: 'lyrics', title: i18n.t('player.showLyrics'), image: 'text.quote' },
+			{ id: 'playlist', title: i18n.t('player.addToPlaylist'), image: 'plus.circle' },
+			{ id: 'share', title: i18n.t('player.share'), image: 'square.and.arrow.up' },
+			{
+				id: 'timing',
+				title: i18n.t('player.closeAfter'),
+				image: 'timer',
+				subactions: [
+					{ id: 'timing_10', title: '10 ' + i18n.t('player.minutes') },
+					{ id: 'timing_15', title: '15 ' + i18n.t('player.minutes') },
+					{ id: 'timing_20', title: '20 ' + i18n.t('player.minutes') },
+					{ id: 'timing_30', title: '30 ' + i18n.t('player.minutes') },
+					{ id: 'timing_cus', title: i18n.t('player.custom') },
+				],
+			},
+		]
+		if (trackToDisplay?.platform !== 'local') {
+			actions.splice(4, 0, {
+				id: 'download',
+				title: i18n.t('player.download'),
+				image: 'arrow.down.circle',
+			})
+		}
+		return actions
+	}, [isFavorite, trackToDisplay?.platform])
 	useEffect(() => {
 		if (showLyrics) {
 			activateKeepAwakeAsync()
@@ -304,18 +305,15 @@ const PlayerScreen = () => {
 			deactivateKeepAwake() // 清理函数，确保组件卸载时停用屏幕常亮
 		}
 	}, [showLyrics])
-	function handleLyricsFontSizeDecrease(): void {
+	const handleLyricsFontSizeDecrease = useCallback(() => {
 		const currentFontSize = PersistStatus.get('lyric.detailFontSize') ?? 1
-		console.log('currentFontSize', currentFontSize)
 		PersistStatus.set('lyric.detailFontSize', currentFontSize - 1 < 0 ? 0 : currentFontSize - 1)
-		// scrollToCurrentLrcItem();
-	}
-	function handleLyricsFontSizeIncrease(): void {
+	}, [])
+
+	const handleLyricsFontSizeIncrease = useCallback(() => {
 		const currentFontSize = PersistStatus.get('lyric.detailFontSize') ?? 1
-		console.log('currentFontSize', currentFontSize)
 		PersistStatus.set('lyric.detailFontSize', currentFontSize + 1 > 3 ? 3 : currentFontSize + 1)
-		// scrollToCurrentLrcItem();
-	}
+	}, [])
 	function formatLyricDelay(delaySeconds: number): string {
 		const normalized = Math.abs(delaySeconds) < 0.05 ? 0 : delaySeconds
 		const rounded = Math.round(normalized * 10) / 10
@@ -538,7 +536,7 @@ const PlayerScreen = () => {
 									{trackToDisplay?.artist && handleArtistSelection(trackToDisplay.artist)}
 								</View>
 
-								<PlayerProgressBar style={{ marginTop: 32 }} onSeek={handleSeek} />
+								<PlayerProgressBar style={{ marginTop: 32 }} />
 
 								<PlayerControls style={{ marginTop: 40 }} />
 							</View>
@@ -572,7 +570,7 @@ const PlayerScreen = () => {
 	)
 }
 
-const DismissPlayerSymbol = () => {
+const DismissPlayerSymbol = React.memo(() => {
 	const { top } = useSafeAreaInsets()
 
 	return (
@@ -587,7 +585,6 @@ const DismissPlayerSymbol = () => {
 			}}
 		>
 			<View
-				accessible={false}
 				style={{
 					width: 50,
 					height: 8,
@@ -598,7 +595,7 @@ const DismissPlayerSymbol = () => {
 			/>
 		</View>
 	)
-}
+})
 
 const styles = StyleSheet.create({
 	menuButton: {

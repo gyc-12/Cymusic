@@ -5,7 +5,7 @@ import { useQueue } from '@/store/queue'
 import { utilsStyles } from '@/styles'
 import { FlashList } from '@shopify/flash-list'
 import { router } from 'expo-router'
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { Text, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
@@ -53,7 +53,6 @@ export const TracksList = React.memo(
 		toggleMultiSelectMode,
 		numsToPlay,
 	}: TracksListProps) => {
-		const queueOffset = useRef(0)
 		const { activeQueueId, setActiveQueueId } = useQueue()
 		const activeTrack = useActiveTrack()
 		const { playing } = useIsPlaying()

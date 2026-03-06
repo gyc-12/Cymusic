@@ -1,35 +1,27 @@
 import { colors } from '@/constants/tokens'
 import { utilsStyles } from '@/styles'
 import { Ionicons } from '@expo/vector-icons'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { View, ViewProps } from 'react-native'
 import { Slider } from 'react-native-awesome-slider'
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import { VolumeManager } from 'react-native-volume-manager'
 
-const NORMAL_HEIGHT = 4
-const EXPANDED_HEIGHT = 4
-
-export const PlayerVolumeBar = ({ style }: ViewProps) => {
-	const [volume, setVolume] = useState(0)
+export const PlayerVolumeBar = React.memo(({ style }: ViewProps) => {
 	const progress = useSharedValue(0)
 	const min = useSharedValue(0)
 	const max = useSharedValue(1)
 	const isSliding = useSharedValue(false)
 
-	const [trackColor, setTrackColor] = useState(colors.maximumTrackTintColor)
-
 	useEffect(() => {
 		const getInitialVolume = async () => {
 			await VolumeManager.showNativeVolumeUI({ enabled: true })
 			const initialVolume = await VolumeManager.getVolume()
-			setVolume(initialVolume.volume)
 			progress.value = initialVolume.volume
 		}
 		getInitialVolume()
 
 		const volumeListener = VolumeManager.addVolumeListener((result) => {
-			setVolume(result.volume)
 			progress.value = result.volume
 		})
 
@@ -40,10 +32,27 @@ export const PlayerVolumeBar = ({ style }: ViewProps) => {
 
 	const animatedSliderStyle = useAnimatedStyle(() => {
 		return {
-			height: withSpring(isSliding.value ? EXPANDED_HEIGHT : NORMAL_HEIGHT),
 			transform: [{ scaleY: withSpring(isSliding.value ? 2 : 1) }],
 		}
 	})
+
+	const handleSlidingStart = useCallback(() => {
+		isSliding.value = true
+	}, [])
+
+	const handleSlidingComplete = useCallback(() => {
+		isSliding.value = false
+	}, [])
+
+	const handleValueChange = useCallback(async (value: number) => {
+		await VolumeManager.setVolume(value, {
+			type: 'system',
+			showUI: true,
+			playSound: false,
+		})
+	}, [])
+
+	const renderBubble = useCallback(() => null, [])
 
 	return (
 		<View style={style}>
@@ -57,25 +66,12 @@ export const PlayerVolumeBar = ({ style }: ViewProps) => {
 						progress={progress}
 						minimumValue={min}
 						containerStyle={utilsStyles.slider}
-						onSlidingStart={() => {
-							isSliding.value = true
-							setTrackColor('#fff')
-						}}
-						onSlidingComplete={() => {
-							isSliding.value = false
-							setTrackColor(colors.maximumTrackTintColor)
-						}}
-						onValueChange={async (value) => {
-							await VolumeManager.showNativeVolumeUI({ enabled: true })
-							await VolumeManager.setVolume(value, {
-								type: 'system', // default: "music" (Android only)
-								showUI: true, // default: false (suppress native UI volume toast for iOS & Android)
-								playSound: false, // default: false (Android only)
-							})
-						}}
-						renderBubble={() => null}
+						onSlidingStart={handleSlidingStart}
+						onSlidingComplete={handleSlidingComplete}
+						onValueChange={handleValueChange}
+						renderBubble={renderBubble}
 						theme={{
-							minimumTrackTintColor: trackColor,
+							minimumTrackTintColor: colors.maximumTrackTintColor,
 							maximumTrackTintColor: colors.maximumTrackTintColor,
 						}}
 						thumbWidth={0}
@@ -87,4 +83,4 @@ export const PlayerVolumeBar = ({ style }: ViewProps) => {
 			</View>
 		</View>
 	)
-}
+})

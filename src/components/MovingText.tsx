@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import Animated, {
 	Easing,
 	StyleProps,
@@ -16,11 +16,10 @@ export type MovingTextProps = {
 	style?: StyleProps
 }
 
-export const MovingText = ({ text, animationThreshold, style }: MovingTextProps) => {
+export const MovingText = React.memo(({ text, animationThreshold, style }: MovingTextProps) => {
 	const translateX = useSharedValue(0)
 	const shouldAnimate = text.length >= animationThreshold
-
-	const textWidth = text.length * 3
+	const textWidth = useMemo(() => text.length * 3, [text])
 
 	useEffect(() => {
 		if (!shouldAnimate) return
@@ -39,9 +38,9 @@ export const MovingText = ({ text, animationThreshold, style }: MovingTextProps)
 
 		return () => {
 			cancelAnimation(translateX)
-			translateX.value = 0//useEffect 钩子函数的返回值是一个清理函数（cleanup function），它在以下情况下执行：组件卸载时。依赖项（dependency array）中的某个值在重新渲染时发生变化时。
+			translateX.value = 0
 		}
-	}, [translateX, text, animationThreshold, shouldAnimate, textWidth])
+	}, [text, shouldAnimate, textWidth])
 
 	const animatedStyle = useAnimatedStyle(() => {
 		return {
@@ -56,12 +55,12 @@ export const MovingText = ({ text, animationThreshold, style }: MovingTextProps)
 				style,
 				animatedStyle,
 				shouldAnimate && {
-					width: 9999, // preventing the ellipsis from appearing
-					paddingLeft: 16, // avoid the initial character being barely visible
+					width: 9999,
+					paddingLeft: 16,
 				},
 			]}
 		>
 			{text}
 		</Animated.Text>
 	)
-}
+})

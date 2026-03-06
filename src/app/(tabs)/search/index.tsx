@@ -36,8 +36,6 @@ const SearchlistsScreen = () => {
 	const [searchType, setSearchType] = useState<SearchType>('songs')
 	const slideAnim = useRef(new Animated.Value(0)).current
 	const contentOffsetAnim = useRef(new Animated.Value(0)).current
-	const [searchBarFocused, setSearchBarFocused] = useState(false)
-
 	const search = useNavigationSearch({
 		searchBarOptions: {
 			placeholder: i18n.t('find.inSearch'),
@@ -50,7 +48,6 @@ const SearchlistsScreen = () => {
 				tension: 100,
 				friction: 10,
 			}).start()
-			setSearchBarFocused(true)
 		},
 		onCancel: () => {
 			Animated.spring(contentOffsetAnim, {
@@ -83,8 +80,6 @@ const SearchlistsScreen = () => {
 					})
 
 					setPage(currentPage)
-				} else {
-					console.log('Skipping state update due to outdated request')
 				}
 			} catch (error) {
 				console.error('Error fetching search results:', error)
@@ -105,7 +100,6 @@ const SearchlistsScreen = () => {
 	useEffect(() => {
 		debouncedFetchSearchResults.cancel()
 	}, [search])
-	useEffect(() => {}, [searchResults])
 	useEffect(() => {
 		setPage(1)
 		setHasMore(true)
