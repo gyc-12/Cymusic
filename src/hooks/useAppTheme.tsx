@@ -8,8 +8,8 @@ import {
 	getThemeColors,
 	setRuntimeColors,
 } from '@/constants/tokens'
-import React, { ReactNode, createContext, useContext, useMemo } from 'react'
-import { ColorSchemeName, useColorScheme } from 'react-native'
+import React, { ReactNode, createContext, useContext, useEffect, useMemo } from 'react'
+import { Appearance, ColorSchemeName, useColorScheme } from 'react-native'
 
 type AppThemeContextValue = {
 	themeMode: ThemeMode
@@ -73,6 +73,10 @@ export const AppThemeProvider = ({ children }: { children: ReactNode }) => {
 	if (getRuntimeColors() !== themeValue.colors) {
 		setRuntimeColors(themeValue.colors)
 	}
+
+	useEffect(() => {
+		Appearance.setColorScheme(themeMode === 'system' ? null : resolvedTheme)
+	}, [resolvedTheme, themeMode])
 
 	return <AppThemeContext.Provider value={themeValue}>{children}</AppThemeContext.Provider>
 }

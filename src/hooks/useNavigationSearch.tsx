@@ -24,7 +24,8 @@ export const useNavigationSearch = ({
 	const defaultSearchOptions = useMemo<SearchBarProps>(
 		() => ({
 			tintColor: colors.primary,
-			barTintColor: colors.surface,
+			barTintColor: colors.background,
+			backgroundColor: colors.surfaceMuted,
 			textColor: colors.text,
 			hintTextColor: colors.placeholder,
 			hideWhenScrolling: false,
