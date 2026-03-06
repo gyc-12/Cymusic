@@ -2,12 +2,13 @@ import { unknownTrackImageUri } from '@/constants/images'
 import { colors } from '@/constants/tokens'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { utilsStyles } from '@/styles'
+import { isSameMediaItem } from '@/utils/mediaItem'
 import { FlashList } from '@shopify/flash-list'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
+import { Track, useIsPlaying } from 'react-native-track-player'
 import TracksListItem from './TracksListItem'
 
 export type TracksListProps = {
@@ -31,16 +32,23 @@ const EmptyListComponent = React.memo(() => (
 ))
 
 export const NowPlayList = React.memo(
-	({ id, tracks, hideQueueControls = false }: TracksListProps) => {
+	({ tracks }: TracksListProps) => {
 		const listRef = useRef<FlashList<Track>>(null)
-		const activeTrack = useActiveTrack()
+		const currentMusic = myTrackPlayer.useCurrentMusic()
 		const { playing } = useIsPlaying()
-		const activeTrackId = activeTrack?.id
 		const { top } = useSafeAreaInsets()
 
 		const initialIndex = useMemo(
-			() => (activeTrackId ? tracks.findIndex((track) => track.id === activeTrackId) : -1),
-			[activeTrackId, tracks],
+			() =>
+				currentMusic
+					? tracks.findIndex((track) =>
+							isSameMediaItem(
+								track as IMusic.IMusicItem,
+								currentMusic as IMusic.IMusicItem | null | undefined,
+							),
+						)
+					: -1,
+			[currentMusic, tracks],
 		)
 
 		const handleTrackSelect = useCallback(async (selectedTrack: Track) => {
@@ -48,15 +56,21 @@ export const NowPlayList = React.memo(
 		}, [])
 
 		const renderItem = useCallback(
-			({ item: track }: { item: Track }) => (
-				<TracksListItem
-					track={track}
-					onTrackSelect={handleTrackSelect}
-					isActiveTrack={track.id === activeTrackId}
-					isPlaying={track.id === activeTrackId && !!playing}
-				/>
-			),
-			[handleTrackSelect, activeTrackId, playing],
+			({ item: track }: { item: Track }) => {
+				const isActiveTrack = isSameMediaItem(
+					track as IMusic.IMusicItem,
+					currentMusic as IMusic.IMusicItem | null | undefined,
+				)
+				return (
+					<TracksListItem
+						track={track}
+						onTrackSelect={handleTrackSelect}
+						isActiveTrack={isActiveTrack}
+						isPlaying={isActiveTrack && !!playing}
+					/>
+				)
+			},
+			[handleTrackSelect, currentMusic, playing],
 		)
 
 		const keyExtractor = useCallback((item: Track) => item.id, [])
@@ -83,11 +97,21 @@ export const NowPlayList = React.memo(
 			[top],
 		)
 
+		const listExtraData = useMemo(
+			() => ({
+				currentTrackId: currentMusic?.id ?? null,
+				currentTrackPlatform: currentMusic?.platform ?? null,
+				playing,
+			}),
+			[currentMusic?.id, currentMusic?.platform, playing],
+		)
+
 		return (
 			<>
 				{DismissPlayerSymbol}
 				<FlashList
 					data={tracks}
+					extraData={listExtraData}
 					contentContainerStyle={styles.contentContainer}
 					ListFooterComponent={ItemDivider}
 					ItemSeparatorComponent={ItemDivider}

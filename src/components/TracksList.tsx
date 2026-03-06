@@ -3,12 +3,13 @@ import { unknownTrackImageUri } from '@/constants/images'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { useQueue } from '@/store/queue'
 import { utilsStyles } from '@/styles'
+import { isSameMediaItem } from '@/utils/mediaItem'
 import { FlashList } from '@shopify/flash-list'
 import { router } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { StyleProp, Text, View, ViewStyle } from 'react-native'
 import FastImage from 'react-native-fast-image'
-import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
+import { Track, useIsPlaying } from 'react-native-track-player'
 import { QueueControls } from './QueueControls'
 export type TracksListProps = {
 	id: string
@@ -60,15 +61,18 @@ export const TracksList = React.memo(
 		numsToPlay,
 	}: TracksListProps) => {
 		const { activeQueueId, setActiveQueueId } = useQueue()
-		const activeTrack = useActiveTrack()
+		const currentMusic = myTrackPlayer.useCurrentMusic()
 		const { playing } = useIsPlaying()
-		const activeTrackId = activeTrack?.id
 
 		const handleTrackSelect = useCallback(
 			async (selectedTrack: Track) => {
+				const isCurrentTrack = isSameMediaItem(
+					selectedTrack as IMusic.IMusicItem,
+					currentMusic as IMusic.IMusicItem | null | undefined,
+				)
 				const isChangingQueue = id !== activeQueueId
 				if (isChangingQueue) {
-					if (selectedTrack.id === activeTrackId) {
+					if (isCurrentTrack) {
 						router.navigate('/player')
 					} else {
 						await myTrackPlayer.playWithReplacePlayList(
@@ -78,7 +82,7 @@ export const TracksList = React.memo(
 						setActiveQueueId(id)
 					}
 				} else {
-					if (selectedTrack.id === activeTrackId) {
+					if (isCurrentTrack) {
 						router.navigate('/player')
 					} else {
 						await myTrackPlayer.playWithReplacePlayList(
@@ -88,28 +92,34 @@ export const TracksList = React.memo(
 					}
 				}
 			},
-			[id, activeQueueId, tracks, setActiveQueueId, activeTrackId, numsToPlay],
+			[id, activeQueueId, tracks, setActiveQueueId, currentMusic, numsToPlay],
 		)
 
 		const renderItem = useCallback(
-			({ item: track }: { item: Track }) => (
-				<TracksListItem
-					track={track}
-					onTrackSelect={handleTrackSelect}
-					isActiveTrack={track.id === activeTrackId}
-					isPlaying={track.id === activeTrackId && !!playing}
-					isSinger={isSinger}
-					allowDelete={allowDelete}
-					onDeleteTrack={onDeleteTrack}
-					isMultiSelectMode={isMultiSelectMode}
-					onToggleSelection={onToggleSelection}
-					selectedTracks={selectedTracks}
-					toggleMultiSelectMode={toggleMultiSelectMode}
-				/>
-			),
+			({ item: track }: { item: Track }) => {
+				const isActiveTrack = isSameMediaItem(
+					track as IMusic.IMusicItem,
+					currentMusic as IMusic.IMusicItem | null | undefined,
+				)
+				return (
+					<TracksListItem
+						track={track}
+						onTrackSelect={handleTrackSelect}
+						isActiveTrack={isActiveTrack}
+						isPlaying={isActiveTrack && !!playing}
+						isSinger={isSinger}
+						allowDelete={allowDelete}
+						onDeleteTrack={onDeleteTrack}
+						isMultiSelectMode={isMultiSelectMode}
+						onToggleSelection={onToggleSelection}
+						selectedTracks={selectedTracks}
+						toggleMultiSelectMode={toggleMultiSelectMode}
+					/>
+				)
+			},
 			[
 				handleTrackSelect,
-				activeTrackId,
+				currentMusic,
 				playing,
 				isSinger,
 				allowDelete,
@@ -145,11 +155,23 @@ export const TracksList = React.memo(
 			)
 		}, [ListHeaderComponent, ListHeaderComponentStyle, queueControlsHeader])
 
+		const listExtraData = useMemo(
+			() => ({
+				currentTrackId: currentMusic?.id ?? null,
+				currentTrackPlatform: currentMusic?.platform ?? null,
+				playing,
+				isMultiSelectMode,
+				selectedTrackIds: Array.from(selectedTracks),
+			}),
+			[currentMusic?.id, currentMusic?.platform, playing, isMultiSelectMode, selectedTracks],
+		)
+
 		const keyExtractor = useCallback((item: Track) => item.id, [])
 
 		return (
 			<FlashList
 				data={tracks}
+				extraData={listExtraData}
 				scrollEnabled={scrollEnabled}
 				contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
 				ListHeaderComponent={combinedListHeader}

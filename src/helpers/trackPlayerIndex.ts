@@ -60,10 +60,9 @@ import {
 	getLocalFilePath,
 	ensureCacheDirExists,
 	ensureDirExists,
-	cacheDir,
 } from '@/player/CacheManager'
 
-import { resolveSource, preloadSource, getPreloadedUrl } from '@/player/MusicSourceResolver'
+import { resolveSource, preloadSource } from '@/player/MusicSourceResolver'
 
 export {
 	playListsStore,
@@ -848,9 +847,13 @@ const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) =
 			}, 5000)
 		}
 
-		// 9. Preload next track source in background
+		// 9. 仅在当前曲目为远端音源时才预加载下一首，避免播放本地/缓存歌曲时继续发起音源请求
+		const shouldPreloadNextTrack =
+			sourceUrl !== fakeAudioMp3Uri &&
+			!sourceUrl.includes('fake') &&
+			!sourceUrl.startsWith('file://')
 		const nextTrack = getPlayListMusicAt(currentIndex + 1)
-		if (nextTrack && !isSameMediaItem(nextTrack, musicItem)) {
+		if (shouldPreloadNextTrack && nextTrack && !isSameMediaItem(nextTrack, musicItem)) {
 			setTimeout(() => {
 				preloadSource(nextTrack).catch(() => {})
 			}, 3000)

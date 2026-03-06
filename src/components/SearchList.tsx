@@ -3,6 +3,7 @@ import { colors, screenPadding } from '@/constants/tokens'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { defaultStyles, utilsStyles } from '@/styles'
 import i18n from '@/utils/i18n'
+import { isSameMediaItem } from '@/utils/mediaItem'
 
 import { getSingerMidBySingerName } from '@/helpers/userApi/getMusicSource'
 import { FlashList } from '@shopify/flash-list'
@@ -11,7 +12,7 @@ import React, { memo, useCallback, useMemo } from 'react'
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
+import { Track, useIsPlaying } from 'react-native-track-player'
 import TracksListItem from './TracksListItem'
 
 export type SearchListProps = {
@@ -77,9 +78,8 @@ export const SearchList: React.FC<SearchListProps> = ({
 	hasMore,
 	isLoading,
 }) => {
-	const activeTrack = useActiveTrack()
+	const currentMusic = myTrackPlayer.useCurrentMusic()
 	const { playing } = useIsPlaying()
-	const activeTrackId = activeTrack?.id
 
 	const handleTrackSelect = useCallback(async (selectedTrack: Track) => {
 		if (selectedTrack.isArtist) {
@@ -108,16 +108,20 @@ export const SearchList: React.FC<SearchListProps> = ({
 					</TouchableOpacity>
 				)
 			}
+			const isActiveTrack = isSameMediaItem(
+				track as IMusic.IMusicItem,
+				currentMusic as IMusic.IMusicItem | null | undefined,
+			)
 			return (
 				<TracksListItem
 					track={track}
 					onTrackSelect={handleTrackSelect}
-					isActiveTrack={track.id === activeTrackId}
-					isPlaying={track.id === activeTrackId && !!playing}
+					isActiveTrack={isActiveTrack}
+					isPlaying={isActiveTrack && !!playing}
 				/>
 			)
 		},
-		[handleTrackSelect, activeTrackId, playing],
+		[handleTrackSelect, currentMusic, playing],
 	)
 
 	const keyExtractor = useCallback((item: Track, index: number) => `${item.id}-${index}`, [])
@@ -133,11 +137,20 @@ export const SearchList: React.FC<SearchListProps> = ({
 		() => <FooterComponent isLoading={isLoading} hasMore={hasMore} />,
 		[isLoading, hasMore],
 	)
+	const listExtraData = useMemo(
+		() => ({
+			currentTrackId: currentMusic?.id ?? null,
+			currentTrackPlatform: currentMusic?.platform ?? null,
+			playing,
+		}),
+		[currentMusic?.id, currentMusic?.platform, playing],
+	)
 
 	return (
 		<View style={[defaultStyles.container]}>
 			<FlashList
 				data={tracks}
+				extraData={listExtraData}
 				contentContainerStyle={{
 					paddingTop: 60,
 					paddingBottom: 128 + insets.bottom,

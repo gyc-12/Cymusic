@@ -46,13 +46,7 @@ const setQuality = (quality: IMusic.IQualityKey) => {
 export const resolveSource = async (
 	musicItem: IMusic.IMusicItem,
 ): Promise<SourceResult> => {
-	// Check preload cache first
-	const preloaded = getPreloadedUrl(musicItem)
-	if (preloaded) {
-		logInfo('使用预加载的音源:', preloaded)
-		preloadCache.delete(makePreloadKey(musicItem))
-		return { url: preloaded, wasCached: false }
-	}
+	const preloadKey = makePreloadKey(musicItem)
 
 	if (musicItem.url && musicItem.url.startsWith('file://')) {
 		const isFileExist = await RNFS.exists(musicItem.url)
@@ -61,13 +55,24 @@ export const resolveSource = async (
 			showToast('错误', '本地文件不存在，请删除并重新缓存或导入。', 'error')
 			return { url: fakeAudioMp3Uri, wasCached: false }
 		}
+		preloadCache.delete(preloadKey)
+		return { url: musicItem.url, wasCached: false }
 	}
 
 	const cached = await isCached(musicItem)
 	if (cached) {
 		const localPath = getLocalFilePath(musicItem)
+		preloadCache.delete(preloadKey)
 		logInfo('使用缓存的音频路径播放:', localPath)
 		return { url: localPath, wasCached: true }
+	}
+
+	// 只在本地与磁盘缓存都未命中时，才复用预加载的远端音源
+	const preloaded = getPreloadedUrl(musicItem)
+	if (preloaded) {
+		logInfo('使用预加载的音源:', preloaded)
+		preloadCache.delete(preloadKey)
+		return { url: preloaded, wasCached: false }
 	}
 
 	if (!musicItem.url || musicItem.url === 'Unknown' || musicItem.url.includes('fake')) {
@@ -132,15 +137,6 @@ export const resolveSource = async (
 					? '获取音乐超时，请稍后重试。'
 					: errMsg || '获取音乐失败，请稍后重试。'
 			showToast(errorMessage, '', 'error')
-			return { url: fakeAudioMp3Uri, wasCached: false }
-		}
-	}
-
-	if (musicItem.url.startsWith('file://')) {
-		const isFileExist = await RNFS.exists(musicItem.url)
-		if (!isFileExist) {
-			logError('本地文件不存在:', musicItem.url)
-			showToast('错误', '本地文件不存在，请删除并重新缓存或导入。', 'error')
 			return { url: fakeAudioMp3Uri, wasCached: false }
 		}
 	}

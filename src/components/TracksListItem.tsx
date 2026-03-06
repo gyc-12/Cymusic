@@ -1,11 +1,12 @@
 import { TrackShortcutsMenu } from '@/components/TrackShortcutsMenu'
 import { unknownTrackImageUri } from '@/constants/images'
 import { colors, fontSize } from '@/constants/tokens'
+import myTrackPlayer, { isCachedIconVisibleStore } from '@/helpers/trackPlayerIndex'
 import { defaultStyles } from '@/styles'
 import { getThumbnailArtwork } from '@/utils/imageUtils'
 import rpx from '@/utils/rpx'
 import { Entypo, Ionicons } from '@expo/vector-icons'
-import React, { memo, useMemo } from 'react'
+import React, { memo, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import LoaderKit from 'react-native-loader-kit'
@@ -39,6 +40,60 @@ const TracksListItem = ({
 	onDeleteTrack,
 	toggleMultiSelectMode,
 }: TracksListItemProps) => {
+	const isCachedIconVisible = isCachedIconVisibleStore.useValue()
+	const [isCachedTrack, setIsCachedTrack] = useState(
+		typeof track.url === 'string' && track.url.includes('/musicCache/'),
+	)
+	const cacheLookupTrack = useMemo(
+		() =>
+			({
+				id: track.id,
+				platform: track.platform,
+				title: track.title,
+				artist: track.artist,
+			}) as IMusic.IMusicItem,
+		[track.id, track.platform, track.title, track.artist],
+	)
+	const artworkSource = useMemo(
+		() => ({
+			uri: getThumbnailArtwork(track.artwork) ?? unknownTrackImageUri,
+			priority: FastImage.priority.normal,
+			cache: FastImage.cacheControl.immutable,
+		}),
+		[track.artwork],
+	)
+
+	useEffect(() => {
+		let isMounted = true
+		const hasCachedFileUrl = typeof track.url === 'string' && track.url.includes('/musicCache/')
+
+		if (hasCachedFileUrl) {
+			setIsCachedTrack(true)
+			return () => {
+				isMounted = false
+			}
+		}
+
+		const checkCachedState = async () => {
+			try {
+				const cached = await myTrackPlayer.isCached(cacheLookupTrack)
+				if (isMounted) {
+					setIsCachedTrack(cached)
+				}
+			} catch {
+				if (isMounted) {
+					setIsCachedTrack(false)
+				}
+			}
+		}
+
+		checkCachedState()
+
+		return () => {
+			isMounted = false
+		}
+	}, [cacheLookupTrack, track.url])
+
 	return (
 		<TouchableHighlight
 			onPress={() => (isMultiSelectMode ? onToggleSelection?.(track.id) : handleTrackSelect(track))}
@@ -59,11 +114,7 @@ const TracksListItem = ({
 				)}
 				<View>
 					<FastImage
-						source={useMemo(() => ({
-							uri: getThumbnailArtwork(track.artwork) ?? unknownTrackImageUri,
-							priority: FastImage.priority.normal,
-							cache: FastImage.cacheControl.immutable,
-						}), [track.artwork])}
+						source={artworkSource}
 						style={{
 							...styles.trackArtworkImage,
 							opacity: isActiveTrack ? 0.6 : 1,
@@ -94,15 +145,25 @@ const TracksListItem = ({
 					}}
 				>
 					<View style={{ flex: 3 }}>
-						<Text
-							numberOfLines={1}
-							style={{
-								...styles.trackTitleText,
-								color: isActiveTrack ? colors.primary : colors.text,
-							}}
-						>
-							{track.title}
-						</Text>
+						<View style={styles.trackTitleRow}>
+							{isCachedTrack && isCachedIconVisible && (
+								<Ionicons
+									name="cloud-done-outline"
+									size={13}
+									color={isActiveTrack ? colors.primary : colors.textMuted}
+									style={styles.cachedIcon}
+								/>
+							)}
+							<Text
+								numberOfLines={1}
+								style={{
+									...styles.trackTitleText,
+									color: isActiveTrack ? colors.primary : colors.text,
+								}}
+							>
+								{track.title}
+							</Text>
+						</View>
 						{track.artist && (
 							<Text numberOfLines={1} style={styles.trackArtistText}>
 								{track.artist}
@@ -163,11 +224,19 @@ const styles = StyleSheet.create({
 		width: 50,
 		height: 50,
 	},
+	trackTitleRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	cachedIcon: {
+		marginRight: 4,
+	},
 	trackTitleText: {
 		...defaultStyles.text,
 		fontSize: fontSize.sm,
 		fontWeight: '600',
-		maxWidth: '80%',
+		flexShrink: 1,
+		maxWidth: '100%',
 	},
 	trackArtistText: {
 		...defaultStyles.text,
