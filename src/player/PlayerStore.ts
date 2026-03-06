@@ -27,3 +27,5 @@ export const importedLocalMusicStore = new GlobalState<IMusic.IMusicItem[] | []>
 export const nowLyricState = new GlobalState<string>(null)
 /** 切歌中的按钮方向 */
 export const trackSkipLoadingStore = new GlobalState<'next' | 'previous' | null>(null)
+/** 当前曲目音源解析中 */
+export const trackSourceLoadingStore = new GlobalState<string | null>(null)

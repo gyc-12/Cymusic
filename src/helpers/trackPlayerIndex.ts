@@ -52,6 +52,7 @@ import {
 	importedLocalMusicStore,
 	nowLyricState,
 	trackSkipLoadingStore,
+	trackSourceLoadingStore,
 } from '@/player/PlayerStore'
 
 import {
@@ -64,6 +65,12 @@ import {
 } from '@/player/CacheManager'
 
 import { resolveSource, preloadSource } from '@/player/MusicSourceResolver'
+
+const NEXT_TRACK_PRELOAD_DELAY_MS = 8000
+const createTrackSourceLoadingToken = (musicItem: IMusic.IMusicItem) =>
+	`track_source_${musicItem.id}_${Date.now().toString(36)}_${Math.random()
+		.toString(36)
+		.slice(2, 8)}`
 
 export {
 	playListsStore,
@@ -78,6 +85,7 @@ export {
 	importedLocalMusicStore,
 	nowLyricState,
 	trackSkipLoadingStore,
+	trackSourceLoadingStore,
 }
 
 export function useCurrentQuality() {
@@ -465,6 +473,7 @@ const setCurrentMusic = (musicItem?: IMusic.IMusicItem | null) => {
 	if (!musicItem) {
 		currentIndex = -1
 		currentMusicStore.setValue(null)
+		trackSourceLoadingStore.setValue(null)
 		PersistStatus.set('music.musicItem', undefined)
 		PersistStatus.set('music.progress', 0)
 		return
@@ -768,6 +777,7 @@ const deleteMusicApiById = (musicApiId: string) => {
 	])
 }
 const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) => {
+	let trackSourceLoadingToken: string | null = null
 	try {
 		if (!musicItem) {
 			musicItem = currentMusicStore.getValue()
@@ -803,11 +813,16 @@ const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) =
 			add(musicItem)
 		}
 
+		trackSourceLoadingToken = createTrackSourceLoadingToken(musicItem)
+		trackSourceLoadingStore.setValue(trackSourceLoadingToken)
+
 		// 3. Update current music state immediately (UI updates instantly)
 		setCurrentMusic(musicItem)
 
 		// 4. Resolve source (cache check + network if needed)
-		const { url: sourceUrl, wasCached } = await resolveSource(musicItem)
+		const { url: sourceUrl, wasCached } = await resolveSource(musicItem, {
+			requestType: 'current',
+		})
 
 		// 5. Race condition guard
 		if (!isCurrentMusic(musicItem)) {
@@ -858,7 +873,7 @@ const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) =
 		if (shouldPreloadNextTrack && nextTrack && !isSameMediaItem(nextTrack, musicItem)) {
 			setTimeout(() => {
 				preloadSource(nextTrack).catch(() => {})
-			}, 3000)
+			}, NEXT_TRACK_PRELOAD_DELAY_MS)
 		}
 	} catch (e: any) {
 		const message = e?.message
@@ -872,6 +887,13 @@ const play = async (musicItem?: IMusic.IMusicItem | null, forcePlay?: boolean) =
 			await failToPlay()
 		} else if (message === PlayFailReason.PLAY_LIST_IS_EMPTY) {
 			// empty queue
+		}
+	} finally {
+		if (
+			trackSourceLoadingToken &&
+			trackSourceLoadingStore.getValue() === trackSourceLoadingToken
+		) {
+			trackSourceLoadingStore.setValue(null)
 		}
 	}
 }

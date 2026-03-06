@@ -1,4 +1,5 @@
 import { PlayPauseButton, SkipToNextButton } from '@/components/PlayerControls'
+import myTrackPlayer, { trackSourceLoadingStore } from '@/helpers/trackPlayerIndex'
 import { unknownTrackImageUri } from '@/constants/images'
 import { ThemeColors } from '@/constants/tokens'
 import { useAppTheme, useThemeColors } from '@/hooks/useAppTheme'
@@ -8,7 +9,7 @@ import { BlurView } from 'expo-blur'
 import * as Haptics from 'expo-haptics'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import { StyleSheet, TouchableOpacity, View, ViewProps } from 'react-native'
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View, ViewProps } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import Animated, {
 	useAnimatedStyle,
@@ -38,9 +39,11 @@ export const FloatingPlayer = React.memo(({ style }: ViewProps) => {
 	const defaultStyles = useDefaultStyles()
 	const styles = useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
 	const router = useRouter()
+	const currentMusic = myTrackPlayer.useCurrentMusic()
 	const activeTrack = useActiveTrack()
 	const lastActiveTrack = useLastActiveTrack()
-	const displayedTrack = activeTrack ?? lastActiveTrack
+	const isTrackSourceLoading = trackSourceLoadingStore.useValue() !== null
+	const displayedTrack = currentMusic ?? activeTrack ?? lastActiveTrack
 
 	const artworkOpacity = useSharedValue(1)
 	const prevArtworkRef = useRef(displayedTrack?.artwork)
@@ -83,11 +86,17 @@ export const FloatingPlayer = React.memo(({ style }: ViewProps) => {
 				</View>
 
 				<View style={styles.trackControlsContainer}>
-					<PlayPauseButton iconSize={24} />
-					<SkipToNextButton iconSize={22} />
+					{isTrackSourceLoading ? (
+						<View style={styles.loadingIndicatorContainer}>
+							<ActivityIndicator size="small" color={colors.text} />
+						</View>
+					) : (
+						<PlayPauseButton iconSize={24} />
+					)}
+					<SkipToNextButton iconSize={22} disabled={isTrackSourceLoading} />
 				</View>
 
-				<ProgressIndicator />
+				{!isTrackSourceLoading && <ProgressIndicator />}
 			</BlurView>
 		</TouchableOpacity>
 	)
@@ -130,6 +139,12 @@ const createStyles = (
 		columnGap: 20,
 		marginRight: 16,
 		paddingLeft: 16,
+	},
+	loadingIndicatorContainer: {
+		minWidth: 24,
+		minHeight: 24,
+		alignItems: 'center',
+		justifyContent: 'center',
 	},
 	progressBarContainer: {
 		position: 'absolute',

@@ -12,6 +12,7 @@ type PlayerControlsProps = {
 type PlayerButtonProps = {
 	style?: ViewStyle
 	iconSize?: number
+	disabled?: boolean
 }
 
 export const PlayerControls = React.memo(({ style }: PlayerControlsProps) => {
@@ -42,11 +43,11 @@ export const PlayPauseButton = React.memo(({ style, iconSize = 48 }: PlayerButto
 	)
 })
 
-export const SkipToNextButton = React.memo(({ iconSize = 30 }: PlayerButtonProps) => {
+export const SkipToNextButton = React.memo(({ iconSize = 30, disabled = false }: PlayerButtonProps) => {
 	const colors = useThemeColors()
 	const trackSkipLoading = trackSkipLoadingStore.useValue()
 	const isLoading = trackSkipLoading === 'next'
-	const isDisabled = trackSkipLoading !== null
+	const isDisabled = disabled || trackSkipLoading !== null
 
 	return (
 		<TouchableOpacity activeOpacity={0.7} disabled={isDisabled} onPress={myTrackPlayer.skipToNext}>

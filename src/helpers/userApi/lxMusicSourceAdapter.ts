@@ -80,11 +80,24 @@ export const parseLxMusicScriptInfo = (
 // QuickJS 原生模块桥接
 // ============================================================
 
+type LxRequestType = 'current' | 'preload'
+
+type LxRequestContext = {
+	requestKey?: string
+	requestType?: LxRequestType
+	timeoutMs?: number
+}
+
 // 待处理的 getMusicUrl 请求映射
 let pendingRequests: Map<
 	string,
-	{ resolve: (url: string) => void; reject: (err: Error) => void }
+	{
+		resolve: (url: string) => void
+		reject: (err: Error) => void
+		requestType: LxRequestType
+	}
 > = new Map()
+let settledRequestTypes: Map<string, LxRequestType> = new Map()
 
 // HTTP 请求映射（QuickJS 脚本发起的 HTTP 请求通过事件转发到 JS-land）
 let pendingHttpRequests: Map<string, AbortController> = new Map()
@@ -99,11 +112,72 @@ let scriptInitPromise: {
 // 事件监听清理函数
 let removeListener: (() => void) | null = null
 
+const getLxRequestLogPrefix = (
+	requestType: LxRequestType | 'unknown',
+	requestKey: string,
+) => `[lxMusicAdapter][${requestType}][requestKey=${requestKey}]`
+
+const rememberSettledRequestType = (
+	requestKey: string,
+	requestType: LxRequestType,
+) => {
+	settledRequestTypes.set(requestKey, requestType)
+	setTimeout(() => {
+		if (settledRequestTypes.get(requestKey) === requestType) {
+			settledRequestTypes.delete(requestKey)
+		}
+	}, 30000)
+}
+
+const shouldLogScriptAction = (event: any) => {
+	if (event.action !== 'response') return true
+	const data = event.data as ResponseParams
+	const pending = pendingRequests.get(data.requestKey)
+	const requestType = pending?.requestType ?? settledRequestTypes.get(data.requestKey)
+	return !(requestType === 'preload' && (!data.status || !pending))
+}
+
+const formatScriptActionLog = (event: any) => {
+	switch (event.action) {
+		case 'request': {
+			const data = event.data as RequestParams
+			const parentPending = data.parentRequestKey
+				? pendingRequests.get(data.parentRequestKey)
+				: null
+			const requestType = data.requestType ?? parentPending?.requestType
+			const requestTypeLabel = requestType ? `[${requestType}]` : ''
+			const parentRequestKeyLabel = data.parentRequestKey
+				? `[parentRequestKey=${data.parentRequestKey}]`
+				: ''
+			const httpRequestKeyLabel = data.requestKey
+				? `[httpRequestKey=${data.requestKey}]`
+				: ''
+			return `[lxMusicAdapter] Script action: request${requestTypeLabel}${parentRequestKeyLabel}${httpRequestKeyLabel}`
+		}
+		case 'response': {
+			const data = event.data as ResponseParams
+			const pending = pendingRequests.get(data.requestKey)
+			const requestType = pending?.requestType ?? settledRequestTypes.get(data.requestKey)
+			const requestTypeLabel = requestType
+				? `[${requestType}]`
+				: ''
+			const requestKeyLabel = data.requestKey
+				? `[requestKey=${data.requestKey}]`
+				: ''
+			return `[lxMusicAdapter] Script action: response${requestTypeLabel}${requestKeyLabel}`
+		}
+		default:
+			return `[lxMusicAdapter] Script action: ${event.action}`
+	}
+}
+
 /**
  * 处理来自 QuickJS 脚本的事件
  */
 const handleScriptAction = (event: any) => {
-	logInfo(`[lxMusicAdapter] Script action: ${event.action}`)
+	if (shouldLogScriptAction(event)) {
+		logInfo(formatScriptActionLog(event))
+	}
 
 	switch (event.action) {
 		case 'init': {
@@ -148,12 +222,16 @@ const handleScriptAction = (event: any) => {
 			const respData = event.data as ResponseParams
 			const pending = pendingRequests.get(respData.requestKey)
 			if (pending) {
+				const logPrefix = getLxRequestLogPrefix(
+					pending.requestType,
+					respData.requestKey,
+				)
 				if (respData.status) {
 					const result = respData.result as any
 					if (result?.action === 'musicUrl') {
 						const url = result?.data?.url
 						if (typeof url === 'string' && /^https?:/.test(url)) {
-							logInfo(`[lxMusicAdapter] musicUrl resolved: ${url}`)
+							logInfo(`${logPrefix} musicUrl resolved: ${url}`)
 							pending.resolve(url)
 						} else {
 							pending.reject(new Error('Script returned invalid musicUrl'))
@@ -162,14 +240,17 @@ const handleScriptAction = (event: any) => {
 						pending.resolve(result as string)
 					}
 				} else {
-					logError(
-						`[lxMusicAdapter] Script response error: ${respData.errorMessage || 'unknown'}`,
-					)
+					if (pending.requestType === 'current') {
+						logError(
+							`${logPrefix} Script response error: ${respData.errorMessage || 'unknown'}`,
+						)
+					}
 					pending.reject(
 						new Error(respData.errorMessage || 'Script returned error'),
 					)
 				}
 				pendingRequests.delete(respData.requestKey)
+				settledRequestTypes.delete(respData.requestKey)
 			}
 			break
 		}
@@ -337,15 +418,22 @@ const getMusicUrlViaScript = (
 	artist: string,
 	songmid: string,
 	quality: string,
+	requestContext?: LxRequestContext,
 ): Promise<string> => {
 	return new Promise((resolve, reject) => {
-		const requestKey = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+		const requestType = requestContext?.requestType ?? 'current'
+		const requestKey =
+			requestContext?.requestKey ??
+			`req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+		const logPrefix = getLxRequestLogPrefix(requestType, requestKey)
+		const timeoutMs = requestContext?.timeoutMs ?? 15000
 
 		// 超时处理
 		const timeout = setTimeout(() => {
 			pendingRequests.delete(requestKey)
+			rememberSettledRequestType(requestKey, requestType)
 			reject(new Error('获取音乐 URL 超时'))
-		}, 15000)
+		}, timeoutMs)
 
 		pendingRequests.set(requestKey, {
 			resolve: (url: string) => {
@@ -356,7 +444,10 @@ const getMusicUrlViaScript = (
 				clearTimeout(timeout)
 				reject(err)
 			},
+			requestType,
 		})
+
+		logInfo(`${logPrefix} Sending musicUrl request: ${title} - ${artist}`)
 
 		// 向 QuickJS 脚本发送 musicUrl 请求
 		sendAction('request', {
@@ -374,6 +465,10 @@ const getMusicUrlViaScript = (
 						artist,
 						source: 'tx',
 						hash: songmid,
+					},
+					requestContext: {
+						requestKey,
+						requestType,
 					},
 					type: quality || '128k',
 				},
@@ -414,7 +509,8 @@ export const adaptLxMusicScript = async (
 			artist: string,
 			songmid: string,
 			quality: string,
-		) => getMusicUrlViaScript(title, artist, songmid, quality),
+			requestContext?: LxRequestContext,
+		) => getMusicUrlViaScript(title, artist, songmid, quality, requestContext),
 	}
 
 	return musicApi
@@ -437,7 +533,8 @@ export const reloadLxMusicScript = async (
 				artist: string,
 				songmid: string,
 				quality: string,
-			) => getMusicUrlViaScript(title, artist, songmid, quality),
+				requestContext?: LxRequestContext,
+			) => getMusicUrlViaScript(title, artist, songmid, quality, requestContext),
 		}
 	} catch (err) {
 		logError(

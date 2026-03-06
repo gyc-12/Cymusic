@@ -55,6 +55,8 @@ export interface UpdateInfoParams {
 }
 export interface RequestParams {
   requestKey: string
+  parentRequestKey?: string
+  requestType?: 'current' | 'preload'
   url: string
   options: {
     method: string

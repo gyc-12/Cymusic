@@ -163,9 +163,21 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
   const requestQueue = new Map()
   let isInitedApi = false
   let isShowedUpdateAlert = false
+  // Best-effort context propagation for native request logs.
+  const requestContextStack = []
+  const pushRequestContext = (context) => {
+    if (!context || typeof context != 'object') return
+    requestContextStack.push(context)
+  }
+  const popRequestContext = (context) => {
+    const index = requestContextStack.lastIndexOf(context)
+    if (index >= 0) requestContextStack.splice(index, 1)
+  }
+  const getCurrentRequestContext = () => requestContextStack[requestContextStack.length - 1] || null
 
   const sendNativeRequest = (url, options, callback) => {
     const requestKey = Math.random().toString()
+    const currentRequestContext = getCurrentRequestContext()
     const requestInfo = {
       aborted: false,
       abort: () => {
@@ -182,7 +194,17 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
       requestInfo,
     })
 
-    nativeCall(NATIVE_EVENTS_NAMES.request, { requestKey, url, options })
+    nativeCall(NATIVE_EVENTS_NAMES.request, {
+      requestKey,
+      url,
+      options,
+      parentRequestKey: currentRequestContext && typeof currentRequestContext.requestKey == 'string'
+        ? currentRequestContext.requestKey
+        : undefined,
+      requestType: currentRequestContext && typeof currentRequestContext.requestType == 'string'
+        ? currentRequestContext.requestType
+        : undefined,
+    })
     return requestInfo
   }
   const handleNativeResponse = ({ requestKey, error, response }) => {
@@ -198,8 +220,25 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
   const handleRequest = ({ requestKey, data }) => {
     // console.log(data)
     if (!events.request) return nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: 'Request event is not defined' })
+    const requestType = data && data.info && typeof data.info == 'object' && data.info.requestContext && typeof data.info.requestContext.requestType == 'string'
+      ? data.info.requestContext.requestType
+      : 'current'
+    const requestContext = typeof requestKey == 'string'
+      ? { requestKey, requestType }
+      : null
+    const requestInfo = data && data.info && typeof data.info == 'object'
+      ? { ...data.info }
+      : data.info
+    if (requestInfo && typeof requestInfo == 'object') delete requestInfo.requestContext
+    if (requestContext) pushRequestContext(requestContext)
     try {
-      events.request.call(globalThis.lx, { source: data.source, action: data.action, info: data.info }).then(response => {
+      Promise.resolve(
+        events.request.call(globalThis.lx, {
+          source: data.source,
+          action: data.action,
+          info: requestInfo,
+        }),
+      ).then(response => {
         let result
         switch (data.action) {
           case 'musicUrl':
@@ -233,8 +272,11 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
       }).catch(err => {
         // console.log('handleRequest err', err)
         nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: err.message })
+      }).finally(() => {
+        if (requestContext) popRequestContext(requestContext)
       })
     } catch (err) {
+      if (requestContext) popRequestContext(requestContext)
       // console.log('handleRequest call err', err)
       nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: err.message })
     }
