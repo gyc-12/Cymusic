@@ -1,6 +1,12 @@
 {
 	"platforms": ["ios"],
 	"apple": {
-		"modules": ["CyMusicFileSystemModule", "CyMusicSourceModule"]
+		"modules": [
+			"CyMusicFileSystemModule",
+			"CyMusicSourceModule",
+			"CyMusicVolumeModule",
+			"CyMusicRequestTasksModule",
+			"CyMusicSleepTimerModule"
+		]
 	}
 }

@@ -312,7 +312,6 @@ PODS:
     - ReactNativeDependencies
     - Yoga
   - MMKVCore (2.4.0)
-  - Mute (0.6.1)
   - NitroMmkv (4.3.2):
     - hermes-engine
     - MMKVCore (= 2.4.0)
@@ -1784,8 +1783,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - react-native-background-timer (2.4.1):
-    - React-Core
   - react-native-menu (2.0.0):
     - hermes-engine
     - RCTRequired
@@ -1880,9 +1877,6 @@ PODS:
   - react-native-track-player (4.1.2):
     - React-Core
     - SwiftAudioEx (= 1.1.0)
-  - react-native-volume-manager (2.2.0):
-    - Mute
-    - React-Core
   - React-NativeModulesApple (0.86.3):
     - hermes-engine
     - React-callinvoker
@@ -2659,11 +2653,9 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - React-mutationobservernativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver`)
-  - react-native-background-timer (from `../node_modules/react-native-background-timer`)
   - "react-native-menu (from `../node_modules/@react-native-menu/menu`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-track-player (from `../node_modules/react-native-track-player`)
-  - react-native-volume-manager (from `../node_modules/react-native-volume-manager`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-networking (from `../node_modules/react-native/ReactCommon/react/networking`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
@@ -2713,7 +2705,6 @@ SPEC REPOS:
     - libdav1d
     - libwebp
     - MMKVCore
-    - Mute
     - SDWebImage
     - SDWebImageAVIFCoder
     - SDWebImageSVGCoder
@@ -2878,16 +2869,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   React-mutationobservernativemodule:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver"
-  react-native-background-timer:
-    :path: "../node_modules/react-native-background-timer"
   react-native-menu:
     :path: "../node_modules/@react-native-menu/menu"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-track-player:
     :path: "../node_modules/react-native-track-player"
-  react-native-volume-manager:
-    :path: "../node_modules/react-native-volume-manager"
   React-NativeModulesApple:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-networking:
@@ -2974,7 +2961,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  CyMusicNative: ee0d3d39de2da8a855c75b397b782e6fa3911b23
+  CyMusicNative: 873e61b7bfc6804e2001347241d3ef00af43a6e6
   EXConstants: 799577d2516460afb4b57874d6823a62327ce5c7
   EXJSONUtils: 7a1683cfa2cbe6d11fca97097d51a496755b0287
   EXManifests: f9888c0bf5aaa6ddb7e3d4b224d6d54ac4ca84a4
@@ -3016,7 +3003,6 @@ SPEC CHECKSUMS:
   libwebp: af5937a13536ef73f3784d69cc342b98961acf33
   LoaderKit: 5fe1581b1f449e31c5bbc6f35eeaf1f111678c85
   MMKVCore: 3d16ce9f7d411e135020915fde98a056859a1efa
-  Mute: 20135a96076f140cc82bfc8b810e2d6150d8ec7e
   NitroMmkv: 85a251e15c39d7c95fe58cf40786fa126b8d143c
   NitroModules: 16bc17a076b12304d608f7c915b9d321f56dfc19
   RCTDeprecation: 96f68ebf33f8762466b01d57d6e873c4f30efb07
@@ -3056,11 +3042,9 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 3c805ea54675b00ef1755f23b3c1fccf34962b93
   React-microtasksnativemodule: 97a771dbbb4315c71579995b53e4e3e351a99d89
   React-mutationobservernativemodule: 530bff1bba9511a5133e3cf8170e3b2c0df49e89
-  react-native-background-timer: 4638ae3bee00320753647900b21260b10587b6f7
   react-native-menu: cef8fb263b5fbc4a748de65494fe768b7527c135
   react-native-safe-area-context: 6b4966397ada0f7dd481e4486a2ef936834861a1
   react-native-track-player: dd56f9948e03756a217c75e0a61aa04aab65b5a1
-  react-native-volume-manager: ad4a45ef90515220687198c350f6649ca529bcd2
   React-NativeModulesApple: 2b658272ca69df0694cf5d54f9510aa7c33977bc
   React-networking: 6be0b80e18e710dd30e77b04838ec46666a7bb78
   React-oscompat: cea7c66df8076bd97e95885d7f584b86afffde41

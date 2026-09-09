@@ -1,5 +1,5 @@
 
-import BackgroundTimer from 'react-native-background-timer'
+import { createRequestTimeout } from '@/helpers/requestTimeout'
 import { requestMsg } from './message'
 import { bHh } from './musicSdk/options'
 //import { deflateRaw } from 'pako'
@@ -68,14 +68,14 @@ const fetchWithTimeout = (resource, options) => {
   const { timeout = 8000 } = options
 
   const controller = new global.AbortController()
-  const id = BackgroundTimer.setTimeout(() => controller.abort(), timeout)
+  const id = setTimeout(() => controller.abort(), timeout)
 
   return {
     request: global.fetch(resource, {
       ...options,
       signal: controller.signal,
     }).then(response => {
-      BackgroundTimer.clearTimeout(id)
+      clearTimeout(id)
       return response
     }),
     abort() {
@@ -169,10 +169,7 @@ const fetchData = (url, { timeout = 15000, ...options }) => {
   console.log('---start---', url)
 
   const controller = new global.AbortController()
-  let id = BackgroundTimer.setTimeout(() => {
-    id = null
-    controller.abort()
-  }, timeout)
+  const timeoutTask = createRequestTimeout(controller, timeout)
 
   return {
     request: handleRequestData(url, options).then(options => {
@@ -203,14 +200,11 @@ const fetchData = (url, { timeout = 15000, ...options }) => {
         }
       }).catch(err => {
         // console.log(err, err.code, err.message)
-        return Promise.reject(err)
-      }).finally(() => {
-        if (id == null) return
-        BackgroundTimer.clearTimeout(id)
+        return Promise.reject(controller.signal.aborted ? new Error('Aborted') : err)
       })
-    }),
+    }).finally(timeoutTask.finish),
     abort() {
-      controller.abort()
+      timeoutTask.abort()
     },
   }
 }

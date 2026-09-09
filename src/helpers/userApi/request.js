@@ -1,6 +1,6 @@
 // import needle from 'needle'
 // import progress from 'request-progress'
-import BackgroundTimer from 'react-native-background-timer'
+import { createRequestTimeout } from '@/helpers/requestTimeout'
 
 const defaultHeaders = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
@@ -75,10 +75,7 @@ export const fetchData = (url, { timeout = 15000, ...options }) => {
   // console.log('---start---', url)
 
   const controller = new global.AbortController()
-  let id = BackgroundTimer.setTimeout(() => {
-    id = null
-    controller.abort()
-  }, timeout)
+  const timeoutTask = createRequestTimeout(controller, timeout)
 
   return {
     request: handleRequestData(options).then(options => {
@@ -111,14 +108,11 @@ export const fetchData = (url, { timeout = 15000, ...options }) => {
         }
       }).catch(err => {
         // console.log(err, err.code, err.message)
-        return Promise.reject(err)
-      }).finally(() => {
-        if (id == null) return
-        BackgroundTimer.clearTimeout(id)
+        return Promise.reject(controller.signal.aborted ? new Error('Aborted') : err)
       })
-    }),
+    }).finally(timeoutTask.finish),
     abort() {
-      controller.abort()
+      timeoutTask.abort()
     },
   }
 }

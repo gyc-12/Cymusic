@@ -1,3 +1,4 @@
+import { logWarn } from '@/helpers/logger'
 import { useThemeColors } from '@/hooks/useAppTheme'
 import { useUtilsStyles } from '@/styles'
 import { Ionicons } from '@expo/vector-icons'
@@ -5,7 +6,7 @@ import React, { useCallback, useEffect } from 'react'
 import { View, ViewProps } from 'react-native'
 import { Slider } from 'react-native-awesome-slider'
 import Animated, { Reanimated3DefaultSpringConfig, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
-import { VolumeManager } from 'react-native-volume-manager'
+import CyMusicVolume from '../../modules/cymusic-native/volume'
 
 export const PlayerVolumeBar = React.memo(({ style }: ViewProps) => {
 	const colors = useThemeColors()
@@ -16,18 +17,22 @@ export const PlayerVolumeBar = React.memo(({ style }: ViewProps) => {
 	const isSliding = useSharedValue(false)
 
 	useEffect(() => {
-		const getInitialVolume = async () => {
-			await VolumeManager.showNativeVolumeUI({ enabled: true })
-			const initialVolume = await VolumeManager.getVolume()
-			progress.value = initialVolume.volume
-		}
-		getInitialVolume()
-
-		const volumeListener = VolumeManager.addVolumeListener((result) => {
+		let active = true
+		let volumeObserved = false
+		const volumeListener = CyMusicVolume.addListener('volumeChanged', (result) => {
+			if (!active) return
+			volumeObserved = true
 			progress.value = result.volume
 		})
 
+		CyMusicVolume.getVolume()
+			.then((volume) => {
+				if (active && !volumeObserved) progress.value = volume
+			})
+			.catch((error) => logWarn('Failed to read system volume', error))
+
 		return () => {
+			active = false
 			volumeListener.remove()
 		}
 	}, [])
@@ -47,11 +52,11 @@ export const PlayerVolumeBar = React.memo(({ style }: ViewProps) => {
 	}, [])
 
 	const handleValueChange = useCallback(async (value: number) => {
-		await VolumeManager.setVolume(value, {
-			type: 'system',
-			showUI: true,
-			playSound: false,
-		})
+		try {
+			await CyMusicVolume.setVolume(value)
+		} catch (error) {
+			logWarn('Failed to set system volume', error)
+		}
 	}, [])
 
 	const renderBubble = useCallback(() => null, [])

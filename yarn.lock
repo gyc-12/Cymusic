@@ -5798,11 +5798,6 @@ react-native-awesome-slider@2.5.1:
   resolved "https://registry.yarnpkg.com/react-native-awesome-slider/-/react-native-awesome-slider-2.5.1.tgz#9bec09b454b7b73057d135b8801402b4b3ced1fc"
   integrity sha512-bDhmM36RfXG9OBCKZFQ1Yu+0jBHBHY11hcpuRFlMuwnwuROxBLunFKsu5PKqBcIYZgJcpXfukLsgEYApbO4zPg==
 
-react-native-background-timer@2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/react-native-background-timer/-/react-native-background-timer-2.4.1.tgz#a3bc1cafa8c1e3aeefd0611de120298b67978a0f"
-  integrity sha512-TE4Kiy7jUyv+hugxDxitzu38sW1NqjCk4uE5IgU2WevLv7sZacaBc6PZKOShNRPGirLl1NWkaG3LDEkdb9Um5g==
-
 react-native-drawer-layout@^4.2.2:
   version "4.2.10"
   resolved "https://registry.yarnpkg.com/react-native-drawer-layout/-/react-native-drawer-layout-4.2.10.tgz#80eb37b6cce4bca95a2b58ca7efc7003ea2a3cdb"
@@ -5878,11 +5873,6 @@ react-native-track-player@4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/react-native-track-player/-/react-native-track-player-4.1.2.tgz#f855e79ea947f7fed707dbd4b5e9a8bc02e0454d"
   integrity sha512-cIgMlqVJx/95hirUWPRW8CHxiBFj9Rjl/voKHh2jF/2URYMTQyt76t/m2FKvjeYUW2doKv4QSCBIOUmtyDLtJw==
-
-react-native-volume-manager@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/react-native-volume-manager/-/react-native-volume-manager-2.2.0.tgz#b82a2aca7d42d070b540e12dab2161cc24ed4996"
-  integrity sha512-rFCFcI3Voda0bhTvQ6j/42zgnuF3e3gjl2+QrfQE7Yp/qHrhewchhSwXN+QC4u2vKurGqO+6791suHQ4ppZ1UA==
 
 react-native-worklets@0.10.1:
   version "0.10.1"

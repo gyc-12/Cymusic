@@ -1,70 +1,97 @@
+import { logInfo, logWarn } from '@/helpers/logger'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
-
 import StateMapper from '@/utils/stateMapper'
-import { useEffect, useRef, useState } from 'react'
-import BackgroundTimer from 'react-native-background-timer'
+import { useEffect, useState } from 'react'
+import { AppState } from 'react-native'
+import CyMusicSleepTimer, { SleepDeadlineEvent } from '../../modules/cymusic-native/sleepTimer'
 
-import { logInfo } from '@/helpers/logger'
-import { NativeModule, NativeModules } from 'react-native'
+let deadline: number | null = null
+let generation: string | null = null
+const stateMapper = new StateMapper(() => deadline)
 
-interface INativeUtils extends NativeModule {
-	exitApp: () => void
-	checkStoragePermission: () => Promise<boolean>
-	requestStoragePermission: () => void
+function cancelNativeTimer() {
+	try {
+		CyMusicSleepTimer.cancel()
+	} catch (error) {
+		logWarn('Failed to cancel sleep timer', error)
+	}
 }
 
-const NativeUtils = NativeModules.NativeUtils
-let deadline: number | null = null
-const stateMapper = new StateMapper(() => deadline)
-// let closeAfterPlayEnd = false;
-// const closeAfterPlayEndStateMapper = new StateMapper(() => closeAfterPlayEnd);
-let timerId: any
+function pauseIfExpired(event: SleepDeadlineEvent) {
+	if (
+		event.generation !== generation ||
+		event.deadline !== deadline ||
+		deadline === null ||
+		Date.now() < deadline
+	) return
 
-function setTimingClose(_deadline: number | null) {
-	deadline = _deadline
-	stateMapper.notify()
-	timerId && BackgroundTimer.clearTimeout(timerId)
-	if (_deadline) {
-		logInfo('将在', (_deadline - Date.now()) / 1000 / 60, '分钟后暂停播放')
-		timerId = BackgroundTimer.setTimeout(async () => {
-			// todo: 播完整首歌再关闭
+	// Invalidate before any asynchronous pause so native/foreground delivery settles once.
+	generation = null
+	cancelNativeTimer()
+	void (async () => {
+		try {
 			await myTrackPlayer.pause()
-			// NativeUtils.exitApp()
-			// if(closeAfterPlayEnd) {
-			//     myTrackPlayer.addEventListener()
-			// } else {
-			//     // 立即关闭
-			//     NativeUtils.exitApp();
-			// }
-		}, _deadline - Date.now())
+		} catch (error) {
+			logWarn('Failed to pause at sleep deadline', error)
+		}
+	})()
+}
+
+const nativeSubscription = CyMusicSleepTimer.addListener('deadline', pauseIfExpired)
+const foregroundSubscription = AppState.addEventListener('change', (state) => {
+	if (state === 'active' && generation !== null && deadline !== null) {
+		pauseIfExpired({ generation, deadline })
+	}
+})
+
+// These subscriptions belong to the module, independently of the player screen.
+const hotModule = module as typeof module & { hot?: { dispose(callback: () => void): void } }
+hotModule.hot?.dispose(() => {
+	generation = null
+	nativeSubscription.remove()
+	foregroundSubscription.remove()
+	cancelNativeTimer()
+})
+
+function setTimingClose(nextDeadline: number | null) {
+	let nextGeneration: string | null = null
+	if (nextDeadline) {
+		try {
+			nextGeneration = CyMusicSleepTimer.schedule(nextDeadline)
+		} catch (error) {
+			logWarn('Failed to schedule sleep timer', error)
+			return
+		}
 	} else {
-		timerId = null
+		cancelNativeTimer()
+	}
+	deadline = nextDeadline
+	generation = nextGeneration
+	stateMapper.notify()
+	if (nextDeadline) {
+		logInfo('将在', (nextDeadline - Date.now()) / 1000 / 60, '分钟后暂停播放')
 	}
 }
 
 function useTimingClose() {
-	const _deadline = stateMapper.useMappedState()
-	const [countDown, setCountDown] = useState(deadline ? deadline - Date.now() : null)
-	const intervalRef = useRef<any>(undefined)
+	const currentDeadline = stateMapper.useMappedState()
+	const [countDown, setCountDown] = useState<number | null>(() =>
+		deadline && deadline > Date.now() ? (deadline - Date.now()) / 1000 : null,
+	)
 
 	useEffect(() => {
-		// deadline改变时，更新定时器
-		// 清除原有的定时器
-		intervalRef.current && clearInterval(intervalRef.current)
-		intervalRef.current = null
-
-		// 清空定时
-		if (!_deadline || _deadline <= Date.now()) {
+		if (!currentDeadline || currentDeadline <= Date.now()) {
 			setCountDown(null)
 			return
-		} else {
-			// 更新倒计时
-			setCountDown(Math.max(_deadline - Date.now(), 0) / 1000)
-			intervalRef.current = setInterval(() => {
-				setCountDown(Math.max(_deadline - Date.now(), 0) / 1000)
-			}, 1000)
 		}
-	}, [_deadline])
+		setCountDown(Math.max(currentDeadline - Date.now(), 0) / 1000)
+		const interval = setInterval(() => {
+			const remaining = Math.max(currentDeadline - Date.now(), 0) / 1000
+			setCountDown(remaining)
+			if (remaining === 0) clearInterval(interval)
+		}, 1000)
+		return () => clearInterval(interval)
+	}, [currentDeadline])
 
 	return countDown
 }
