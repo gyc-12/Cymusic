@@ -1,6 +1,6 @@
 import { TrackShortcutsMenu } from '@/components/TrackShortcutsMenu'
 import { unknownTrackImageUri } from '@/constants/images'
-import { ThemeColors, fontSize } from '@/constants/tokens'
+import { ThemeColors } from '@/constants/tokens'
 import myTrackPlayer, { isCachedIconVisibleStore } from '@/helpers/trackPlayerIndex'
 import { useThemeColors } from '@/hooks/useAppTheme'
 import { useDefaultStyles } from '@/styles'
@@ -9,7 +9,7 @@ import rpx from '@/utils/rpx'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import React, { memo, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 import LoaderKit from 'react-native-loader-kit'
 import { Track } from 'react-native-track-player'
 import { StopPropagation } from './utils/StopPropagation'
@@ -61,8 +61,6 @@ const TracksListItem = ({
 	const artworkSource = useMemo(
 		() => ({
 			uri: getThumbnailArtwork(track.artwork) ?? unknownTrackImageUri,
-			priority: FastImage.priority.normal,
-			cache: FastImage.cacheControl.immutable,
 		}),
 		[track.artwork],
 	)
@@ -118,7 +116,11 @@ const TracksListItem = ({
 					</TouchableOpacity>
 				)}
 				<View>
-					<FastImage
+					<Image
+						contentFit="cover"
+						cachePolicy="memory-disk"
+						priority="normal"
+						recyclingKey={artworkSource.uri ?? 'missing-artwork'}
 						source={artworkSource}
 						style={{
 							...styles.trackArtworkImage,
@@ -242,8 +244,8 @@ const createStyles = (
 	},
 	trackTitleText: {
 		...defaultStyles.text,
-		fontSize: fontSize.sm,
-		fontWeight: '600',
+		fontSize: 17,
+		fontWeight: '400',
 		flexShrink: 1,
 		maxWidth: '100%',
 	},
@@ -251,7 +253,7 @@ const createStyles = (
 		...defaultStyles.text,
 		color: colors.textMuted,
 		fontSize: 14,
-		marginTop: 4,
+		marginTop: 3,
 		maxWidth: '80%',
 	},
 	})

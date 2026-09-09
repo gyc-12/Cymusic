@@ -1,0 +1,56 @@
+diff --git a/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift b/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift
+--- a/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift
++++ b/node_modules/expo-share-intent/ios/ExpoShareIntentModule.swift
+@@ -7,6 +7,7 @@
+ import ExpoModulesCore
+ import Foundation
+ import Photos
++import UIKit
+ 
+ public class ExpoShareIntentModule: Module {
+     // Each module class must implement the definition function. The definition consists of components
+@@ -110,16 +111,25 @@
+                 }
+             } else if url.fragment == "weburl" {
+                 if let key = url.host?.components(separatedBy: "=").last {
+-                    if let json = userDefaults?.object(forKey: key) as? Data {
+-                        let sharedArray = decodeWebUrl(data: json)
+-                        let sharedWebUrls: [WebUrl] = sharedArray.compactMap {
+-                            return WebUrl.init(url: $0.url, meta: $0.meta)
+-                        }
+-                        guard let json = toJson(data: sharedWebUrls) else { return "[]" }
+-                        return "{ \"weburls\": \(json), \"type\": \"\(url.fragment!)\" }"
++                    let storedValue = userDefaults?.object(forKey: key)
++                    let sharedWebUrls: [WebUrl]
++                    if let json = storedValue as? Data {
++                        guard let decodedUrls = decodeWebUrl(data: json) else { return "empty" }
++                        sharedWebUrls = decodedUrls
++                    } else if let legacyUrls = storedValue as? [String] {
++                        // Keep pending SDK51 URL shares readable after an in-place upgrade.
++                        sharedWebUrls = legacyUrls.map { WebUrl(url: $0, meta: "") }
+                     } else {
+                         return "empty"
+                     }
++                    guard let json = toJson(data: sharedWebUrls) else { return "[]" }
++                    return "{ \"weburls\": \(json), \"type\": \"\(url.fragment!)\" }"
++                }
++            } else if url.fragment == "clip" {
++                if let clipboardText = UIPasteboard.general.string {
++                    return try? ShareIntentText(text: clipboardText, type: "text").toJSON()
++                } else {
++                    return "empty"
+                 }
+             } else if url.fragment == "text" {
+                 if let key = url.host?.components(separatedBy: "=").last {
+@@ -207,9 +217,9 @@
+         let encodedData = try? JSONDecoder().decode([SharedMediaFile].self, from: data)
+         return encodedData!
+     }
+-    private func decodeWebUrl(data: Data) -> [WebUrl] {
++    private func decodeWebUrl(data: Data) -> [WebUrl]? {
+         let encodedData = try? JSONDecoder().decode([WebUrl].self, from: data)
+-        return encodedData!
++        return encodedData
+     }
+ 
+     private func toJson(data: [SharedMediaFile]?) -> String? {

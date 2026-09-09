@@ -6,7 +6,7 @@ import { useDefaultStyles } from '@/styles'
 import { FontAwesome } from '@expo/vector-icons'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 import { Track } from 'react-native-track-player'
 import { QueueControls } from './QueueControls'
 import { TracksList } from './TracksList'
@@ -64,10 +64,13 @@ export const SingerTracksList = ({ playlist, tracks }: { playlist: any; tracks: 
 			ListHeaderComponent={
 				<View>
 					<View style={styles.artworkImageContainer}>
-						<FastImage
+						<Image
+							contentFit="cover"
+							cachePolicy="memory-disk"
+							priority="high"
+							recyclingKey={playlist.singerImg ?? 'missing-artwork'}
 							source={{
 								uri: playlist.singerImg,
-								priority: FastImage.priority.high,
 							}}
 							style={styles.artworkImage}
 						/>
@@ -106,7 +109,6 @@ const createStyles = (defaultStyles: ReturnType<typeof useDefaultStyles>) =>
 	artworkImage: {
 		width: '85%',
 		height: '100%',
-		resizeMode: 'cover',
 		borderRadius: 12,
 	},
 	textContainer: {

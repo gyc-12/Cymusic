@@ -7,29 +7,43 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      EXPO_NO_TELEMETRY: '1'
+      RCT_NEW_ARCH_ENABLED: '1'
+      RCT_HERMES_V1_ENABLED: '1'
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode 16
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
-
+      # Cache Yarn downloads only; node_modules, Pods and DerivedData stay fresh.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 24.19.0
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Verify build tools
+        run: |
+          xcodebuild -version
+          test "$(node --version)" = "v24.19.0"
+          test "$(yarn --version)" = "1.22.22"
+          echo "NODE_BINARY=$(command -v node)" >> "$GITHUB_ENV"
+
+      - name: Install pinned CocoaPods
+        run: |
+          gem install cocoapods --version 1.16.2 --no-document --user-install
+          echo "$(ruby -e 'puts Gem.user_dir')/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile --non-interactive
 
-      - name: Prebuild iOS
-        run: npx expo prebuild --platform ios --clean
-
-      - name: Apply patches
-        run: npx patch-package
-
-      - name: Install CocoaPods
-        run: cd ios && pod install
+      - name: Install locked Pods
+        working-directory: ios
+        run: |
+          # Installed Pods carry configuration state; see README for local recovery.
+          test ! -e Pods
+          pod _1.16.2_ install --deployment
 
       - name: Build unsigned .app
         run: |
@@ -42,6 +56,12 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM=""
+
+      - name: Verify retained native resources
+        run: |
+          test -s ios/build/Build/Products/Release-iphoneos/CyMusic.app/main.jsbundle
+          test -s ios/build/Build/Products/Release-iphoneos/CyMusic.app/user-api-preload.js
+          test -d ios/build/Build/Products/Release-iphoneos/CyMusic.app/PlugIns/ShareExtension.appex
 
       - name: Package IPA
         run: |

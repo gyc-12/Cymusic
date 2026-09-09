@@ -8,7 +8,7 @@ import { useDefaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 import { QueueControls } from './QueueControls'
 import { TracksList } from './TracksList'
 export const ArtistTracksList = ({ artist }: { artist: Artist }) => {
@@ -35,10 +35,12 @@ export const ArtistTracksList = ({ artist }: { artist: Artist }) => {
 			ListHeaderComponent={
 				<View>
 					<View style={styles.artworkImageContainer}>
-						<FastImage
+						<Image
+							contentFit="cover"
+							cachePolicy="memory-disk"
+							priority="high"
 							source={{
 								uri: unknownArtistImageUri,
-								priority: FastImage.priority.high,
 							}}
 							style={styles.artistImage}
 						/>
@@ -72,7 +74,6 @@ const createStyles = (defaultStyles: ReturnType<typeof useDefaultStyles>) =>
 	artistImage: {
 		width: '60%',
 		height: '100%',
-		resizeMode: 'cover',
 		borderRadius: 128,
 	},
 	artistNameText: {

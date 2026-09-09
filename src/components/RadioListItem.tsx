@@ -5,7 +5,7 @@ import { useDefaultStyles } from '@/styles'
 import { AntDesign } from '@expo/vector-icons'
 import { useMemo } from 'react'
 import { StyleSheet, Text, TouchableHighlight, TouchableHighlightProps, View } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 
 type PlaylistListItemProps = {
 	playlist: Playlist
@@ -20,10 +20,13 @@ export const RadioListItem = ({ playlist, ...props }: PlaylistListItemProps) => 
 		<TouchableHighlight activeOpacity={0.8} underlayColor={colors.surfaceMuted} {...props}>
 			<View style={styles.playlistItemContainer}>
 				<View>
-					<FastImage
+					<Image
+						contentFit="cover"
+						cachePolicy="memory-disk"
+						priority="normal"
+						recyclingKey={playlist.coverImg ?? 'missing-artwork'}
 						source={{
 							uri: playlist.coverImg,
-							priority: FastImage.priority.normal,
 						}}
 						style={styles.playlistArtworkImage}
 					/>

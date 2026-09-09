@@ -1,4 +1,3 @@
-import { getData } from 'ajv/lib/compile/validate'
 import { saveDataMultiple } from '@/helpers/storage'
 import { storageDataPrefix } from '@/constants/constant'
 

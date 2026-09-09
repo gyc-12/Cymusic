@@ -1,7 +1,7 @@
 import { logError, logInfo } from '@/helpers/logger'
 import { importedLocalMusicStore, qualityStore } from './PlayerStore'
 import PersistStatus from '@/store/PersistStatus'
-import * as FileSystem from 'expo-file-system'
+import * as FileSystem from 'expo-file-system/legacy'
 import RNFS from 'react-native-fs'
 
 const cacheDir = FileSystem.documentDirectory + 'musicCache/'

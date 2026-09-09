@@ -11,7 +11,6 @@ import {
 	FlatList,
 	Modal,
 	Pressable,
-	SafeAreaView,
 	ScrollView,
 	Share,
 	StyleSheet,
@@ -20,6 +19,7 @@ import {
 	TouchableWithoutFeedback,
 	View,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 const LogScreen = () => {
 	const colors = useThemeColors()
 	const styles = useMemo(() => createStyles(colors), [colors])

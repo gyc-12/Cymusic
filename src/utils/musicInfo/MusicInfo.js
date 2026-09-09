@@ -1,5 +1,5 @@
 import { decode, encode } from 'base-64';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import Buffer from './Buffer';
 import MusicInfoResponse from './MusicInfoResponse';

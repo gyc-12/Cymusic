@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import React, { useCallback, useEffect } from 'react'
 import { View, ViewProps } from 'react-native'
 import { Slider } from 'react-native-awesome-slider'
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
+import Animated, { Reanimated3DefaultSpringConfig, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import { VolumeManager } from 'react-native-volume-manager'
 
 export const PlayerVolumeBar = React.memo(({ style }: ViewProps) => {
@@ -34,7 +34,7 @@ export const PlayerVolumeBar = React.memo(({ style }: ViewProps) => {
 
 	const animatedSliderStyle = useAnimatedStyle(() => {
 		return {
-			transform: [{ scaleY: withSpring(isSliding.value ? 2 : 1) }],
+			transform: [{ scaleY: withSpring(isSliding.value ? 2 : 1, Reanimated3DefaultSpringConfig) }],
 		}
 	})
 
@@ -55,6 +55,7 @@ export const PlayerVolumeBar = React.memo(({ style }: ViewProps) => {
 	}, [])
 
 	const renderBubble = useCallback(() => null, [])
+	const renderThumb = useCallback(() => null, [])
 
 	return (
 		<View style={style}>
@@ -72,6 +73,7 @@ export const PlayerVolumeBar = React.memo(({ style }: ViewProps) => {
 						onSlidingComplete={handleSlidingComplete}
 						onValueChange={handleValueChange}
 						renderBubble={renderBubble}
+						renderThumb={renderThumb}
 						theme={{
 							minimumTrackTintColor: colors.maximumTrackTintColor,
 							maximumTrackTintColor: colors.maximumTrackTintColor,

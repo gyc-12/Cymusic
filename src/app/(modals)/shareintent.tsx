@@ -7,7 +7,7 @@ import {
 	fetchScriptFromUrl,
 	looksLikeScriptText,
 } from '@/helpers/userApi/importMusicSource'
-import * as FileSystem from 'expo-file-system'
+import * as FileSystem from 'expo-file-system/legacy'
 import { router } from 'expo-router'
 import { useShareIntentContext } from 'expo-share-intent'
 import React, { useMemo, useState } from 'react'

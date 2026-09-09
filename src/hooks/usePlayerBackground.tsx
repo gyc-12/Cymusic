@@ -1,7 +1,8 @@
 import { useThemeColors } from '@/hooks/useAppTheme'
 import { useEffect, useRef, useState } from 'react'
-import { getColors } from 'react-native-image-colors'
-import { IOSImageColors } from 'react-native-image-colors/build/types'
+import { getColors, type ImageColorsResult } from 'react-native-image-colors'
+
+type IOSImageColors = Extract<ImageColorsResult, { platform: 'ios' }>
 
 const colorCache = new Map<string, IOSImageColors>()
 

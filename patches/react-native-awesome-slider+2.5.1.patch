@@ -1,0 +1,168 @@
+diff --git a/node_modules/react-native-awesome-slider/src/slide.tsx b/node_modules/react-native-awesome-slider/src/slide.tsx
+--- a/node_modules/react-native-awesome-slider/src/slide.tsx
++++ b/node_modules/react-native-awesome-slider/src/slide.tsx
+@@ -9,7 +9,7 @@
+   ViewStyle,
+ } from 'react-native';
+ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+-import type { WithTimingConfig } from 'react-native-reanimated';
++import type { SharedValue, WithTimingConfig } from 'react-native-reanimated';
+ import Animated, {
+   runOnJS,
+   useAnimatedReaction,
+@@ -90,27 +90,27 @@
+   bubble?: (s: number) => string;
+ 
+   /**
+-   * An Animated.SharedValue from `react-native-reanimated` library which is the
++   * An SharedValue from `react-native-reanimated` library which is the
+    * current value of the slider.
+    */
+-  progress: Animated.SharedValue<number>;
+-
+-  /**
+-   * A Animated.SharedValue from `react-native-reanimated` library which is the
++  progress: SharedValue<number>;
++
++  /**
++   * A SharedValue from `react-native-reanimated` library which is the
+    * curren value of the cache. the cache is optional and will be rendered behind
+    * the main progress indicator.
+    */
+-  cache?: Animated.SharedValue<number>;
+-
+-  /**
+-   * An  Animated.SharedValue from `react-native-reanimated` library which is the minimum value of the slider.
+-   */
+-  minimumValue: Animated.SharedValue<number>;
+-
+-  /**
+-   * An Animated.SharedValue from `react-native-reanimated` library which is themaximum value of the slider.
+-   */
+-  maximumValue: Animated.SharedValue<number>;
++  cache?: SharedValue<number>;
++
++  /**
++   * An  SharedValue from `react-native-reanimated` library which is the minimum value of the slider.
++   */
++  minimumValue: SharedValue<number>;
++
++  /**
++   * An SharedValue from `react-native-reanimated` library which is themaximum value of the slider.
++   */
++  maximumValue: SharedValue<number>;
+ 
+   /**
+    * Callback called when the users starts sliding
+@@ -175,7 +175,7 @@
+   /**
+    * By this, you know the slider status as quickly as possible.(This is useful when you doing video-palyer’s scrubber.)
+    */
+-  isScrubbing?: Animated.SharedValue<boolean>;
++  isScrubbing?: SharedValue<boolean>;
+   /**
+    * On tap slider event.(This is useful when you doing video-palyer’s scrubber.)
+    */
+@@ -183,7 +183,7 @@
+   /**
+    * By this, you can control thumb’s transform-scale animation.
+    */
+-  thumbScaleValue?: Animated.SharedValue<number>;
++  thumbScaleValue?: SharedValue<number>;
+   panHitSlop?: Insets;
+ 
+   step?: number;
+@@ -198,9 +198,9 @@
+   theme?: SliderThemeType;
+   /**
+    * Current swipe direction
+-   * @enum Animated.SharedValue<PanDirectionEnum>
+-   */
+-  panDirectionValue?: Animated.SharedValue<PanDirectionEnum>;
++   * @enum SharedValue<PanDirectionEnum>
++   */
++  panDirectionValue?: SharedValue<PanDirectionEnum>;
+   /**
+    * Disable track follow thumb.(Commonly used in video/audio players)
+    */
+diff --git a/node_modules/react-native-awesome-slider/lib/typescript/slide.d.ts b/node_modules/react-native-awesome-slider/lib/typescript/slide.d.ts
+--- a/node_modules/react-native-awesome-slider/lib/typescript/slide.d.ts
++++ b/node_modules/react-native-awesome-slider/lib/typescript/slide.d.ts
+@@ -1,7 +1,6 @@
+ import React, { FC } from 'react';
+ import { Insets, StyleProp, TextStyle, ViewStyle } from 'react-native';
+-import type { WithTimingConfig } from 'react-native-reanimated';
+-import Animated from 'react-native-reanimated';
++import type { SharedValue, WithTimingConfig } from 'react-native-reanimated';
+ export declare enum HapticModeEnum {
+     NONE = "none",
+     STEP = "step",
+@@ -57,24 +56,24 @@
+      */
+     bubble?: (s: number) => string;
+     /**
+-     * An Animated.SharedValue from `react-native-reanimated` library which is the
++     * An SharedValue from `react-native-reanimated` library which is the
+      * current value of the slider.
+      */
+-    progress: Animated.SharedValue<number>;
+-    /**
+-     * A Animated.SharedValue from `react-native-reanimated` library which is the
++    progress: SharedValue<number>;
++    /**
++     * A SharedValue from `react-native-reanimated` library which is the
+      * curren value of the cache. the cache is optional and will be rendered behind
+      * the main progress indicator.
+      */
+-    cache?: Animated.SharedValue<number>;
+-    /**
+-     * An  Animated.SharedValue from `react-native-reanimated` library which is the minimum value of the slider.
+-     */
+-    minimumValue: Animated.SharedValue<number>;
+-    /**
+-     * An Animated.SharedValue from `react-native-reanimated` library which is themaximum value of the slider.
+-     */
+-    maximumValue: Animated.SharedValue<number>;
++    cache?: SharedValue<number>;
++    /**
++     * An  SharedValue from `react-native-reanimated` library which is the minimum value of the slider.
++     */
++    minimumValue: SharedValue<number>;
++    /**
++     * An SharedValue from `react-native-reanimated` library which is themaximum value of the slider.
++     */
++    maximumValue: SharedValue<number>;
+     /**
+      * Callback called when the users starts sliding
+      */
+@@ -130,7 +129,7 @@
+     /**
+      * By this, you know the slider status as quickly as possible.(This is useful when you doing video-palyer’s scrubber.)
+      */
+-    isScrubbing?: Animated.SharedValue<boolean>;
++    isScrubbing?: SharedValue<boolean>;
+     /**
+      * On tap slider event.(This is useful when you doing video-palyer’s scrubber.)
+      */
+@@ -138,7 +137,7 @@
+     /**
+      * By this, you can control thumb’s transform-scale animation.
+      */
+-    thumbScaleValue?: Animated.SharedValue<number>;
++    thumbScaleValue?: SharedValue<number>;
+     panHitSlop?: Insets;
+     step?: number;
+     /**
+@@ -152,9 +151,9 @@
+     theme?: SliderThemeType;
+     /**
+      * Current swipe direction
+-     * @enum Animated.SharedValue<PanDirectionEnum>
+-     */
+-    panDirectionValue?: Animated.SharedValue<PanDirectionEnum>;
++     * @enum SharedValue<PanDirectionEnum>
++     */
++    panDirectionValue?: SharedValue<PanDirectionEnum>;
+     /**
+      * Disable track follow thumb.(Commonly used in video/audio players)
+      */

@@ -123,7 +123,9 @@ class ShareViewController: UIViewController {
                 self.sharedText.append(url.absoluteString)
                 if index == (content.attachments?.count)! - 1 {
                   let userDefaults = UserDefaults(suiteName: "group.\(self.hostAppBundleIdentifier)")
-                  userDefaults?.set(self.sharedText, forKey: self.sharedKey)
+                  userDefaults?.set(
+                    self.toData(data: self.sharedText.map { WebUrl(url: $0, meta: "") }),
+                    forKey: self.sharedKey)
                   userDefaults?.synchronize()
                   self.redirectToHostApp(type: .weburl)
                 }
@@ -161,7 +163,9 @@ class ShareViewController: UIViewController {
           // If this is the last item, save sharedText in userDefaults and redirect to host app
           if index == (content.attachments?.count)! - 1 {
             let userDefaults = UserDefaults(suiteName: "group.\(self.hostAppBundleIdentifier)")
-            userDefaults?.set(self.sharedText, forKey: self.sharedKey)
+            userDefaults?.set(
+              self.toData(data: self.sharedText.map { WebUrl(url: $0, meta: "") }),
+              forKey: self.sharedKey)
             userDefaults?.synchronize()
             self.redirectToHostApp(type: .weburl)
           }
@@ -548,6 +552,11 @@ class ShareViewController: UIViewController {
     return path
   }
 
+  struct WebUrl: Codable {
+    let url: String
+    let meta: String
+  }
+
   class SharedMediaFile: Codable {
     var path: String  // can be image, video or url path
     var thumbnail: String?  // video thumbnail
@@ -581,7 +590,7 @@ class ShareViewController: UIViewController {
     case file
   }
 
-  func toData(data: [SharedMediaFile]) -> Data {
+  func toData<T: Encodable>(data: [T]) -> Data {
     let encodedData = try? JSONEncoder().encode(data)
     return encodedData!
   }

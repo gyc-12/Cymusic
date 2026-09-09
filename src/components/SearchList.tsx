@@ -11,7 +11,7 @@ import { FlashList } from '@shopify/flash-list'
 import { router } from 'expo-router'
 import React, { memo, useCallback, useMemo } from 'react'
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Track, useIsPlaying } from 'react-native-track-player'
 import TracksListItem from './TracksListItem'
@@ -34,8 +34,11 @@ const EmptyComponent = memo(() => {
 	const utilsStyles = useUtilsStyles()
 	return (
 		<View>
-			<FastImage
-				source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
+			<Image
+				contentFit="cover"
+				cachePolicy="memory-disk"
+				priority="normal"
+				source={{ uri: unknownTrackImageUri }}
 				style={utilsStyles.emptyContentImage}
 			/>
 		</View>
@@ -111,7 +114,10 @@ export const SearchList: React.FC<SearchListProps> = ({
 			if (track.isArtist) {
 				return (
 					<TouchableOpacity style={styles.artistItem} onPress={() => handleTrackSelect(track)}>
-						<FastImage
+						<Image
+							contentFit="cover"
+							cachePolicy="memory-disk"
+							recyclingKey={(track.artwork || unknownTrackImageUri) ?? 'missing-artwork'}
 							source={{ uri: track.artwork || unknownTrackImageUri }}
 							style={styles.artistAvatar}
 						/>
@@ -168,13 +174,13 @@ export const SearchList: React.FC<SearchListProps> = ({
 					paddingHorizontal: screenPadding.horizontal,
 				}}
 				ItemSeparatorComponent={ItemDivider}
-				ListEmptyComponent={!isLoading ? EmptyComponent : null}
+				ListEmptyComponent={!isLoading ? <EmptyComponent /> : null}
 				renderItem={renderItem}
 				keyExtractor={keyExtractor}
 				onEndReached={handleEndReached}
 				onEndReachedThreshold={0.1}
 				ListFooterComponent={footerComponent}
-				estimatedItemSize={68}
+				maintainVisibleContentPosition={{ disabled: true }}
 				keyboardDismissMode="on-drag"
 				keyboardShouldPersistTaps="handled"
 			/>

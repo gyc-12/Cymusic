@@ -134,7 +134,8 @@ const createStyles = (
 	button: {
 		padding: 12,
 		backgroundColor: colors.surfaceMuted,
-		borderRadius: 8,
+		borderRadius: 10,
+		borderCurve: 'continuous',
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
@@ -144,7 +145,7 @@ const createStyles = (
 		...defaultStyles.text,
 		color: colors.primary,
 		fontWeight: '600',
-		fontSize: 18,
+		fontSize: 17,
 		textAlign: 'center',
 	},
 	})

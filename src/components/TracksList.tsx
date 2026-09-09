@@ -8,7 +8,7 @@ import { FlashList } from '@shopify/flash-list'
 import { router } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { StyleProp, Text, View, ViewStyle } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 import { Track, useIsPlaying } from 'react-native-track-player'
 import { QueueControls } from './QueueControls'
 export type TracksListProps = {
@@ -60,8 +60,11 @@ export const TracksList = React.memo(
 			() => (
 				<View>
 					<Text style={utilsStyles.emptyContentText}>No songs found</Text>
-					<FastImage
-						source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
+					<Image
+						contentFit="cover"
+						cachePolicy="memory-disk"
+						priority="normal"
+						source={{ uri: unknownTrackImageUri }}
 						style={utilsStyles.emptyContentImage}
 					/>
 				</View>
@@ -185,7 +188,7 @@ export const TracksList = React.memo(
 				ListEmptyComponent={emptyListComponent}
 				renderItem={renderItem}
 				keyExtractor={keyExtractor}
-				estimatedItemSize={68}
+				maintainVisibleContentPosition={{ disabled: true }}
 			/>
 		)
 	},

@@ -10,7 +10,7 @@ import * as Haptics from 'expo-haptics'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { ActivityIndicator, StyleSheet, TouchableOpacity, View, ViewProps } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
@@ -18,8 +18,6 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useActiveTrack, useProgress } from 'react-native-track-player'
 import { MovingText } from './MovingText'
-
-const AnimatedFastImage = Animated.createAnimatedComponent(FastImage)
 
 const ProgressIndicator = React.memo(() => {
 	const colors = useThemeColors()
@@ -70,12 +68,17 @@ export const FloatingPlayer = React.memo(({ style }: ViewProps) => {
 	return (
 		<TouchableOpacity onPress={handlePress} activeOpacity={0.9} style={[styles.container, style]}>
 			<BlurView intensity={80} tint={blurTint} style={styles.blurContainer}>
-				<AnimatedFastImage
-					source={{
-						uri: displayedTrack.artwork ?? unknownTrackImageUri,
-					}}
-					style={[styles.trackArtworkImage, artworkAnimatedStyle]}
-				/>
+				<Animated.View style={[styles.trackArtworkContainer, artworkAnimatedStyle]}>
+					<Image
+						contentFit="cover"
+						cachePolicy="memory-disk"
+						recyclingKey={displayedTrack.artwork ?? unknownTrackImageUri ?? 'missing-artwork'}
+						source={{
+							uri: displayedTrack.artwork ?? unknownTrackImageUri,
+						}}
+						style={StyleSheet.absoluteFill}
+					/>
+				</Animated.View>
 
 				<View style={styles.trackTitleContainer}>
 					<MovingText
@@ -108,37 +111,40 @@ const createStyles = (
 ) =>
 	StyleSheet.create({
 	container: {
-		borderRadius: 12,
+		borderRadius: 14,
+		borderCurve: 'continuous',
+		borderColor: colors.border,
+		borderWidth: StyleSheet.hairlineWidth,
 		overflow: 'hidden',
 	},
 	blurContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		padding: 8,
+		paddingHorizontal: 10,
 		paddingVertical: 10,
 	},
-	trackArtworkImage: {
+	trackArtworkContainer: {
 		width: 40,
 		height: 40,
 		borderRadius: 8,
+		overflow: 'hidden',
 	},
 	trackTitleContainer: {
 		flex: 1,
 		overflow: 'hidden',
-		marginLeft: 10,
+		marginLeft: 12,
 	},
 	trackTitle: {
 		...(defaultStyles?.text ?? {}),
-		fontSize: 18,
-		fontWeight: '600',
-		paddingLeft: 10,
+		fontSize: 17,
+		fontWeight: '500',
 	},
 	trackControlsContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		columnGap: 20,
-		marginRight: 16,
-		paddingLeft: 16,
+		columnGap: 18,
+		marginRight: 8,
+		paddingLeft: 12,
 	},
 	loadingIndicatorContainer: {
 		minWidth: 24,

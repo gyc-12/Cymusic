@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 
 export default function useDelayFalsy<T = any>(init?: T, ms: number = 0) {
 	const [_state, _setState] = useState<T | undefined>(init)
-	const timer = useRef<any>()
+	const timer = useRef<any>(undefined)
 
 	function setState(st: T) {
 		if (st === undefined || st === null || st === false) {

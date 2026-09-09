@@ -35,6 +35,7 @@ export const PlayPauseButton = React.memo(({ style, iconSize = 48 }: PlayerButto
 		<View style={[{ height: iconSize }, style]}>
 			<TouchableOpacity
 				activeOpacity={0.85}
+				hitSlop={10}
 				onPress={playing ? TrackPlayer.pause : TrackPlayer.play}
 			>
 				<FontAwesome6 name={playing ? 'pause' : 'play'} size={iconSize} color={colors.text} />
@@ -50,7 +51,7 @@ export const SkipToNextButton = React.memo(({ iconSize = 30, disabled = false }:
 	const isDisabled = disabled || trackSkipLoading !== null
 
 	return (
-		<TouchableOpacity activeOpacity={0.7} disabled={isDisabled} onPress={myTrackPlayer.skipToNext}>
+		<TouchableOpacity activeOpacity={0.7} hitSlop={10} disabled={isDisabled} onPress={myTrackPlayer.skipToNext}>
 			<View style={styles.iconContainer}>
 				{isLoading ? (
 					<ActivityIndicator size="small" color={colors.text} />
@@ -71,6 +72,7 @@ export const SkipToPreviousButton = React.memo(({ iconSize = 30 }: PlayerButtonP
 	return (
 		<TouchableOpacity
 			activeOpacity={0.7}
+			hitSlop={10}
 			disabled={isDisabled}
 			onPress={myTrackPlayer.skipToPrevious}
 		>

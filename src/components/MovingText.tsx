@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react'
+import type { TextProps } from 'react-native'
 import Animated, {
 	Easing,
-	StyleProps,
 	cancelAnimation,
 	useAnimatedStyle,
 	useSharedValue,
@@ -13,7 +13,7 @@ import Animated, {
 export type MovingTextProps = {
 	text: string
 	animationThreshold: number
-	style?: StyleProps
+	style?: TextProps['style']
 }
 
 export const MovingText = React.memo(({ text, animationThreshold, style }: MovingTextProps) => {

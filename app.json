@@ -7,35 +7,30 @@
 		"icon": "./assets/1024.png",
 		"userInterfaceStyle": "automatic",
 		"scheme": "cymusic",
-		"splash": {
-			"image": "./assets/splash.png",
-			"resizeMode": "cover",
-			"backgroundColor": "#000"
-		},
-		"assetBundlePatterns": ["**/*"],
+		"assetBundlePatterns": [
+			"**/*"
+		],
 		"ios": {
 			"supportsTablet": true,
 			"bundleIdentifier": "com.music.player.gyc",
 			"usesIcloudStorage": false,
 			"infoPlist": {
-				"UIBackgroundModes": ["audio"],
+				"AppGroupIdentifier": "group.com.music.player.gyc",
+				"UIBackgroundModes": [
+					"audio"
+				],
 				"UIFileSharingEnabled": true,
 				"LSSupportsOpeningDocumentsInPlace": true,
 				"NSAppTransportSecurity": {
 					"NSAllowsArbitraryLoads": true
 				},
 				"CADisableMinimumFrameDurationOnPhone": true
-			},
-			"splash": {
-				"image": "./assets/splash.png",
-				"resizeMode": "cover",
-				"backgroundColor": "#000"
 			}
 		},
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/adaptive-icon.png",
-				"backgroundColor": "#000"
+				"backgroundColor": "#000000"
 			},
 			"package": "com.music.player.gyc"
 		},
@@ -46,9 +41,21 @@
 			"expo-router",
 			"expo-localization",
 			[
+				"expo-splash-screen",
+				{
+					"image": "./assets/splash.png",
+					"resizeMode": "cover",
+					"backgroundColor": "#000000",
+					"enableFullScreenImage_legacy": true
+				}
+			],
+			[
 				"expo-share-intent",
 				{
-					"androidIntentFilters": ["text/*", "*/*"],
+					"androidIntentFilters": [
+						"text/*",
+						"*/*"
+					],
 					"iosActivationRules": {
 						"NSExtensionActivationSupportsFileWithMaxCount": 1,
 						"NSExtensionActivationSupportsWebURLWithMaxCount": 1,

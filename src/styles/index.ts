@@ -33,9 +33,8 @@ const buildUtilsStyles = (colors: ThemeColors) => {
 			borderRadius: 16,
 		},
 		itemSeparator: {
-			borderColor: colors.textMuted,
-			borderWidth: StyleSheet.hairlineWidth,
-			opacity: 0.3,
+			borderBottomColor: colors.separator,
+			borderBottomWidth: StyleSheet.hairlineWidth,
 		},
 		emptyContentText: {
 			...defaultStyles.text,

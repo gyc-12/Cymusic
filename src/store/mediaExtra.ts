@@ -60,7 +60,7 @@ const update = (
 const remove = (mediaItem: ICommon.IMediaBase) => {
     if (mediaItem.platform && mediaItem.id) {
         const store = getPluginStore(mediaItem.platform);
-        store.delete(`${mediaItem.id}`);
+        store.remove(`${mediaItem.id}`);
         return true;
     }
 

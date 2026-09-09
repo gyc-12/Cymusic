@@ -1,8 +1,8 @@
 import { fakeAudioMp3Uri } from '@/constants/images'
+import { resolveLocalFile } from '@/helpers/localFile'
 import { logError, logInfo } from '@/helpers/logger'
 import PersistStatus from '@/store/PersistStatus'
 import { showToast } from '@/utils/utils'
-import RNFS from 'react-native-fs'
 import { isCached, getLocalFilePath } from './CacheManager'
 import { musicApiSelectedStore, nowApiState, qualityStore } from './PlayerStore'
 
@@ -93,17 +93,17 @@ export const resolveSource = async (
 	const preloadKey = makePreloadKey(musicItem)
 	const requestType = options.requestType ?? 'current'
 
-	if (musicItem.url && musicItem.url.startsWith('file://')) {
-		const isFileExist = await RNFS.exists(musicItem.url)
-		if (!isFileExist) {
+	const localFile = await resolveLocalFile(musicItem.url)
+	if (localFile.status !== 'nonlocal') {
+		if (localFile.status !== 'resolved') {
 			if (isCurrentSourceRequest(requestType)) {
-				logError('本地文件不存在:', musicItem.url)
+				logError('本地文件无法访问:', musicItem.url, localFile.reason)
 				showToast('错误', '本地文件不存在，请删除并重新缓存或导入。', 'error')
 			}
 			return { url: fakeAudioMp3Uri, wasCached: false }
 		}
 		preloadCache.delete(preloadKey)
-		return { url: musicItem.url, wasCached: false }
+		return { url: localFile.fileUri, wasCached: false }
 	}
 
 	const cached = await isCached(musicItem)

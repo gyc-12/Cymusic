@@ -9,23 +9,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
 	Animated,
 	Dimensions,
-	Platform,
 	Pressable,
-	SafeAreaView,
 	StyleSheet,
 	Text,
 	View,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Track } from 'react-native-track-player'
 
 type SearchType = 'songs' | 'artists'
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window')
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const SEGMENT_WIDTH = (SCREEN_WIDTH - 32 - 4) / 2 // 32 for padding, 4 for container padding
-const SEARCH_OFFSET = Platform.select({
-	ios: SCREEN_HEIGHT * 0.11, // 约11%的屏幕高度
-	android: 0,
-})
 
 const SearchlistsScreen = () => {
 	const colors = useThemeColors()
@@ -38,27 +33,10 @@ const SearchlistsScreen = () => {
 	const searchRequestRef = useRef(0)
 	const [searchType, setSearchType] = useState<SearchType>('songs')
 	const slideAnim = useRef(new Animated.Value(0)).current
-	const contentOffsetAnim = useRef(new Animated.Value(0)).current
 	const search = useNavigationSearch({
 		searchBarOptions: {
 			placeholder: i18n.t('find.inSearch'),
 			cancelButtonText: i18n.t('find.cancel'),
-		},
-		onFocus: () => {
-			Animated.spring(contentOffsetAnim, {
-				toValue: -SEARCH_OFFSET,
-				useNativeDriver: true,
-				tension: 100,
-				friction: 10,
-			}).start()
-		},
-		onCancel: () => {
-			Animated.spring(contentOffsetAnim, {
-				toValue: 0,
-				useNativeDriver: true,
-				tension: 100,
-				friction: 10,
-			}).start()
 		},
 	})
 
@@ -140,15 +118,8 @@ const SearchlistsScreen = () => {
 	}
 
 	return (
-		<SafeAreaView style={styles.safeArea}>
-			<Animated.View
-				style={[
-					styles.contentContainer,
-					{
-						transform: [{ translateY: contentOffsetAnim }],
-					},
-				]}
-			>
+		<SafeAreaView style={styles.safeArea} edges={['left', 'right']}>
+			<View style={styles.contentContainer}>
 				<View style={styles.segmentedControlContainer}>
 					<View style={styles.segmentedControl}>
 						<Animated.View
@@ -190,7 +161,7 @@ const SearchlistsScreen = () => {
 					hasMore={hasMore}
 					isLoading={isLoading}
 				/>
-			</Animated.View>
+			</View>
 		</SafeAreaView>
 	)
 }
@@ -217,7 +188,7 @@ const createStyles = (colors: ThemeColors) =>
 	},
 	segmentedControl: {
 		flexDirection: 'row',
-		backgroundColor: colors.background,
+		backgroundColor: colors.surfaceMuted,
 		borderRadius: 8,
 		padding: 2,
 		position: 'relative',

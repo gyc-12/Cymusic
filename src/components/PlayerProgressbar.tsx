@@ -5,7 +5,7 @@ import { useDefaultStyles, useUtilsStyles } from '@/styles'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { StyleSheet, Text, View, ViewProps } from 'react-native'
 import { Slider } from 'react-native-awesome-slider'
-import Animated, { SharedValue, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
+import Animated, { Reanimated3DefaultSpringConfig, SharedValue, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
 import TrackPlayer, { useProgress } from 'react-native-track-player'
 
 const AnimatedThumb = React.memo(({ isSliding }: { isSliding: SharedValue<boolean> }) => {
@@ -13,9 +13,9 @@ const AnimatedThumb = React.memo(({ isSliding }: { isSliding: SharedValue<boolea
 
 	const animatedStyle = useAnimatedStyle(() => {
 		return {
-			width: withSpring(isSliding.value ? 24 : 12),
-			height: withSpring(isSliding.value ? 24 : 12),
-			borderRadius: withSpring(isSliding.value ? 12 : 6),
+			width: withSpring(isSliding.value ? 24 : 12, Reanimated3DefaultSpringConfig),
+			height: withSpring(isSliding.value ? 24 : 12, Reanimated3DefaultSpringConfig),
+			borderRadius: withSpring(isSliding.value ? 12 : 6, Reanimated3DefaultSpringConfig),
 			backgroundColor: colors.text,
 			left: 2,
 		}

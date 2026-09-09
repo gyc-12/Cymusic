@@ -33,7 +33,7 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
 	Easing,
@@ -201,7 +201,7 @@ const PlayerScreenContent = () => {
 				artworkCrossfade.value = withTiming(0, { duration: 200 })
 				runOnJS(handleSkipPrev)()
 			}
-			artworkTranslateX.value = withSpring(0, { damping: 15, stiffness: 150 })
+			artworkTranslateX.value = withSpring(0, { damping: 15, stiffness: 150, mass: 1 })
 		}), [handleSkipNext, handleSkipPrev])
 
 	const handleLyricsToggle = useCallback(() => {
@@ -209,11 +209,11 @@ const PlayerScreenContent = () => {
 			const newShowLyrics = !prev
 			if (newShowLyrics) {
 				lyricsOpacity.value = withTiming(1, { duration: 300 })
-				lyricsTranslateY.value = withSpring(0, { damping: 15, stiffness: 100 })
+				lyricsTranslateY.value = withSpring(0, { damping: 15, stiffness: 100, mass: 1 })
 			} else {
 				setShowLyricDelayControls(false)
 				lyricsOpacity.value = withTiming(0, { duration: 300 })
-				lyricsTranslateY.value = withSpring(50, { damping: 15, stiffness: 100 })
+				lyricsTranslateY.value = withSpring(50, { damping: 15, stiffness: 100, mass: 1 })
 			}
 			return newShowLyrics
 		})
@@ -405,7 +405,11 @@ const PlayerScreenContent = () => {
 			<StatusBar style="light" />
 			<LinearGradient
 				style={{ flex: 1 }}
-				colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.background]}
+				colors={
+					imageColors
+						? [imageColors.background, imageColors.primary]
+						: [colors.background, colors.background]
+				}
 			>
 				<View style={styles.overlayContainer}>
 					<DismissPlayerSymbol />
@@ -489,12 +493,14 @@ const PlayerScreenContent = () => {
 						<GestureDetector gesture={swipeGesture}>
 							<Animated.View style={[styles.artworkImageContainer, artworkAnimatedStyle]}>
 								<TouchableOpacity style={styles.artworkTouchable} onPress={handleLyricsToggle}>
-									<FastImage
+									<Image
+										contentFit="cover"
+										cachePolicy="memory-disk"
+										priority="high"
+										recyclingKey={trackToDisplay?.artwork ?? unknownTrackImageUri ?? 'missing-artwork'}
 										source={{
 											uri: trackToDisplay?.artwork ?? unknownTrackImageUri,
-											priority: FastImage.priority.high,
 										}}
-										resizeMode="cover"
 										style={styles.artworkImage}
 									/>
 								</TouchableOpacity>
@@ -684,7 +690,6 @@ const createStyles = (
 	artworkImage: {
 		width: '100%',
 		height: '100%',
-		resizeMode: 'cover',
 		borderRadius: 12,
 		backgroundColor: 'transparent',
 	},

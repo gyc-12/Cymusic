@@ -1,10 +1,10 @@
 import { FloatingPlayer } from '@/components/FloatingPlayer'
-import { BlurTint, fontSize } from '@/constants/tokens'
+import { BlurTint } from '@/constants/tokens'
 import { useAppTheme } from '@/hooks/useAppTheme'
 import i18n from '@/utils/i18n'
-import { FontAwesome, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
-import { Tabs } from 'expo-router'
+import { Tabs } from 'expo-router/js-tabs'
 import React, { useMemo } from 'react'
 import { StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -15,12 +15,14 @@ const TabBarBackground = ({ tint }: { tint: BlurTint }) => (
 	<BlurView
 		intensity={90}
 		tint={tint}
-		style={{
-			...StyleSheet.absoluteFillObject,
-			overflow: 'hidden',
-			borderTopLeftRadius: 20,
-			borderTopRightRadius: 20,
-		}}
+		style={[
+			StyleSheet.absoluteFill,
+			{
+				overflow: 'hidden',
+				borderTopLeftRadius: 20,
+				borderTopRightRadius: 20,
+			},
+		]}
 	/>
 )
 
@@ -42,7 +44,7 @@ const TabsNavigation = () => {
 					tabBarActiveTintColor: colors.primary,
 					tabBarInactiveTintColor: colors.textMuted,
 					tabBarLabelStyle: {
-						fontSize: fontSize.xs,
+						fontSize: 11,
 						fontWeight: '500',
 					},
 					headerShown: false,
@@ -51,7 +53,7 @@ const TabsNavigation = () => {
 						borderTopLeftRadius: 20,
 						borderTopRightRadius: 20,
 						borderTopWidth: 0,
-						paddingTop: 8,
+						paddingTop: 6,
 						backgroundColor: 'transparent',
 					},
 					tabBarBackground: () => <TabBarBackground tint={blurTint} />,
@@ -61,8 +63,8 @@ const TabsNavigation = () => {
 					name="(songs)"
 					options={{
 						title: i18n.t('appTab.songs'),
-						tabBarIcon: ({ color }) => (
-							<Ionicons name="musical-notes-sharp" size={24} color={color} />
+						tabBarIcon: ({ color, focused }) => (
+							<Ionicons name={focused ? 'musical-notes' : 'musical-notes-outline'} size={24} color={color} />
 						),
 					}}
 				/>
@@ -70,22 +72,26 @@ const TabsNavigation = () => {
 					name="radio"
 					options={{
 						title: i18n.t('appTab.radio'),
-						tabBarIcon: ({ color }) => <Ionicons name="radio" size={24} color={color} />,
+						tabBarIcon: ({ color, focused }) => (
+							<Ionicons name={focused ? 'radio' : 'radio-outline'} size={24} color={color} />
+						),
 					}}
 				/>
 				<Tabs.Screen
 					name="favorites"
 					options={{
 						title: i18n.t('appTab.favorites'),
-						tabBarIcon: ({ color }) => <FontAwesome name="heart" size={20} color={color} />,
+						tabBarIcon: ({ color, focused }) => (
+							<Ionicons name={focused ? 'heart' : 'heart-outline'} size={24} color={color} />
+						),
 					}}
 				/>
 				<Tabs.Screen
 					name="search"
 					options={{
 						title: i18n.t('appTab.search'),
-						tabBarIcon: ({ color }) => (
-							<MaterialCommunityIcons name="text-search" size={26} color={color} />
+						tabBarIcon: ({ color, focused }) => (
+							<Ionicons name={focused ? 'search' : 'search-outline'} size={24} color={color} />
 						),
 					}}
 				/>

@@ -1,5 +1,2 @@
-
-declare module 'crypto' {
-  import crypto from 'react-native-quick-crypto'
-  export default crypto
-}
+// Keep the ambient crypto API supplied by @types/node.
+import 'node:crypto'

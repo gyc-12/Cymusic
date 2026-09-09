@@ -46,3 +46,7 @@ third_party_url.ts
 .specstory/.what-is-this.md
 .cursorindexingignore
 android
+
+# Local audit downloads, build evidence and simulator captures.
+# Curated findings live in docs/audit/ and .trellis/spec/.
+/.trellis/tasks/09-05-rn-expo-new-architecture/research/

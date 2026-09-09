@@ -1,4 +1,4 @@
-import { stringMd5 } from 'react-native-quick-md5'
+import MD5 from 'crypto-js/md5'
 import { decodeName } from '../common'
 
 /**
@@ -19,7 +19,7 @@ export const getMusicType = (info, type) => {
   return '128k'
 }
 
-export const toMD5 = str => stringMd5(str)
+export const toMD5 = str => MD5(str).toString()
 
 
 /**

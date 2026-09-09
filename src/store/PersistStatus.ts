@@ -41,7 +41,7 @@ interface IPersistConfig {
 function set<K extends keyof IPersistConfig>(key: K, value: IPersistConfig[K] | undefined) {
 	const store = getOrCreateMMKV(PersistConfig.PersistStatus)
 	if (value === undefined) {
-		store.delete(key)
+		store.remove(key)
 	} else {
 		store.set(key, JSON.stringify(value))
 	}

@@ -15,6 +15,7 @@ const PlaylistsScreenLayout = () => {
 					name="index"
 					options={{
 						...getStackScreenWithSearchBar(colors),
+						headerTransparent: false,
 						headerTitle: i18n.t('appTab.search'),
 					}}
 				/>

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native'
+import type { FlatList as NativeFlatList, FlatListProps } from 'react-native'
 
 import { ThemeColors } from '@/constants/tokens'
 import LyricManager from '@/helpers/lyricManager'
@@ -12,6 +13,9 @@ import { musicIsPaused } from '@/utils/trackUtils'
 import { FlatList } from 'react-native-gesture-handler'
 import rpx from '../../utils/rpx'
 import LyricItemComponent from './lyricItem'
+const LyricFlatList = FlatList as React.ForwardRefExoticComponent<
+	FlatListProps<ILyric.IParsedLrcItem> & React.RefAttributes<NativeFlatList<ILyric.IParsedLrcItem>>
+>
 const ITEM_HEIGHT = rpx(92)
 const AUTO_SCROLL_THROTTLE_MS = 900
 const AUTO_SCROLL_MIN_INDEX_DELTA = 2
@@ -59,7 +63,7 @@ export default function Lyric(_props: IProps) {
 	const [draggingIndex, setDraggingIndex] = useDelayFalsy<number | undefined>(undefined, 2000)
 	const musicState = myTrackPlayer.useMusicState()
 
-	const listRef = useRef<FlatList<ILyric.IParsedLrcItem> | null>(null)
+	const listRef = useRef<NativeFlatList<ILyric.IParsedLrcItem> | null>(null)
 
 	// 是否展示拖拽
 	const dragShownRef = useRef(false)
@@ -251,7 +255,7 @@ export default function Lyric(_props: IProps) {
 						<ActivityIndicator size="large" color={colors.loading} />
 					</View>
 				) : lyrics?.length ? (
-					<FlatList
+					<LyricFlatList
 						ref={(_) => {
 							listRef.current = _
 						}}

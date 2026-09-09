@@ -105,7 +105,7 @@ export const parseUrlParams = (str: string): Record<string, string> => {
  * @returns
  */
 export function throttle<Args extends any[]>(fn: (...args: Args) => void | Promise<void>, delay = 100) {
-  let timer: NodeJS.Timeout | null = null
+  let timer: ReturnType<typeof setTimeout> | null = null
   let _args: Args
   return (...args: Args) => {
     _args = args
@@ -124,7 +124,7 @@ export function throttle<Args extends any[]>(fn: (...args: Args) => void | Promi
  * @returns
  */
 export function debounce<Args extends any[]>(fn: (...args: Args) => void | Promise<void>, delay = 100) {
-  let timer: NodeJS.Timeout | null = null
+  let timer: ReturnType<typeof setTimeout> | null = null
   let _args: Args
   return (...args: Args) => {
     _args = args

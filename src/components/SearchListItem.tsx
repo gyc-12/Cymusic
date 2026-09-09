@@ -7,7 +7,7 @@ import { useDefaultStyles } from '@/styles'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import { useMemo } from 'react'
 import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
-import FastImage from 'react-native-fast-image' //导入默认导出时，不需要使用大括号 {}，并且可以使用任意名称来引用导入的值。
+import { Image } from 'expo-image'
 import LoaderKit from 'react-native-loader-kit'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 
@@ -35,10 +35,13 @@ export const SearchListItem = ({
 		<TouchableHighlight onPress={() => handleTrackSelect(track)} underlayColor={colors.surfaceMuted}>
 			<View style={styles.trackItemContainer}>
 				<View>
-					<FastImage
+					<Image
+						contentFit="cover"
+						cachePolicy="memory-disk"
+						priority="normal"
+						recyclingKey={track.artwork ?? unknownTrackImageUri ?? 'missing-artwork'}
 						source={{
 							uri: track.artwork ?? unknownTrackImageUri,
-							priority: FastImage.priority.normal,
 						}}
 						style={{
 							...styles.trackArtworkImage,

@@ -4,7 +4,15 @@ import LyricManager from '@/helpers/lyricManager'
 import { useLogTrackPlayerState } from '@/hooks/useLogTrackPlayerState'
 import { useSetupTrackPlayer } from '@/hooks/useSetupTrackPlayer'
 import i18n, { setI18nConfig } from '@/utils/i18n'
-import { router, SplashScreen, Stack } from 'expo-router'
+import {
+	DarkTheme,
+	DefaultTheme,
+	router,
+	SplashScreen,
+	Stack,
+	ThemeProvider,
+	useRootNavigationState,
+} from 'expo-router'
 import { ShareIntentProvider, useShareIntentContext } from 'expo-share-intent'
 import { StatusBar } from 'expo-status-bar'
 import { useCallback, useEffect, useMemo } from 'react'
@@ -18,7 +26,7 @@ TrackPlayer.registerPlaybackService(() => playbackService)
 setI18nConfig()
 const App = () => {
 	const handleTrackPlayerLoaded = useCallback(() => {
-		setTimeout(SplashScreen.hideAsync, 1500)
+		void SplashScreen.hideAsync()
 	}, [])
 
 	useSetupTrackPlayer({
@@ -26,30 +34,8 @@ const App = () => {
 	})
 
 	useLogTrackPlayerState()
-	// myTrackPlayer.setupTrackPlayer()
-
-	LyricManager.setup()
-	const { hasShareIntent } = useShareIntentContext()
-
 	useEffect(() => {
-		if (hasShareIntent) {
-			// we want to handle share intent event in a specific page
-			console.log('[expo-router-index111] redirect to ShareIntent screen')
-			console.log('[expo-router-index111] hasShareIntent', hasShareIntent)
-			router.replace('/(modals)/cymusic')
-		}
-	}, [hasShareIntent])
-	useEffect(() => {
-		const initI18n = async () => {
-			try {
-				// 确保 i18n 配置已加载
-				await setI18nConfig()
-			} catch (error) {
-				console.error('Failed to initialize i18n:', error)
-			}
-		}
-
-		initI18n()
+		void LyricManager.setup()
 	}, [])
 	return (
 		<ShareIntentProvider
@@ -71,7 +57,15 @@ const App = () => {
 }
 
 const ThemedAppShell = () => {
-	const { colors, statusBarStyle } = useAppTheme()
+	const { colors, isDark, statusBarStyle } = useAppTheme()
+	const { hasShareIntent } = useShareIntentContext()
+	const navigationState = useRootNavigationState()
+
+	useEffect(() => {
+		if (navigationState?.key && hasShareIntent) {
+			router.replace('/(modals)/cymusic')
+		}
+	}, [hasShareIntent, navigationState?.key])
 
 	const toastConfig = useMemo(
 		() => ({
@@ -122,7 +116,9 @@ const ThemedAppShell = () => {
 	return (
 		<SafeAreaProvider>
 			<GestureHandlerRootView style={{ flex: 1 }}>
-				<RootNavigation />
+				<ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+					<RootNavigation />
+				</ThemeProvider>
 				<StatusBar style={statusBarStyle} />
 				<Toast config={toastConfig} />
 			</GestureHandlerRootView>

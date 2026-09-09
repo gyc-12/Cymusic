@@ -3,7 +3,7 @@ import { SoundAsset } from '@/constants/constant'
 import Config from '@/store/config'
 import delay from '@/utils/delay'
 import { isSameMediaItem, mergeProps, sortByTimestampAndIndex } from '@/utils/mediaItem'
-import * as FileSystem from 'expo-file-system'
+import * as FileSystem from 'expo-file-system/legacy'
 import { produce } from 'immer'
 import shuffle from 'lodash.shuffle'
 import RNFS from 'react-native-fs'
@@ -35,6 +35,7 @@ import { myGetLyric } from '@/helpers/userApi/getMusicSource'
 import { fakeAudioMp3Uri } from '@/constants/images'
 import { nowLanguage } from '@/utils/i18n'
 import { showToast } from '@/utils/utils'
+import { resolveLocalFile } from './localFile'
 import { logError, logInfo } from './logger'
 import { isLxMusicScript, reloadLxMusicScript } from './userApi/lxMusicSourceAdapter'
 
@@ -142,7 +143,21 @@ async function setupTrackPlayer() {
 		setQuality(quality as IMusic.IQualityKey)
 	}
 	if (playLists) {
-		playListsStore.setValue(playLists)
+		const resolvedPlayLists = await Promise.all(
+			playLists.map(async (playList) => {
+				const [artwork, coverImg] = await Promise.all([
+					resolveLocalFile(playList.artwork),
+					resolveLocalFile(playList.coverImg),
+				])
+				return {
+					...playList,
+					...(artwork.status === 'resolved' ? { artwork: artwork.fileUri } : {}),
+					...(coverImg.status === 'resolved' ? { coverImg: coverImg.fileUri } : {}),
+				}
+			}),
+		)
+		// Project cover addresses for display only; preserve stored IDs, songs and URLs.
+		playListsStore.setValue(resolvedPlayLists)
 	}
 	if (musicApiLists) {
 		musicApiStore.setValue(musicApiLists)
@@ -905,7 +920,7 @@ const cacheAndImportMusic = async (track: IMusic.IMusicItem) => {
 		const isCacheExist = await RNFS.exists(localPath)
 		if (isCacheExist) {
 			logInfo('音乐已缓存到本地:', localPath)
-			const newTrack = { ...track, url: `file://${localPath}` }
+			const newTrack = { ...track, url: localPath }
 			await addImportedLocalMusic([newTrack], false)
 		} else {
 			logInfo('开始下载音乐:', track.url)
@@ -1103,21 +1118,29 @@ const addImportedLocalMusic = async (musicItem: IMusic.IMusicItem[], isAlert: bo
 		logError('本地音乐保存时出错:', error)
 	}
 }
-const deleteImportedLocalMusic = (musicItemsIdToDelete: string) => {
+const deleteImportedLocalMusic = async (musicItemsIdToDelete: string) => {
 	try {
 		const importedLocalMusic = importedLocalMusicStore.getValue() || []
-		let fileUri = ''
-		const updatedImportedLocalMusic = importedLocalMusic.filter((item) => {
-			if (musicItemsIdToDelete === item.id) {
-				fileUri = item.url
-			}
-			return musicItemsIdToDelete !== item.id
-		})
+		const selectedItems = importedLocalMusic.filter((item) => item.id === musicItemsIdToDelete)
+		if (selectedItems.length !== 1) return
+		const selectedItem = selectedItems[0]
+		const localFile = await resolveLocalFile(selectedItem.url, { requireOwnedMedia: true })
+		const currentItems = importedLocalMusicStore.getValue() || []
+		if (
+			!currentItems.includes(selectedItem) ||
+			currentItems.filter((item) => item.id === musicItemsIdToDelete).length !== 1
+		) {
+			return
+		}
+		if (localFile.status === 'resolved') {
+			await FileSystem.deleteAsync(localFile.fileUri)
+		}
+		// Explicit removal may discard a missing-file record, but never guesses a file
+		// target. Read the latest list after I/O so concurrent imports/deletes survive.
+		const latestItems = importedLocalMusicStore.getValue() || []
+		const updatedImportedLocalMusic = latestItems.filter((item) => item !== selectedItem)
 		importedLocalMusicStore.setValue(updatedImportedLocalMusic)
 		PersistStatus.set('music.importedLocalMusic', updatedImportedLocalMusic)
-		//同时删除本地文
-		FileSystem.deleteAsync(fileUri)
-		// Alert.alert('成功', '音乐删除成功', [{ text: '确定', onPress: () => {} }])
 	} catch (error) {
 		logError('删除本地音乐时出错:', error)
 	}

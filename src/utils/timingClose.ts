@@ -45,7 +45,7 @@ function setTimingClose(_deadline: number | null) {
 function useTimingClose() {
 	const _deadline = stateMapper.useMappedState()
 	const [countDown, setCountDown] = useState(deadline ? deadline - Date.now() : null)
-	const intervalRef = useRef<any>()
+	const intervalRef = useRef<any>(undefined)
 
 	useEffect(() => {
 		// deadline改变时，更新定时器

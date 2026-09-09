@@ -1,14 +1,13 @@
 import { unknownTrackImageUri } from '@/constants/images'
-import { ThemeColors } from '@/constants/tokens'
+import { ThemeColors, screenPadding } from '@/constants/tokens'
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { useThemeColors } from '@/hooks/useAppTheme'
 import { useUtilsStyles } from '@/styles'
 import { isSameMediaItem } from '@/utils/mediaItem'
-import { FlashList } from '@shopify/flash-list'
+import { FlashList, type FlashListRef } from '@shopify/flash-list'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import FastImage from 'react-native-fast-image'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Image } from 'expo-image'
 import { Track, useIsPlaying } from 'react-native-track-player'
 import TracksListItem from './TracksListItem'
 
@@ -17,8 +16,6 @@ export type TracksListProps = {
 	tracks: Track[]
 	hideQueueControls?: boolean
 }
-
-const ITEM_HEIGHT = 68
 
 const ItemDivider = React.memo(() => {
 	const colors = useThemeColors()
@@ -34,8 +31,11 @@ const EmptyListComponent = React.memo(() => {
 	return (
 		<View>
 			<Text style={utilsStyles.emptyContentText}>No songs</Text>
-			<FastImage
-				source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
+			<Image
+				contentFit="cover"
+				cachePolicy="memory-disk"
+				priority="normal"
+				source={{ uri: unknownTrackImageUri }}
 				style={utilsStyles.emptyContentImage}
 			/>
 		</View>
@@ -46,10 +46,9 @@ export const NowPlayList = React.memo(({ tracks }: TracksListProps) => {
 	const colors = useThemeColors()
 	const utilsStyles = useUtilsStyles()
 	const styles = useMemo(() => createStyles(colors, utilsStyles), [colors, utilsStyles])
-	const listRef = useRef<FlashList<Track>>(null)
+	const listRef = useRef<FlashListRef<Track>>(null)
 	const currentMusic = myTrackPlayer.useCurrentMusic()
 	const { playing } = useIsPlaying()
-	const { top } = useSafeAreaInsets()
 
 	const initialIndex = useMemo(
 		() =>
@@ -102,12 +101,12 @@ export const NowPlayList = React.memo(({ tracks }: TracksListProps) => {
 
 	const DismissPlayerSymbol = useMemo(
 		() => (
-			<View style={[styles.dismissPlayerSymbol, { top: top - 38 }]}>
+			<View style={styles.dismissPlayerSymbol}>
 				<View style={styles.dismissPlayerBar} />
 				<Text style={styles.header}>播放列表</Text>
 			</View>
 		),
-		[top, styles.dismissPlayerBar, styles.dismissPlayerSymbol, styles.header],
+		[styles.dismissPlayerBar, styles.dismissPlayerSymbol, styles.header],
 	)
 
 	const listExtraData = useMemo(
@@ -122,26 +121,31 @@ export const NowPlayList = React.memo(({ tracks }: TracksListProps) => {
 	return (
 		<>
 			{DismissPlayerSymbol}
-			<FlashList
-				data={tracks}
-				extraData={listExtraData}
-				contentContainerStyle={styles.contentContainer}
-				ListFooterComponent={ItemDivider}
-				ItemSeparatorComponent={ItemDivider}
-				ref={listRef}
-				ListEmptyComponent={EmptyListComponent}
-				renderItem={renderItem}
-				keyExtractor={keyExtractor}
-				estimatedItemSize={ITEM_HEIGHT}
-			/>
+			<View style={styles.listContainer}>
+				<FlashList
+					data={tracks}
+					extraData={listExtraData}
+					contentContainerStyle={styles.contentContainer}
+					ListFooterComponent={<ItemDivider />}
+					ItemSeparatorComponent={ItemDivider}
+					ref={listRef}
+					ListEmptyComponent={<EmptyListComponent />}
+					renderItem={renderItem}
+					keyExtractor={keyExtractor}
+					maintainVisibleContentPosition={{ disabled: true }}
+				/>
+			</View>
 		</>
 	)
 })
 
 const createStyles = (colors: ThemeColors, utilsStyles: ReturnType<typeof useUtilsStyles>) =>
 	StyleSheet.create({
+		listContainer: {
+			flex: 1,
+			paddingHorizontal: screenPadding.horizontal,
+		},
 		contentContainer: {
-			paddingTop: 60,
 			paddingBottom: 128,
 		},
 		itemDivider: {
@@ -150,10 +154,6 @@ const createStyles = (colors: ThemeColors, utilsStyles: ReturnType<typeof useUti
 			marginLeft: 60,
 		},
 		dismissPlayerSymbol: {
-			position: 'absolute',
-			left: 0,
-			right: 0,
-			zIndex: 1000,
 			paddingTop: 10,
 			backgroundColor: colors.overlayStrong,
 		},

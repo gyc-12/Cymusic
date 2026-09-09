@@ -29,6 +29,7 @@ export const useNavigationSearch = ({
 			textColor: colors.text,
 			hintTextColor: colors.placeholder,
 			hideWhenScrolling: false,
+			placement: 'stacked',
 		}),
 		[colors],
 	)

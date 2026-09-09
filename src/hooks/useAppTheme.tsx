@@ -75,7 +75,7 @@ export const AppThemeProvider = ({ children }: { children: ReactNode }) => {
 	}
 
 	useEffect(() => {
-		Appearance.setColorScheme(themeMode === 'system' ? null : resolvedTheme)
+		Appearance.setColorScheme(themeMode === 'system' ? 'unspecified' : resolvedTheme)
 	}, [resolvedTheme, themeMode])
 
 	return <AppThemeContext.Provider value={themeValue}>{children}</AppThemeContext.Provider>

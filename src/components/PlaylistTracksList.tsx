@@ -4,7 +4,7 @@ import { Playlist } from '@/helpers/types'
 import { useDefaultStyles } from '@/styles'
 import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 import { Track } from 'react-native-track-player'
 import { QueueControls } from './QueueControls'
 import { TracksList } from './TracksList'
@@ -55,10 +55,13 @@ export const PlaylistTracksList = ({
 			ListHeaderComponent={
 				<View>
 					<View style={styles.artworkImageContainer}>
-						<FastImage
+						<Image
+							contentFit="cover"
+							cachePolicy="memory-disk"
+							priority="high"
+							recyclingKey={(playlist.coverImg || playlist.artwork) ?? 'missing-artwork'}
 							source={{
 								uri: playlist.coverImg || playlist.artwork,
-								priority: FastImage.priority.high,
 							}}
 							style={styles.artworkImage}
 						/>
@@ -106,7 +109,6 @@ const createStyles = (defaultStyles: ReturnType<typeof useDefaultStyles>) =>
 	artworkImage: {
 		width: '85%',
 		height: '100%',
-		resizeMode: 'cover',
 		borderRadius: 12,
 	},
 	playlistNameText: {

@@ -7,7 +7,7 @@ import { useUtilsStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import { useMemo } from 'react'
 import { FlatList, FlatListProps, Text, View } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { Image } from 'expo-image'
 type PlaylistsListProps = {
 	onPlaylistPress: (playlist: IMusic.PlayList) => void
 } & Partial<FlatListProps<Playlist>>
@@ -53,8 +53,11 @@ export const PlaylistsListModal = ({
 			<View>
 				<Text style={utilsStyles.emptyContentText}>No playlist found</Text>
 
-				<FastImage
-					source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
+				<Image
+					contentFit="cover"
+					cachePolicy="memory-disk"
+					priority="normal"
+					source={{ uri: unknownTrackImageUri }}
 					style={utilsStyles.emptyContentImage}
 				/>
 			</View>
