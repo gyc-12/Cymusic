@@ -1,0 +1,1426 @@
+{
+  "schema_version": 1,
+  "query": "评估 CyMusic 当前 RNTP4、当前稳定 RNTP5、Expo Audio SDK57 及真正开源新架构音频候选的架构、许可与完整播放器能力。",
+  "scope": "mixed",
+  "research_date": "2026-09-09",
+  "task_dir": "/Users/gyc/Code/Cymusic/.trellis/tasks/09-05-rn-expo-new-architecture",
+  "method": {
+    "local": "只读当前产品及已安装依赖源码；没有安装、构建、测试、模拟器或 Git 操作。",
+    "external": "官方 npm registry、发布 tarball、项目官方文档与许可证，curl 使用正常 TLS。tarball 仅在内存解析。",
+    "distinction": "registry 标签是获取时点的版本事实；README 是官方主张；源码摘录验证原生接口。报告不把源码阅读记作运行验收。",
+    "preservation": "只保留来源、摘要、哈希和必要摘录；未保存完整下载包或 HTML。"
+  },
+  "installed": {
+    "expo": "57.0.20",
+    "react-native": "0.86.3",
+    "react": "19.2.3",
+    "react-native-track-player": "4.1.2",
+    "react-native-volume-manager": "2.2.0",
+    "react-native-background-timer": "2.4.1",
+    "react-native-fs": "2.20.0",
+    "react-native-nitro-modules": "0.35.9",
+    "expo-audio": null,
+    "expo_audio_sdk_mapping": "~57.0.4"
+  },
+  "registry_sources": [
+    {
+      "id": "registry_rntp",
+      "url": "https://registry.npmjs.org/react-native-track-player",
+      "fetched_at": "2026-09-09T14:37:38.459940+00:00",
+      "dist_tags": {
+        "next": "4.0.0-rc09",
+        "latest": "4.1.2",
+        "nightly": "5.0.0-alpha0-nightly-359af5a12d712d3b685530aed9b9625865a25d74"
+      },
+      "stable": {
+        "name": "react-native-track-player",
+        "version": "4.1.2",
+        "description": "A fully fledged audio module created for music apps",
+        "license": "Apache-2.0",
+        "homepage": "https://github.com/doublesymmetry/react-native-track-player#readme",
+        "repository": {
+          "url": "git+https://github.com/doublesymmetry/react-native-track-player.git",
+          "type": "git"
+        },
+        "peerDependencies": {
+          "react": ">=16.8.6",
+          "react-native": ">=0.60.0-rc.2",
+          "shaka-player": "^4.7.9",
+          "react-native-windows": ">=0.63.0"
+        },
+        "dependencies": null,
+        "engines": null,
+        "dist": {
+          "shasum": "f855e79ea947f7fed707dbd4b5e9a8bc02e0454d",
+          "tarball": "https://registry.npmjs.org/react-native-track-player/-/react-native-track-player-4.1.2.tgz",
+          "fileCount": 243,
+          "integrity": "sha512-cIgMlqVJx/95hirUWPRW8CHxiBFj9Rjl/voKHh2jF/2URYMTQyt76t/m2FKvjeYUW2doKv4QSCBIOUmtyDLtJw==",
+          "signatures": [
+            {
+              "sig": "MEUCIHv97RhngCbouC+lT771iVmBcGGZmkYxA8dFkAe5RXFlAiEA8TSitHO2VNl3meEjvoiE+z5K1li4OvJXV+bgLanbPxg=",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ],
+          "unpackedSize": 386892
+        },
+        "codegenConfig": null
+      },
+      "stable_published_at": "2025-08-12T12:59:09.329Z",
+      "selected_extra": [
+        {
+          "name": "react-native-track-player",
+          "version": "5.0.0-alpha0-nightly-359af5a12d712d3b685530aed9b9625865a25d74",
+          "description": "A fully fledged audio module created for music apps",
+          "license": "Apache-2.0",
+          "homepage": "https://github.com/doublesymmetry/react-native-track-player#readme",
+          "repository": {
+            "url": "git+https://github.com/doublesymmetry/react-native-track-player.git",
+            "type": "git"
+          },
+          "peerDependencies": {
+            "react": "*",
+            "react-native": "*",
+            "shaka-player": "^4.7.9"
+          },
+          "dependencies": null,
+          "engines": null,
+          "dist": {
+            "shasum": "2fc6e64b74f56113d54e5c4102210329c3258bd3",
+            "tarball": "https://registry.npmjs.org/react-native-track-player/-/react-native-track-player-5.0.0-alpha0-nightly-359af5a12d712d3b685530aed9b9625865a25d74.tgz",
+            "fileCount": 403,
+            "integrity": "sha512-8IwJxiJVbk7vVLZF1rwCFgb9Nu1AqHZ8//UFyKRLNGo0ZIkvFbeCgQSkedgFfD2Hfx2tosz2kTze7hh+nLelyQ==",
+            "signatures": [
+              {
+                "sig": "MEUCIGcPnGbj2xPHY3QJiUJOc8VLiEG6bhpaUIMt9Z31QEPZAiEAjbkkKaPj7cdXZUQ1e7Jd4AJyHUFmnmrkDxF+XUEKfZo=",
+                "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+              }
+            ],
+            "unpackedSize": 511444
+          },
+          "codegenConfig": {
+            "ios": {
+              "modulesProvider": {
+                "NativeTrackPlayer": "TrackPlayer"
+              }
+            },
+            "name": "TrackPlayerSpec",
+            "type": "modules",
+            "android": {
+              "javaPackageName": "com.doublesymmetry.trackplayer"
+            },
+            "jsSrcsDir": "src"
+          }
+        }
+      ]
+    },
+    {
+      "id": "registry_expo_audio",
+      "url": "https://registry.npmjs.org/expo-audio",
+      "fetched_at": "2026-09-09T14:37:37.253915+00:00",
+      "dist_tags": {
+        "sdk-51": "0.1.0",
+        "canary-sdk-55": "55.0.9-canary-20260429-a5e59cf",
+        "canary-sdk-56": "56.0.12-canary-20260701-9100865",
+        "sdk-56": "56.0.13",
+        "latest": "57.0.4",
+        "next": "57.0.4",
+        "sdk-55": "55.0.18",
+        "canary": "58.0.0-canary-20260909-ea7a89a"
+      },
+      "stable": {
+        "name": "expo-audio",
+        "version": "57.0.4",
+        "description": "A cross-platform audio library for React Native and Expo apps.",
+        "license": "MIT",
+        "homepage": "https://docs.expo.dev/versions/latest/sdk/audio/",
+        "repository": {
+          "url": "git+https://github.com/expo/expo.git",
+          "type": "git",
+          "directory": "packages/expo-audio"
+        },
+        "peerDependencies": {
+          "expo": "*",
+          "react": "*",
+          "expo-asset": "*",
+          "react-native": "*"
+        },
+        "dependencies": {},
+        "engines": null,
+        "dist": {
+          "shasum": "fe0e38e53346215329057dba854d8fbbb73938c4",
+          "tarball": "https://registry.npmjs.org/expo-audio/-/expo-audio-57.0.4.tgz",
+          "fileCount": 190,
+          "integrity": "sha512-TLP8rt1UvUDzgxGnyQ0TR9hV6tNP/UJQdDu7mSK+dgEydMFoptq55D3hcUoB1gF39f3/3AUuWfOtpGM+4N4X1A==",
+          "signatures": [
+            {
+              "sig": "MEYCIQC5KiIbNHBJYvEH8G6bJJkasgrvRKpATIHhCyZodkHtOwIhAKlN56L2aAxr7FWinTrOMdH04MIwaBGm4Zx6ZPgszOGS",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            },
+            {
+              "sig": "MEYCIQDzb3tdOyam4uYRoAZMy0q2DFfMybK1KNLIRF1v1K7oTwIhAL96tttMwhOMAaQfuYrIvk3ODvFfy+lTzCgkCFsv98Dc",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ],
+          "unpackedSize": 1329711
+        },
+        "codegenConfig": null
+      },
+      "stable_published_at": "2026-08-20T10:49:56.781Z"
+    },
+    {
+      "id": "registry_audio_api",
+      "url": "https://registry.npmjs.org/react-native-audio-api",
+      "fetched_at": "2026-09-09T14:37:40.183021+00:00",
+      "dist_tags": {
+        "latest": "0.13.3",
+        "audio-api-nightly": "1.0.0-nightly-a8925b5-20260909"
+      },
+      "stable": {
+        "name": "react-native-audio-api",
+        "version": "0.13.3",
+        "description": "react-native-audio-api provides system for controlling audio in React Native environment compatible with Web Audio API specification",
+        "license": "MIT",
+        "homepage": "https://github.com/software-mansion/react-native-audio-api#readme",
+        "repository": {
+          "url": "git+https://github.com/software-mansion/react-native-audio-api.git",
+          "type": "git"
+        },
+        "peerDependencies": {
+          "react": "*",
+          "react-native": "*",
+          "react-native-worklets": ">= 0.6.0"
+        },
+        "dependencies": {
+          "semver": "^7.7.3"
+        },
+        "engines": null,
+        "dist": {
+          "shasum": "87b17cc1e76d3a07a189a3dda767b1584d484ad8",
+          "tarball": "https://registry.npmjs.org/react-native-audio-api/-/react-native-audio-api-0.13.3.tgz",
+          "fileCount": 1392,
+          "integrity": "sha512-U2+vMo7N7CtwHTNNEWnnIckw1EhwhUEmXhQFCL4boo3Q4UfeI1mu2z3DR6BMRL5wWrGYVLNZXQyt5U85nAXntg==",
+          "signatures": [
+            {
+              "sig": "MEYCIQDaxnLrI0v9ROK6ErOZ/4jslimpJt9gxkhqtqRjPfXQ8AIhAJOY7oIkKrQwvmmjF8oggVbM8qRLH1qmhHWUHXMcIaWe",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ],
+          "attestations": {
+            "url": "https://registry.npmjs.org/-/npm/v1/attestations/react-native-audio-api@0.13.3",
+            "provenance": {
+              "predicateType": "https://slsa.dev/provenance/v1"
+            }
+          },
+          "unpackedSize": 9398233
+        },
+        "codegenConfig": {
+          "name": "rnaudioapi",
+          "type": "modules",
+          "android": {
+            "javaPackageName": "com.swmansion.audioapi"
+          },
+          "jsSrcsDir": "src/specs"
+        }
+      },
+      "stable_published_at": "2026-08-17T08:44:55.137Z"
+    },
+    {
+      "id": "registry_rntp5",
+      "url": "https://registry.npmjs.org/@rntp%2Fplayer",
+      "fetched_at": "2026-09-09T14:40:05.912984+00:00",
+      "dist_tags": {
+        "beta": "5.0.0-beta.6",
+        "latest": "5.9.2"
+      },
+      "stable": {
+        "name": "@rntp/player",
+        "version": "5.9.2",
+        "license": "SEE LICENSE IN <license.txt>",
+        "homepage": "https://github.com/doublesymmetry/react-native-track-player#readme",
+        "repository": {
+          "type": "git",
+          "url": "git+https://github.com/doublesymmetry/react-native-track-player.git"
+        },
+        "dependencies": null,
+        "peerDependencies": {
+          "react": "*",
+          "react-native": "*",
+          "shaka-player": ">=4.12.0"
+        },
+        "dist": {
+          "integrity": "sha512-BckAAXu412xR6jWhZAG3aGS8qyFam0ZMmf3bnaeoi9YAUzVoa9gHWjMUEq3SzVs/udbn1wBoVep+/K0NjrTrCg==",
+          "shasum": "eb5ced004b3dbda7db96eb37575117ac8fe0a379",
+          "tarball": "https://registry.npmjs.org/@rntp/player/-/player-5.9.2.tgz",
+          "fileCount": 377,
+          "unpackedSize": 975539,
+          "signatures": [
+            {
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+              "sig": "MEQCIAzvHHXZrNlKUeI1lXHVr2KYvx0HYSViRZ0pHhHptvFMAiB3+nSK1rBJTHPqe4dW78PZ2TpwzEzUpdyzaOG2U71rTw=="
+            }
+          ]
+        },
+        "codegenConfig": {
+          "name": "RNTrackPlayerSpec",
+          "type": "modules",
+          "jsSrcsDir": "src"
+        },
+        "engines": null
+      },
+      "stable_published_at": "2026-08-26T23:12:23.605Z"
+    }
+  ],
+  "document_sources": [
+    {
+      "id": "rntp_official_readme",
+      "url": "https://api.github.com/repos/doublesymmetry/react-native-track-player/readme",
+      "download_url": "https://raw.githubusercontent.com/doublesymmetry/react-native-track-player/main/README.md",
+      "git_blob_sha": "c70b2f43b484b23def02e5b6b0a32854b303035b",
+      "fetched_at": "2026-09-09T14:38:38.372513+00:00",
+      "evidence_level": "official_statement",
+      "excerpts": [
+        {
+          "start_line": 3,
+          "end_line": 9,
+          "text": "**The premium audio player for React Native.**\n\nBuilt on the New Architecture with synchronous native calls — background playback, Android Auto, audio caching, preloading, and more.\n\n> [!IMPORTANT]\n> **Starting with V5, react-native-track-player is commercially licensed.** Personal and educational use remains free; commercial use requires a paid license — see [rntp.dev/pricing](https://rntp.dev/pricing). V4 and earlier remain available under Apache-2.0 on the [`v4` branch](https://github.com/doublesymmetry/react-native-track-player/tree/v4).\n"
+        },
+        {
+          "start_line": 18,
+          "end_line": 38,
+          "text": "- **Simple TypeScript API** — Clean, minimal API fully typed for React Native developers\n- **New Architecture Native** — Built on JSI with TurboModule support, no bridge overhead, no jitter\n- **Background Playback** — Audio continues when the app is backgrounded or screen is off\n- **Android Auto** — Full support for native car dashboard integration\n- **Preloading** — Background buffering of upcoming tracks for gapless-like playback\n- **Audio Caching** — Built-in caching to reduce bandwidth and enable offline playback\n- **Remote Controls** — Lock screen, notification controls, and headset support out of the box\n- **React Hooks** — `usePlaybackState`, `useIsPlaying`, `useProgress`, `useActiveMediaItem`, and more\n\n## Requirements\n\n- React Native **0.74** or later\n- **New Architecture** enabled (Fabric + TurboModules)\n\n## Installation\n\n```sh\nnpm install @rntp/player\n```\n\nThen for iOS:"
+        },
+        {
+          "start_line": 83,
+          "end_line": 101,
+          "text": "\n## Documentation\n\nFull documentation, API reference, and guides are available at **[rntp.dev](https://rntp.dev)**.\n\n## V5\n\nV5 is a complete rewrite and is **not backwards-compatible with V4**.\n\nKey improvements in V5:\n- Built on JSI — `getProgress()`, `getQueue()`, `isPlaying()` return synchronously\n- Full TurboModule and Fabric support\n- Rewritten Android and iOS native layers\n\n## License\n\nFree for non-commercial use. **Commercial use requires a license.**\n\nSee [license.txt](./license.txt) for details or visit [rntp.dev/pricing](https://rntp.dev/pricing) to purchase a commercial license."
+        }
+      ]
+    },
+    {
+      "id": "rntp5_main_license",
+      "url": "https://raw.githubusercontent.com/doublesymmetry/react-native-track-player/main/license.txt",
+      "fetched_at": "2026-09-09T14:40:04.959648+00:00",
+      "evidence_level": "license_text",
+      "text": "react-native-track-player\n\nCopyright (c) Double Symmetry GmbH\n\nNon-Commercial Use\n\nFree for non-commercial use. Non-commercial means use by a private individual\nsolely for personal, non-professional purposes (Personal Use), or use by a\nqualified academic institution strictly for instructional or non-commercial\nresearch activities (Educational Use). Any use that does not strictly and\nentirely qualify as Personal Use or Educational Use requires a commercial\nlicense, including any use within a for-profit company, non-profit\norganization, or government entity.\n\nCommercial Use\n\nCommercial use requires a paid license. See https://rntp.dev/pricing.\n\nBy obtaining a commercial license, you are granted a non-exclusive,\nnon-transferable right to use this software in your project, subject to\nthe following terms:\n\n1. Non-Competition: This software may not be used, in whole or in part,\n   to build a product or service that competes directly with\n   react-native-track-player.\n\n2. Redistribution: This software may not be shared, distributed, or\n   sub-licensed to third parties without explicit written permission.\n\n3. Termination: Your license is terminated immediately upon violation of\n   these terms.\n\nDisclaimer\n\nTHIS SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\nOR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL\nTHE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING\nFROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER\nDEALINGS IN THE SOFTWARE.\n\nFor licensing questions or permissions, contact team@doublesymmetry.com.\n"
+    },
+    {
+      "id": "rntp5_pricing",
+      "url": "https://rntp.dev/pricing",
+      "fetched_at": "2026-09-09T14:40:08.264611+00:00",
+      "evidence_level": "official_price_snapshot",
+      "text": "React Native Track Player — The Premium Audio Player for React Native\nReact Native Track Player\nDocs\nPricing\nSimple, transparent pricing.\nChoose the license that fits how you ship. All plans include full access to V5 features,\nupdates, and bug fixes.\nCommercial License\nFor apps owned & operated by your organization\nMonthly\nYearly\nSave 16%\nRNTP Pro\nFor a single production app.\n€99\n/month\nOr €999/year · plus applicable taxes\nGet V5 Access\n1 commercial app\nFull access to all V5 features\nUpdates & bug fixes included\nCommunity support\nWhite-label & resale not permitted\nMost popular\nRNTP Studio\nFor teams shipping multiple apps.\n€249\n/month\nOr €2,499/year · plus applicable taxes\nGet V5 Access\nUp to 5 commercial apps\nFull access to all V5 features\nUpdates & bug fixes included\nPriority support\nWhite-label & resale not permitted\nPlatform & OEM\nFor client delivery, white-label & platform providers\nBuilding for clients or at scale?\nIf you ship RNTP inside white-label apps, a shared platform codebase, or other\nclient-facing products, Pro and Studio are not the right fit. We offer custom platform\nlicenses scoped to how you deliver — with pricing and terms agreed upfront.\nWhite-label and client delivery\nShared codebase across many production apps\nPlatform-scale deployments\nFixed pricing and terms — no usage reporting\nContact us\nLaunch Credit\nInvite-only · discount code emailed\nShip first. Pay after 6 months.\nApply before your app launches and we'll email you a discount code for a\ncomplimentary 6-month commercial license\n. The 6\nmonths start when you redeem the code at checkout. After 6 months, your subscription\nauto-renews at the standard rate — cancel anytime. Intended for independent developers and\nsmall teams — not for funded companies or enterprise projects. One app, one time.\nApply before launch · discount code emailed; 6 months start when redeemed\nFor indie developers and small teams · not for funded or enterprise projects\nApproval at our discretion · non-transferable · auto-renews at standard rate\nRequest a credit\nAll licenses are per-organization. Launch pricing — early customers keep this rate while their\nsubscription remains active; standard pricing may apply after general availability.\nQuestions?\nReact Native Track Player\nTerms\nImpressum\n© 2026 Double Symmetry GmbH\nen\nde"
+    },
+    {
+      "id": "expo_docs_latest_small",
+      "url": "https://docs.expo.dev/versions/latest/sdk/audio/",
+      "fetched_at": "2026-09-09T14:46:00.655271+00:00",
+      "sha256": "8f959bb72af52de313654760b55240f5eedf3cd1ad7393efb1bc79ccaab6fbb4",
+      "text_length": 70782,
+      "snippets": [
+        "Changelog Recommended version: ~57.0.4 Copy page",
+        "Background recording can significantly impact battery life. enableBackgroundPlayback true A boolean that determines whether to enable background audio playback. On Android, this adds a media playback foreground service and allows you to display the lockscreen controls and is required for sustained background playback. On iOS, this adds the",
+        "Configure the audio session to allow background playback Enable lock screen controls (required on Android for sustained background playback)",
+        "setActiveForLockScreen for sustained background playback. Otherwise, the audio will stop after approximately 3 minutes of background playback (OS limitation). Ensure to appropriately configure the config plugin .",
+        "A media notification appears in the notification drawer with playback controls Audio continues playing indefinitely in the background Users can control playback from the lock screen and notification The foreground service keeps the playback alive during playback",
+        "iOS On iOS, audio playback continues seamlessly in the background once the audio session is configured with shouldPlayInBackground: true . Lock screen controls are optional but enhance the user experience by providing playback controls on the lock screen and Control Center.",
+        "iOS On iOS, background recording continues seamlessly when the app is in the background or the screen locks. No additional notifications or indicators are shown to the app user beyond the system status bar. Using the AudioPlayer directly In most cases, use the",
+        "extends SharedObject < AudioEvents",
+        "extends SharedObject < AudioPlaylistEvents",
+        "extends SharedObject < RecordingEvents",
+        "extends SharedObject < AudioStreamEvents",
+        "setActiveForLockScreen for sustained background playback. Otherwise, the audio will stop after approximately 3 minutes of background playback (OS limitation). Make sure to also appropriately configure the config-plugin ."
+      ]
+    },
+    {
+      "id": "expo_new_arch_docs",
+      "url": "https://docs.expo.dev/guides/new-architecture/",
+      "fetched_at": "2026-09-09T14:45:56.267335+00:00",
+      "sha256": "c07591f3795c27abc64b7ad66eb372f9ab415e44b4be3b3e0a7f38f1f22efa71",
+      "text_length": 15913,
+      "snippets": [
+        "Copy page SDK 55 and later run entirely on the New Architecture. The New Architecture is always enabled and cannot be disabled. If you need to use the legacy architecture, use SDK 54 or earlier. The New Architecture is a name that we use to describe a complete refactoring of the internals of React Native. It is also used to solve limitations of the original React Native architecture discovered over years of usage in production at Meta and other companies.",
+        "Additionally, all modules written using the Expo Modules API support the New Architecture by default! So if you have built your own native modules using this API, no additional work is needed to use them with the New Architecture. As of January 2026, approximately 83% of SDK 54 projects built with",
+        "Known issues in Expo libraries There are no known issues specific to the New Architecture in Expo libraries. Known issues in third-party libraries Since React Native 0.74, there are various Interop Layers enabled by default. This allows many libraries built for the old architecture to work on the New Architecture without any changes. However, the interop is not perfect and some libraries will need to be updated. The libraries that are most likely to require updates are those that ship or depend on third-party native code.",
+        "Since React Native 0.74, there are various Interop Layers enabled by default. This allows many libraries built for the old architecture to work on the New Architecture without any changes. However, the interop is not perfect and some libraries will need to be updated. The libraries that are most likely to require updates are those that ship or depend on third-party native code. Learn more about library support in the New Architecture . Refer to"
+      ]
+    },
+    {
+      "id": "expo_module_api_docs",
+      "url": "https://docs.expo.dev/modules/module-api/",
+      "fetched_at": "2026-09-09T14:45:59.118296+00:00",
+      "sha256": "74a0e5f3decb7d8aeecfbbaf9fe1faf53856ad4b396c5b76d94461971b533e09",
+      "text_length": 44503,
+      "snippets": [
+        "The native modules API is an abstraction layer on top of JSI and other low-level primitives that React Native is built upon. It is built with modern languages (Swift and Kotlin) and provides an easy-to-use and convenient API that is consistent across platforms where possible. Definition components"
+      ]
+    },
+    {
+      "id": "audio_api_license",
+      "url": "https://api.github.com/repos/software-mansion/react-native-audio-api/license",
+      "fetched_at": "2026-09-09T14:45:52.531890+00:00",
+      "sha256": "9e1a5d16cc1c82079809e9bbbf3a2a8fd84c0a90da3a1fc922bb3c313adb27c6",
+      "download_url": "https://raw.githubusercontent.com/software-mansion/react-native-audio-api/main/LICENSE",
+      "git_blob_sha": "d967adb8a19d21dece2260b02749bbc7173eb798",
+      "license": {
+        "key": "mit",
+        "name": "MIT License",
+        "spdx_id": "MIT",
+        "url": "https://api.github.com/licenses/mit",
+        "node_id": "MDc6TGljZW5zZTEz"
+      },
+      "text": "MIT License\n\nCopyright (c) 2024 Software Mansion\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n"
+    },
+    {
+      "id": "audio_api_third_party",
+      "url": "https://raw.githubusercontent.com/software-mansion/react-native-audio-api/0.13.3/THIRD_PARTY.md",
+      "fetched_at": "2026-09-09T14:45:52.953960+00:00",
+      "sha256": "3aa8130b8dd48fc10adb4158e888bb7bc8648c8c83f64df44ad13504a499cc95",
+      "text": "This project contains source code copied from Webkit implementation, which mixes BSD 2 clause and BSD 3 clause with copyrights in specific files held by the following organizations:\n\n- Google Inc.\n- Apple Inc.\n\nIndividual files retain the original copyright notice, but not the full license text.\n\nWebKit, 2 Clause BSD\nCopyright (c) The WebKit Authors\n[https://github.com/WebKit/webkit](https://github.com/WebKit/webkit)\n\nWebKit, 3 Clause BSD\nCopyright (c) The WebKit Authors\n[https://github.com/WebKit/webkit](https://github.com/WebKit/webkit)\n\nIn addition we utilize FFmpeg library under GNU Lesser General Public License (LGPL) version 2.1 or later\n\n- Source: https://github.com/FFmpeg/FFmpeg/releases/tag/n8.0\n- Used in audio decoding module [packages/react-native-audio-api/common/cpp/audioapi/decoding/backends/FfmpegDecoder.cpp](https://github.com/software-mansion/react-native-audio-api/blob/main/packages/react-native-audio-api/common/cpp/audioapi/decoding/backends/FfmpegDecoder.cpp)\n- Instruction for relinking: [packages/react-native-audio-api/common/cpp/audioapi/libs/ffmpeg/INSTRUCTIONS.md](https://github.com/software-mansion/react-native-audio-api/blob/main/packages/react-native-audio-api/common/cpp/audioapi/libs/ffmpeg/INSTRUCTIONS.md)\n\nOther LGPL components may be included as dependencies.\nThe full text of the LGPL license is included in lgplv3 file.\n"
+    },
+    {
+      "id": "audio_api_getting_started",
+      "url": "https://docs.swmansion.com/react-native-audio-api/docs/fundamentals/getting-started",
+      "fetched_at": "2026-09-09T14:45:55.550135+00:00",
+      "sha256": "8cd1156df12bacbf0aa21008d381ea4710b8aa5ceac625b3f26ef8a7a3f4dc44",
+      "text_length": 4998,
+      "snippets": [
+        "Getting started | React Native Audio API Skip to main content Search",
+        "AudioDestinationNode Worklets Introduction WorkletNode",
+        "WorkletNode WorkletSourceNode WorkletProcessingNode Types",
+        "{ \"iosBackgroundMode\" : true",
+        "{ \"iosBackgroundMode\" : true",
+        ", WorkletSourceNode , WorkletProcessingNode",
+        ", it is required to have react-native-worklets library set up with version 0.6.0",
+        "or higher. See worklets getting-started page for info how to do it. info",
+        "If you are not planning to use any of mentioned nodes, react-native-worklets dependency is OPTIONAL"
+      ]
+    },
+    {
+      "id": "expo_docs57",
+      "url": "https://docs.expo.dev/versions/v57.0.0/sdk/audio/",
+      "fetched_at": "2026-09-09T14:40:10.658584+00:00",
+      "evidence_level": "official_sdk57_documentation",
+      "observations": [
+        "Recommended version: ~57.0.4",
+        "AudioPlaylist / useAudioPlaylist / createAudioPlaylist documented",
+        "Background guide uses AudioPlayer.setActiveForLockScreen; Android sustained background requires the media playback foreground service."
+      ]
+    },
+    {
+      "id": "audio_api_pinned_license",
+      "url": "https://raw.githubusercontent.com/software-mansion/react-native-audio-api/0.13.3/LICENSE",
+      "fetched_at": "2026-09-09T14:49:41.543470+00:00",
+      "sha256": "4c497a1c33537e0d8c49d3c0963c17356af83a0fa69f822e5669a1a5169d8918",
+      "license": "MIT",
+      "note": "版本标签0.13.3的许可证已读取；npm tarball 未包含项目根LICENSE，但包manifest与该文件一致。"
+    }
+  ],
+  "published_source_groups": [
+    {
+      "id": "rntp5_592",
+      "package": "@rntp/player",
+      "version": "5.9.2",
+      "url": "https://registry.npmjs.org/@rntp/player/-/player-5.9.2.tgz",
+      "fetched_at": "2026-09-09T14:41:42.169404+00:00",
+      "sha256": "8db99641430af01a2dc3e7e43d55e3a1e26045c0807a142e21ab1c20ce24624e",
+      "files": [
+        {
+          "path": "package/src/NativeTrackPlayer.ts",
+          "sha256": "b6909653c21681e7e415771be612652daba1ea8b89d6b331268c95bb18cbdf5a",
+          "claim": "Spec extends TurboModule；同步getters；真正TurboModule路径",
+          "excerpts": [
+            {
+              "start_line": 6,
+              "end_line": 27,
+              "text": "import type { TurboModule } from 'react-native';\nimport { Platform, TurboModuleRegistry } from 'react-native';\nimport type { UnsafeObject } from 'react-native/Libraries/Types/CodegenTypes';\n\nexport interface Spec extends TurboModule {\n  // Setup\n  setupPlayer(config: UnsafeObject): void;\n\n  // Playback\n  play(): void;\n  pause(): void;\n  stop(): void;\n  seekTo(position: number): void;\n  seekToLiveEdge(): void;\n  seekBy(offset: number): void;\n  skipToNext(): void;\n  skipToPrevious(): void;\n  skipToIndex(index: number): void;\n  retry(): void;\n  clearCache(): void;\n  setPlaybackSpeed(speed: number): void;\n  setVolume(volume: number): void;"
+            },
+            {
+              "start_line": 57,
+              "end_line": 87,
+              "text": "  // State getters (sync)\n  getPlaybackState(): string;\n  isPlaying(): boolean;\n  getProgress(): UnsafeObject;\n  getPlaybackSpeed(): number;\n  getVolume(): number;\n  getActiveMediaItem(): UnsafeObject | null;\n  getActiveMediaItemIndex(): number | null;\n  getQueue(): ReadonlyArray<UnsafeObject>;\n  getRepeatMode(): string;\n  isShuffleEnabled(): boolean;\n\n  // Player options\n  setCommands(commands: UnsafeObject): void;\n  setRepeatMode(mode: string): void;\n  setShuffleEnabled(enabled: boolean): void;\n\n  // Browse tree (Android Auto / media browsers)\n  setBrowseTree(categories: ReadonlyArray<UnsafeObject>): void;\n\n  // Progress Sync\n  updateProgressSyncHeaders(headers: UnsafeObject): void;\n\n  // Preloading\n  preload(item: UnsafeObject, duration: number): void;\n  cancelPreload(item: UnsafeObject): void;\n\n  // Sleep Timer\n  sleepAfterTime(seconds: number, fadeOutSeconds: number): void;\n  sleepAfterMediaItemAtIndex(index: number): void;\n  getSleepTimer(): UnsafeObject | null;"
+            },
+            {
+              "start_line": 103,
+              "end_line": 111,
+              "text": "      throw new Error(\n        '@rntp/player: the native TurboModule was requested on web. Your bundler ' +\n          \"isn't resolving `.web.ts` platform extensions, so it picked the native \" +\n          'module instead of the web implementation. Configure resolve extensions ' +\n          \"(e.g. ['.web.tsx', '.web.ts', '.web.js', ...]) — see the web installation docs.\"\n      );\n    }\n    throw error;\n  }"
+            }
+          ]
+        },
+        {
+          "path": "package/ios/TrackPlayerBridge.h",
+          "sha256": "4a432ba8168f8bc4ec4a7f2b530ff8d98a01c32d7eef0fd6fdfeea4f98cfd618",
+          "claim": "遵循NativeTrackPlayerSpec；出现RCTEventEmitter本身不能据此判旧架构",
+          "excerpts": [
+            {
+              "start_line": 8,
+              "end_line": 19,
+              "text": "#import <Foundation/Foundation.h>\n#import <React/RCTEventEmitter.h>\n#import <React/RCTViewManager.h>\n#import <React/RCTConvert.h>\n#import <RNTrackPlayerSpec/RNTrackPlayerSpec.h>\n\n@interface TrackPlayer: RCTEventEmitter\n@end\n\n@interface TrackPlayer(RCTExternModule)<NativeTrackPlayerSpec>\n@end\n"
+            }
+          ]
+        },
+        {
+          "path": "package/ios/TrackPlayerBridge.mm",
+          "sha256": "46b3353281dfb3484ef7c3435dc85a2ca5d6b905bdfba59f7ab4b66f4453aa6a",
+          "claim": "getTurboModule返回NativeTrackPlayerSpecJSI",
+          "excerpts": [
+            {
+              "start_line": 84,
+              "end_line": 95,
+              "text": "RCT_EXTERN_METHOD(cancelSleepTimer);\n\n// Destroy\nRCT_EXTERN_METHOD(destroy);\n\n- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:\n(const facebook::react::ObjCTurboModule::InitParams &)params\n{\n    return std::make_shared<facebook::react::NativeTrackPlayerSpecJSI>(params);\n}\n\n@end"
+            }
+          ]
+        },
+        {
+          "path": "package/android/src/newarch/TrackPlayerSpec.kt",
+          "sha256": "8300b8bc1c72f2205180e9e799d7abb3b727298f68ec735cb2acb306f6adc426",
+          "claim": "Android生成Spec基类",
+          "excerpts": [
+            {
+              "start_line": 6,
+              "end_line": 12,
+              "text": "package com.doublesymmetry.trackplayer\n\nimport com.facebook.react.bridge.ReactApplicationContext\n\nabstract class TrackPlayerSpec internal constructor(context: ReactApplicationContext) :\n  NativeTrackPlayerSpec(context) {\n}"
+            }
+          ]
+        },
+        {
+          "path": "package/src/trackPlayerModule.ts",
+          "sha256": "b111d3124ac03a947151289cca7b6b391fd3f0ee9632bd4de74f93e6409f0598",
+          "claim": "TurboModule选路；保留fallback并不否认原生新架构实现",
+          "excerpts": [
+            {
+              "start_line": 14,
+              "end_line": 21,
+              "text": "// @ts-expect-error global.__turboModuleProxy is injected by the New Architecture.\nconst isTurboModuleEnabled = global.__turboModuleProxy != null;\n\nconst TrackPlayerModule = isTurboModuleEnabled\n  ? require('./NativeTrackPlayer').default\n  : NativeModules.TrackPlayer;\n\nexport const TrackPlayer = TrackPlayerModule"
+            }
+          ]
+        },
+        {
+          "path": "package/license.txt",
+          "sha256": "d662a67651c9ed6224aba9e229f150d757431d7e4533e1bb5b6dca12b7414cbd",
+          "claim": "精确发布版本的商业/非商业使用条件",
+          "excerpts": [
+            {
+              "start_line": 1,
+              "end_line": 44,
+              "text": "react-native-track-player\n\nCopyright (c) Double Symmetry GmbH\n\nNon-Commercial Use\n\nFree for non-commercial use. Non-commercial means use by a private individual\nsolely for personal, non-professional purposes (Personal Use), or use by a\nqualified academic institution strictly for instructional or non-commercial\nresearch activities (Educational Use). Any use that does not strictly and\nentirely qualify as Personal Use or Educational Use requires a commercial\nlicense, including any use within a for-profit company, non-profit\norganization, or government entity.\n\nCommercial Use\n\nCommercial use requires a paid license. See https://rntp.dev/pricing.\n\nBy obtaining a commercial license, you are granted a non-exclusive,\nnon-transferable right to use this software in your project, subject to\nthe following terms:\n\n1. Non-Competition: This software may not be used, in whole or in part,\n   to build a product or service that competes directly with\n   react-native-track-player.\n\n2. Redistribution: This software may not be shared, distributed, or\n   sub-licensed to third parties without explicit written permission.\n\n3. Termination: Your license is terminated immediately upon violation of\n   these terms.\n\nDisclaimer\n\nTHIS SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\nOR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL\nTHE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING\nFROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER\nDEALINGS IN THE SOFTWARE.\n\nFor licensing questions or permissions, contact team@doublesymmetry.com.\n"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "expo_audio_5704",
+      "package": "expo-audio",
+      "version": "57.0.4",
+      "url": "https://registry.npmjs.org/expo-audio/-/expo-audio-57.0.4.tgz",
+      "fetched_at": "2026-09-09T14:41:42.169987+00:00",
+      "sha256": "0a0e53d07ba3280909c16d520af66023c02be817bb4de62ae44aa3292a8c295d",
+      "files": [
+        {
+          "path": "package/LICENSE",
+          "claim": "MIT许可，允许商业使用并须保留声明",
+          "excerpts": [
+            {
+              "start_line": 1,
+              "end_line": 20,
+              "text": "The MIT License (MIT)\n\nCopyright (c) 2015-present 650 Industries, Inc. (aka Expo)\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE"
+            }
+          ]
+        },
+        {
+          "path": "package/expo-module.config.json",
+          "claim": "Expo官方原生Module注册",
+          "excerpts": [
+            {
+              "start_line": 1,
+              "end_line": 16,
+              "text": "{\n  \"platforms\": [\"apple\", \"android\"],\n  \"apple\": {\n    \"modules\": [\"AudioModule\"]\n  },\n  \"android\": {\n    \"modules\": [\"expo.modules.audio.AudioModule\"],\n    \"publication\": {\n      \"groupId\": \"expo.modules.audio\",\n      \"artifactId\": \"expo.modules.audio\",\n      \"version\": \"57.0.4\",\n      \"repository\": \"local-maven-repo\"\n    }\n  }\n}\n"
+            }
+          ]
+        },
+        {
+          "path": "package/src/AudioModule.ts",
+          "sha256": "c29fafe853816cda3ff7554a1599c93a249e680d3add1358ec45875cb94d5e58",
+          "claim": "Expo Modules requireNativeModule",
+          "excerpts": [
+            {
+              "start_line": 1,
+              "end_line": 9,
+              "text": "import { requireNativeModule } from 'expo-modules-core';\n\nimport type { NativeAudioModule } from './AudioModule.types';\n\n/**\n * @hidden\n */\nexport default requireNativeModule<NativeAudioModule>('ExpoAudio');\n"
+            }
+          ]
+        },
+        {
+          "path": "package/ios/AudioModule.swift",
+          "sha256": "988bad3ed7eadf2b79d0de2a02529862e7e04cf5d52c9e8ddb65b55acb133e52",
+          "claim": "ExpoModule/SharedObject；预加载/锁屏只暴露于AudioPlayer；Playlist原生队列及自动中断策略",
+          "excerpts": [
+            {
+              "start_line": 1,
+              "end_line": 19,
+              "text": "import ExpoModulesCore\n\npublic class AudioModule: Module {\n  private var sessionIsActive = true\n  private let registry = AudioComponentRegistry()\n\n  // MARK: Properties\n  private var recordingSettings = [String: Any]()\n  private var shouldPlayInBackground = false\n  private var interruptionMode: InterruptionMode = .mixWithOthers\n  private var interruptedPlayers = Set<String>()\n  private var playerVolumes = [String: Float]()\n  private var allowsRecording = false\n  private var allowsBackgroundRecording = false\n  private var sessionOptions: AVAudioSession.CategoryOptions = []\n  private var lastConfiguredMode: AudioMode?\n\n  public func definition() -> ModuleDefinition {\n    Name(\"ExpoAudio\")"
+            },
+            {
+              "start_line": 63,
+              "end_line": 74,
+              "text": "    AsyncFunction(\"preload\") { (source: AudioSource, preferredForwardBufferDuration: Double) in\n      guard let uri = source.uri else {\n        return\n      }\n      let key = uri.absoluteString\n      if self.registry.hasPreloadedPlayer(forKey: key) {\n        return\n      }\n      let player = AudioUtils.createAVPlayer(from: source)\n      player.currentItem?.preferredForwardBufferDuration = preferredForwardBufferDuration\n      self.registry.addPreloadedPlayer(player, forKey: key)\n    }"
+            },
+            {
+              "start_line": 121,
+              "end_line": 136,
+              "text": "    Class(AudioPlayer.self) {\n      Constructor { (source: AudioSource?, updateInterval: Double, keepAudioSessionActive: Bool, preferredForwardBufferDuration: Double) -> AudioPlayer in\n        let avPlayer: AVPlayer\n        if let uri = source?.uri?.absoluteString, let cachedPlayer = self.registry.removePreloadedPlayer(forKey: uri) {\n          avPlayer = cachedPlayer\n        } else {\n          avPlayer = AudioUtils.createAVPlayer(from: source)\n          if preferredForwardBufferDuration > 0 {\n            avPlayer.currentItem?.preferredForwardBufferDuration = preferredForwardBufferDuration\n          }\n        }\n        let player = AudioPlayer(avPlayer, interval: updateInterval, source: source)\n        player.owningRegistry = self.registry\n        player.keepAudioSessionActive = keepAudioSessionActive\n        player.onPlaybackComplete = { [weak self] in\n          if !keepAudioSessionActive {"
+            },
+            {
+              "start_line": 202,
+              "end_line": 206,
+              "text": "      Property(\"volume\") { player in\n        player.ref.volume\n      }.set { (player, volume: Double) in\n        player.ref.volume = Float(volume)\n      }"
+            },
+            {
+              "start_line": 261,
+              "end_line": 284,
+              "text": "      Function(\"setActiveForLockScreen\") { (player: AudioPlayer, active: Bool, metadata: Metadata?, options: LockScreenOptions?) in\n        player.setActiveForLockScreen(active, metadata: metadata, options: options)\n      }\n\n      Function(\"updateLockScreenMetadata\") { (player: AudioPlayer, metadata: Metadata?) in\n        if player.isActiveForLockScreen {\n          player.metadata = metadata\n          MediaController.shared.updateNowPlayingInfo(for: player)\n        }\n      }\n\n      Function(\"clearLockScreenControls\") { (player: AudioPlayer) in\n        if player.isActiveForLockScreen {\n          player.metadata = nil\n          player.isActiveForLockScreen = false\n          MediaController.shared.setActivePlayer(nil)\n        }\n      }\n\n      AsyncFunction(\"seekTo\") { (player: AudioPlayer, seconds: Double, toleranceMillisBefore: Double?, toleranceMillisAfter: Double?) in\n        await player.seekTo(\n          seconds: seconds,\n          toleranceMillisBefore: toleranceMillisBefore,\n          toleranceMillisAfter: toleranceMillisAfter"
+            },
+            {
+              "start_line": 289,
+              "end_line": 299,
+              "text": "    Class(AudioPlaylist.self) {\n      Constructor { (sources: [AudioSource], updateInterval: Double, loopMode: LoopMode) -> AudioPlaylist in\n        // Keep one slot per source, nil where an item can't be created, so playerItems stays aligned with sources.\n        let items = sources.map { AudioUtils.createAVPlayerItem(from: $0) }\n        let avQueuePlayer = AVQueuePlayer(items: items.compactMap { $0 })\n        let playlist = AudioPlaylist(avQueuePlayer, sources: sources, items: items, interval: updateInterval, loopMode: loopMode)\n        playlist.owningRegistry = self.registry\n        self.registry.add(playlist)\n        return playlist\n      }\n"
+            },
+            {
+              "start_line": 342,
+              "end_line": 345,
+              "text": "      Property(\"volume\") { playlist in\n        playlist.ref.volume\n      }.set { (playlist, volume: Double) in\n        playlist.ref.volume = Float(volume)"
+            },
+            {
+              "start_line": 364,
+              "end_line": 408,
+              "text": "      Function(\"play\") { playlist in\n        try activateSession()\n        playlist.play(at: playlist.currentRate)\n      }\n\n      Function(\"pause\") { playlist in\n        playlist.pause()\n      }\n\n      Function(\"next\") { playlist in\n        playlist.next()\n      }\n\n      Function(\"previous\") { playlist in\n        playlist.previous()\n      }\n\n      Function(\"skipTo\") { (playlist, index: Int) in\n        playlist.skipTo(index: index)\n      }\n\n      AsyncFunction(\"seekTo\") { (playlist: AudioPlaylist, seconds: Double) in\n        await playlist.seekTo(seconds: seconds)\n      }\n\n      Function(\"add\") { (playlist, source: AudioSource) in\n        playlist.add(source: source)\n      }\n\n      Function(\"insert\") { (playlist, source: AudioSource, index: Int) in\n        playlist.insert(source: source, at: index)\n      }\n\n      Function(\"remove\") { (playlist, index: Int) in\n        playlist.remove(at: index)\n      }\n\n      Function(\"clear\") { playlist in\n        playlist.clear()\n      }\n\n      Function(\"destroy\") { playlist in\n        self.registry.remove(playlist)\n      }\n    }"
+            },
+            {
+              "start_line": 589,
+              "end_line": 624,
+              "text": "  private func handleInterruptionBegan() {\n    interruptedPlayers.removeAll()\n    playerVolumes.removeAll()\n\n    registry.allPlayables.forEach { playable in\n      if playable.isPlaying {\n        interruptedPlayers.insert(playable.id)\n        switch interruptionMode {\n        case .duckOthers:\n          playerVolumes[playable.id] = playable.volume\n          playable.volume *= 0.5\n        case .doNotMix, .mixWithOthers:\n          playable.pause()\n        }\n      }\n    }\n\n#if os(iOS)\n    registry.allRecorders.values.forEach { recorder in\n      if recorder.isRecording {\n        recorder.pauseRecording()\n      }\n    }\n#endif\n  }\n\n  private func handleInterruptionEnded(with options: AVAudioSession.InterruptionOptions) {\n    do {\n      try AVAudioSession.sharedInstance().setActive(true)\n      if options.contains(.shouldResume) {\n        resumeInterruptedPlayers()\n      }\n    } catch {\n      print(\"Failed to reactivate audio session: \\(error)\")\n    }\n  }"
+            },
+            {
+              "start_line": 626,
+              "end_line": 637,
+              "text": "  @objc private func handleAudioSessionRouteChange(_ notification: Notification) {\n    guard let userInfo = notification.userInfo,\n      let reasonRaw = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,\n      let reason = AVAudioSession.RouteChangeReason(rawValue: reasonRaw) else {\n      return\n    }\n\n    switch reason {\n    case .oldDeviceUnavailable:\n      pauseAllPlayers()\n    default:\n      break"
+            },
+            {
+              "start_line": 669,
+              "end_line": 680,
+              "text": "  private func resumeInterruptedPlayers() {\n    registry.allPlayables.forEach { playable in\n      if interruptedPlayers.contains(playable.id) {\n        switch interruptionMode {\n        case .duckOthers:\n          if let originalVolume = playerVolumes[playable.id] {\n            playable.volume = originalVolume\n          }\n        case .doNotMix, .mixWithOthers:\n          playable.resumePlayback()\n        }\n      }"
+            }
+          ]
+        },
+        {
+          "path": "package/ios/AudioPlaylist.swift",
+          "sha256": "5c990cc4f73454ab1ec00b189beab2c3f32968b4bb75a7751fe8d438094af81f",
+          "claim": "SharedRef<AVQueuePlayer>；真正原生队列",
+          "excerpts": [
+            {
+              "start_line": 10,
+              "end_line": 21,
+              "text": "public class AudioPlaylist: SharedRef<AVQueuePlayer>, Playable {\n  let id = UUID().uuidString\n  private let interval: Double\n  private(set) var currentRate: Float = 1.0\n\n  var loopMode: LoopMode = .none\n  var wasPlaying = false\n\n  private(set) var sources: [AudioSource] = []\n\n  private var playerItems: [AVPlayerItem?] = []\n  private var previousTrackIndex = 0"
+            },
+            {
+              "start_line": 66,
+              "end_line": 104,
+              "text": "  init(_ ref: AVQueuePlayer, sources: [AudioSource], items: [AVPlayerItem?], interval: Double, loopMode: LoopMode) {\n    self.interval = interval\n    self.loopMode = loopMode\n    self.sources = sources\n    self.playerItems = items\n    super.init(ref)\n\n    ref.actionAtItemEnd = loopMode == .single ? .pause : .advance\n    setupPublisher()\n    addPlaybackEndNotification()\n  }\n\n  func play(at rate: Float) {\n    registerTimeObserver()\n    ref.playImmediately(atRate: rate)\n  }\n\n  func pause() {\n    ref.pause()\n  }\n\n  func next() {\n    if currentTrackIndex < sources.count - 1 {\n      ref.advanceToNextItem()\n    } else if loopMode == .all && !sources.isEmpty {\n      skipTo(index: 0)\n    }\n  }\n\n  func previous() {\n    if currentTrackIndex > 0 {\n      let wasPlaying = isPlaying\n      rebuildPlaylist(startingAt: currentTrackIndex - 1)\n      if wasPlaying {\n        play(at: currentRate)\n      }\n    } else if loopMode == .all && !sources.isEmpty {\n      skipTo(index: sources.count - 1)\n    }"
+            }
+          ]
+        },
+        {
+          "path": "package/src/AudioModule.types.ts",
+          "claim": "AudioPlayer锁屏接口；Playlist只有状态/trackChanged等事件，无远程next/previous控制入口",
+          "excerpts": [
+            {
+              "start_line": 214,
+              "end_line": 245,
+              "text": "   *\n   * > **Note:** For lock screen controls to work correctly, [`interruptionMode`](#interruptionmode) must be set to `doNotMix` using [`setAudioModeAsync`](#audiosetaudiomodeasyncmode).\n   * > Without this, the OS might not associate lock screen controls with your player.\n   *\n   * @param active Whether this player should be active for lock screen controls.\n   * @param metadata Optional metadata to display on the lock screen (title, artist, album, artwork).\n   * @param options Optional configuration to configure the lock screen controls.\n   */\n  setActiveForLockScreen(\n    active: boolean,\n    metadata?: AudioMetadata,\n    options?: AudioLockScreenOptions\n  ): void;\n\n  /**\n   * Updates the metadata displayed on the lock screen for this player.\n   * This method only has an effect if this player is currently active for lock screen controls.\n   * @param metadata The metadata to display (title, artist, album, artwork).\n   */\n  updateLockScreenMetadata(metadata: AudioMetadata): void;\n\n  /**\n   * Removes this player from lock screen controls if it's currently active.\n   * This will clear the lock screen's now playing info.\n   */\n  clearLockScreenControls(): void;\n\n  /**\n   * Remove the player from memory to free up resources.\n   */\n  remove(): void;\n}"
+            },
+            {
+              "start_line": 278,
+              "end_line": 283,
+              "text": "export type AudioEvents = {\n  /** Fired when the player's status changes (play/pause/seek/load and so on.). */\n  playbackStatusUpdate(status: AudioStatus): void;\n  /** Fired when audio sampling is enabled and new sample data is available. */\n  audioSampleUpdate(data: AudioSample): void;\n};"
+            },
+            {
+              "start_line": 384,
+              "end_line": 401,
+              "text": " * Event types that an `AudioPlaylist` can emit.\n *\n * These events allow you to listen for changes in playlist playback state.\n * Use `playlist.addListener()` to subscribe to these events.\n */\nexport type AudioPlaylistEvents = {\n  /** Fired when the playlist's status changes (play/pause/seek/load/track change). */\n  playlistStatusUpdate(status: AudioPlaylistStatus): void;\n  /** Fired when the current track changes (next/previous/skip). */\n  trackChanged(data: { previousIndex: number; currentIndex: number }): void;\n};\n\nexport declare class AudioPlaylist extends SharedObject<AudioPlaylistEvents> {\n  /**\n   * Initializes a new audio playlist instance.\n   * @hidden\n   */\n  constructor(sources: AudioSource[], updateInterval: number, loop: AudioPlaylistLoopMode);"
+            },
+            {
+              "start_line": 474,
+              "end_line": 538,
+              "text": "  /**\n   * Start playing the current track in the playlist.\n   */\n  play(): void;\n\n  /**\n   * Pause playback.\n   */\n  pause(): void;\n\n  /**\n   * Skip to the next track in the playlist.\n   * If at the end of the playlist and loop mode is 'all', wraps to the first track.\n   * If loop mode is 'none' and at the end, does nothing.\n   */\n  next(): void;\n\n  /**\n   * Skip to the previous track in the playlist.\n   * If at the beginning of the playlist and loop mode is 'all', wraps to the last track.\n   * If loop mode is 'none' and at the beginning, does nothing.\n   */\n  previous(): void;\n\n  /**\n   * Skip to a specific track in the playlist by index.\n   * @param index The index of the track to skip to.\n   */\n  skipTo(index: number): void;\n\n  /**\n   * Seeks the playback to a specific position in seconds.\n   * @param seconds The position to seek to.\n   */\n  seekTo(seconds: number): Promise<void>;\n\n  /**\n   * Add a track to the end of the playlist.\n   * @param source The audio source to add.\n   */\n  add(source: AudioSource): void;\n\n  /**\n   * Insert a track at a specific position in the playlist.\n   * @param source The audio source to insert.\n   * @param index The position to insert at.\n   */\n  insert(source: AudioSource, index: number): void;\n\n  /**\n   * Remove a track from the playlist by index.\n   * @param index The index of the track to remove.\n   */\n  remove(index: number): void;\n\n  /**\n   * Clear all tracks from the playlist.\n   */\n  clear(): void;\n\n  /**\n   * Destroy the playlist and free up resources.\n   */\n  destroy(): void;\n}"
+            }
+          ]
+        },
+        {
+          "path": "package/src/Audio.types.ts",
+          "claim": "URI来源；中断模式；后台设置；loop=none/single/all",
+          "excerpts": [
+            {
+              "start_line": 18,
+              "end_line": 44,
+              "text": "// @docsMissing\nexport type AudioSource =\n  | string\n  | number\n  | null\n  | {\n      /**\n       * A string representing the resource identifier for the audio,\n       * which could be an HTTPS address, a local file path, or the name of a static audio file resource.\n       */\n      uri?: string;\n      /**\n       * The asset ID of a local audio asset, acquired with the `require` function.\n       * This property is exclusive with the `uri` property. When both are present, the `assetId` will be ignored.\n       */\n      assetId?: number;\n      /**\n       * An object representing the HTTP headers to send along with the request for a remote audio source.\n       * On web requires the `Access-Control-Allow-Origin` header returned by the server to include the current domain.\n       */\n      headers?: Record<string, string>;\n      /**\n       * An optional display name for the audio source.\n       * Useful for showing track names in a queue or playlist UI.\n       */\n      name?: string;\n    };"
+            },
+            {
+              "start_line": 553,
+              "end_line": 593,
+              "text": "export type AudioMode = {\n  /**\n   * Determines if audio playback is allowed when the device is in silent mode.\n   * On Android, when `false`, playback is suppressed when the ringer mode is silent or vibrate.\n   *\n   * @default true\n   */\n  playsInSilentMode: boolean;\n  /**\n   * Determines how the audio session interacts with other audio sessions.\n   *\n   * - `'doNotMix'`: Requests exclusive audio focus. Other apps will pause their audio.\n   * - `'duckOthers'`: Requests audio focus with ducking. Other apps lower their volume but continue playing.\n   * - `'mixWithOthers'`: Audio plays alongside other apps without interrupting them.\n   *   On Android, this means no audio focus is requested. Best suited for sound effects,\n   *   UI feedback, or short audio clips.\n   *\n   * @default 'mixWithOthers'\n   */\n  interruptionMode: InterruptionMode;\n  /**\n   * Determines how the audio session interacts with other sessions on Android.\n   *\n   * @platform android\n   * @deprecated Use `interruptionMode` instead, which now works on both platforms.\n   */\n  interruptionModeAndroid?: InterruptionModeAndroid;\n  /**\n   * Whether the audio session allows recording.\n   *\n   * @default false\n   * @platform ios\n   */\n  allowsRecording: boolean;\n  /**\n   * Whether the audio session stays active when the app moves to the background.\n   *\n   * > **Note**: On Android, you have to enable the lockscreen controls with [`setActiveForLockScreen`](#setactiveforlockscreenactive-metadata-options) for sustained background playback. Otherwise, the audio will stop after approximately 3 minutes of background playback (OS limitation). Make sure to also appropriately [configure the config-plugin](#configuration-in-app-config).\n   * @default false\n   */\n  shouldPlayInBackground: boolean;"
+            },
+            {
+              "start_line": 611,
+              "end_line": 628,
+              "text": "/**\n * Audio interruption behavior modes.\n *\n * Controls how your app's audio interacts with other apps' audio.\n *\n * - `'doNotMix'`: Requests exclusive audio focus. Other apps will pause their audio.\n * - `'duckOthers'`: Requests audio focus with ducking. Other apps lower their volume but continue playing.\n * - `'mixWithOthers'`: Audio plays alongside other apps without interrupting them.\n *\n *   On Android, this means no audio focus is requested. Best suited for sound effects,\n *   UI feedback, or short audio clips. Note that on Android your app won't receive\n *   audio focus loss callbacks (for example, during phone calls) when using this mode.\n *\n *  > **Note:** When using `setActiveForLockScreen`, this must be set to `doNotMix`.\n *\n * @default 'mixWithOthers'\n */\nexport type InterruptionMode = 'mixWithOthers' | 'doNotMix' | 'duckOthers';"
+            },
+            {
+              "start_line": 675,
+              "end_line": 701,
+              "text": " */\nexport type AudioPlaylistLoopMode = 'none' | 'single' | 'all';\n\n/**\n * Options for configuring an audio playlist.\n */\nexport type AudioPlaylistOptions = {\n  /**\n   * Initial sources to add to the playlist. Each source can be a local asset, remote URL, or null.\n   * @default []\n   */\n  sources?: AudioSource[];\n\n  /**\n   * How often (in milliseconds) to emit playback status updates. Defaults to 500ms.\n   * @default 500\n   */\n  updateInterval?: number;\n\n  /**\n   * Loop mode for the playlist.\n   * - `'none'`: No looping (default)\n   * - `'single'`: Loop the current track\n   * - `'all'`: Loop the entire playlist\n   * @default 'none'\n   */\n  loop?: AudioPlaylistLoopMode;"
+            }
+          ]
+        },
+        {
+          "path": "package/src/ExpoAudio.ts",
+          "claim": "hook卸载释放；createAudioPlaylist持有单例；preload与清理",
+          "excerpts": [
+            {
+              "start_line": 335,
+              "end_line": 345,
+              "text": "export function useAudioPlaylist(options: AudioPlaylistOptions = {}): AudioPlaylist {\n  const { sources = [], updateInterval = 500, loop = 'none' } = options;\n\n  const resolvedSources = useMemo(() => resolveSources(sources), [JSON.stringify(sources)]);\n\n  const playlist = useReleasingSharedObject(\n    () => new AudioModule.AudioPlaylist(resolvedSources, updateInterval, loop),\n    [JSON.stringify(resolvedSources), updateInterval, loop]\n  );\n\n  return playlist;"
+            },
+            {
+              "start_line": 380,
+              "end_line": 390,
+              "text": "/**\n * Creates an instance of an `AudioPlaylist` that doesn't release automatically.\n *\n * > **info** For most use cases you should use the [`useAudioPlaylist`](#useaudioplaylistoptions) hook instead.\n *\n * @param options Audio playlist configuration options.\n */\nexport function createAudioPlaylist(options: AudioPlaylistOptions = {}): AudioPlaylist {\n  const { sources = [], updateInterval = 500, loop = 'none' } = options;\n  const resolvedSources = resolveSources(sources);\n  return new AudioModule.AudioPlaylist(resolvedSources, updateInterval, loop);"
+            },
+            {
+              "start_line": 394,
+              "end_line": 416,
+              "text": " * Creates an instance of an `AudioPlayer` that doesn't release automatically.\n *\n * > **info** For most use cases you should use the [`useAudioPlayer`](#useaudioplayersource-options) hook instead.\n * > See the [Using the `AudioPlayer` directly](#using-the-audioplayer-directly) section for more details.\n * @param source The audio source to load.\n * @param options Audio player configuration options.\n */\nexport function createAudioPlayer(\n  source: AudioSource | string | number | null = null,\n  options: AudioPlayerOptions = {}\n): AudioPlayer {\n  const {\n    updateInterval = 500,\n    downloadFirst = false,\n    keepAudioSessionActive = false,\n    preferredForwardBufferDuration = 0,\n  } = options;\n  const initialSource = downloadFirst ? null : resolveSource(source);\n  const player = new AudioModule.AudioPlayer(\n    initialSource,\n    updateInterval,\n    keepAudioSessionActive,\n    preferredForwardBufferDuration"
+            },
+            {
+              "start_line": 624,
+              "end_line": 629,
+              "text": "export async function preload(source: AudioSource, options: PreloadOptions = {}): Promise<void> {\n  const resolved = resolveSource(source);\n  if (!resolved) return;\n  const { preferredForwardBufferDuration = 10 } = options;\n  return AudioModule.preload(resolved, preferredForwardBufferDuration);\n}"
+            },
+            {
+              "start_line": 649,
+              "end_line": 658,
+              "text": "/**\n * Returns the URIs of all currently preloaded audio sources.\n *\n * On iOS, sources are removed from this list when consumed by `useAudioPlayer()`, `createAudioPlayer()`, or `player.replace()`.\n * On Android and web, sources remain until explicitly cleared with `clearPreloadedSource()` / `clearAllPreloadedSources()`.\n *\n * @returns An array of URI strings for sources currently in the preload cache.\n */\nexport async function getPreloadedSources(): Promise<string[]> {\n  return AudioModule.getPreloadedSources();"
+            }
+          ]
+        },
+        {
+          "path": "package/src/AudioConstants.ts",
+          "sha256": "4469ffa1af8995a71bdd45d8278f9aadb94e52c5e278006a7e5d8179a8ba97f4",
+          "claim": "锁屏只有seek-forward/backward与live标志，没有next/previous track",
+          "excerpts": [
+            {
+              "start_line": 1,
+              "end_line": 20,
+              "text": "// @needsAudit\n/**\n * Options for configuring which playback controls should be displayed on the lock screen.\n */\nexport type AudioLockScreenOptions = {\n  /**\n   * Whether the seek forward button should be displayed on the lock screen.\n   */\n  showSeekForward?: boolean;\n  /**\n   * Whether the seek backward button should be displayed on the lock screen.\n   */\n  showSeekBackward?: boolean;\n  /**\n   * Whether the audio is a live stream. When `true`, the lock screen will hide the duration\n   * and scrub bar, and disable seek controls.\n   */\n  isLiveStream?: boolean;\n};\n"
+            }
+          ]
+        },
+        {
+          "path": "package/ios/MediaController.swift",
+          "sha256": "8a1d895f13afe02f291a7db1050c4e74b176963598ced7e83213c3fb7ba3d604",
+          "claim": "activePlayer是AudioPlayer；命令直接操作单曲播放/暂停/seek；±10秒不是切歌",
+          "excerpts": [
+            {
+              "start_line": 5,
+              "end_line": 9,
+              "text": "class MediaController {\n  static let shared = MediaController()\n\n  private var activePlayer: AudioPlayer?\n  private var remoteCommandCenter = MPRemoteCommandCenter.shared()"
+            },
+            {
+              "start_line": 234,
+              "end_line": 275,
+              "text": "  private func enableRemoteCommands(options: LockScreenOptions?) {\n    remoteCommandCenter.playCommand.addTarget { [weak self] _ in\n      guard let player = self?.activePlayer else {\n        return .commandFailed\n      }\n\n      player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))\n      return .success\n    }\n\n    remoteCommandCenter.pauseCommand.addTarget { [weak self] _ in\n      guard let player = self?.activePlayer else {\n        return .commandFailed\n      }\n\n      player.ref.pause()\n      return .success\n    }\n\n    remoteCommandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in\n      guard let player = self?.activePlayer else {\n        return .commandFailed\n      }\n\n      if player.isPlaying {\n        player.ref.pause()\n      } else {\n        player.play(at: Float(player.currentRate > 0 ? player.currentRate : 1.0))\n      }\n      return .success\n    }\n\n    remoteCommandCenter.changePlaybackPositionCommand.addTarget { [weak self] event in\n      guard let player = self?.activePlayer,\n      let event = event as? MPChangePlaybackPositionCommandEvent else {\n        return .commandFailed\n      }\n\n      let seekTime = CMTime(seconds: event.positionTime, preferredTimescale: 1)\n      player.ref.seek(to: seekTime)\n\n      return .success"
+            },
+            {
+              "start_line": 278,
+              "end_line": 311,
+              "text": "    remoteCommandCenter.skipForwardCommand.preferredIntervals = [10.0]\n    remoteCommandCenter.skipForwardCommand.addTarget { [weak self] event in\n      guard let player = self?.activePlayer,\n      let event = event as? MPSkipIntervalCommandEvent else {\n        return .commandFailed\n      }\n\n      let currentTime = player.ref.currentTime()\n      let seekTime = currentTime + CMTime(seconds: event.interval, preferredTimescale: 1)\n      player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)\n\n      return .success\n    }\n\n    remoteCommandCenter.skipBackwardCommand.preferredIntervals = [10.0]\n    remoteCommandCenter.skipBackwardCommand.addTarget { [weak self] event in\n      guard let player = self?.activePlayer,\n      let event = event as? MPSkipIntervalCommandEvent else {\n        return .commandFailed\n      }\n\n      let currentTime = player.ref.currentTime()\n      let seekTime = currentTime - CMTime(seconds: event.interval, preferredTimescale: 1)\n      player.ref.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero)\n\n      return .success\n    }\n\n    remoteCommandCenter.playCommand.isEnabled = true\n    remoteCommandCenter.pauseCommand.isEnabled = true\n    remoteCommandCenter.togglePlayPauseCommand.isEnabled = true\n    remoteCommandCenter.changePlaybackPositionCommand.isEnabled = !isLiveStream\n    remoteCommandCenter.skipForwardCommand.isEnabled = options?.showSeekForward ?? false\n    remoteCommandCenter.skipBackwardCommand.isEnabled = options?.showSeekBackward ?? false"
+            }
+          ]
+        },
+        {
+          "path": "package/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt",
+          "sha256": "a39a43672602c9eda1c11b840fbe2984fd57f37dd7be2152d19271131c90fbb7",
+          "claim": "后台MediaSessionService绑定AudioPlayer，不接受AudioPlaylist",
+          "excerpts": [
+            {
+              "start_line": 41,
+              "end_line": 49,
+              "text": "class AudioControlsService : MediaSessionService() {\n  private lateinit var audioManager: AudioManager\n  private val binder = AudioPlaybackServiceBinder(this)\n  private var mediaSession: MediaSession? = null\n  private var sessionMetadataPlayer: MetadataInjectingPlayer? = null\n  private var currentMetadata: Metadata? = null\n  private var currentPlayer: AudioPlayer? = null\n  private var currentOptions: AudioLockScreenOptions? = null\n  private val scope = CoroutineScope(Dispatchers.IO)"
+            },
+            {
+              "start_line": 323,
+              "end_line": 352,
+              "text": "  private fun resolveSessionPlayer(player: AudioPlayer, options: AudioLockScreenOptions?): Player {\n    val isLive = options?.isLiveStream ?: player.isLive\n    if (!isLive) {\n      return player.ref\n    }\n\n    return object : ForwardingPlayer(player.ref) {\n      override fun getAvailableCommands(): Player.Commands {\n        return super.getAvailableCommands().buildUpon()\n          .remove(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)\n          .build()\n      }\n    }\n  }\n\n  private fun setActivePlayerInternal(\n    player: AudioPlayer?,\n    metadata: Metadata? = null,\n    options: AudioLockScreenOptions? = null\n  ) {\n    appContext?.mainQueue?.launch {\n      val playbackListener = playbackListener ?: return@launch\n      currentPlayer?.ref?.removeListener(playbackListener)\n    }\n\n    playbackListener = null\n    currentPlayer?.isActiveForLockScreen = false\n    hideNotification()\n\n    currentPlayer = player"
+            },
+            {
+              "start_line": 364,
+              "end_line": 389,
+              "text": "    if (player != null) {\n      mediaSession?.release()\n      sessionMetadataPlayer = null\n\n      appContext?.mainQueue?.launch {\n        val context = appContext?.reactContext ?: return@launch\n        val sessionPlayer = MetadataInjectingPlayer(resolveSessionPlayer(player, options)).apply {\n          updateMetadata(metadata)\n        }\n        val session = MediaSession.Builder(context, sessionPlayer)\n          .setCallback(AudioMediaSessionCallback())\n          .build()\n\n        // Replace the basic media session with a session connected to our playback service.\n        player.mediaSession.release()\n        player.mediaSession = session\n\n        addSession(session)\n        mediaSession = session\n        sessionMetadataPlayer = sessionPlayer\n\n        updateSessionCustomLayout(player.ref.isPlaying)\n\n        postOrStartForegroundNotification(startInForeground = true)\n\n        addPlayerListener(player)"
+            }
+          ]
+        },
+        {
+          "path": "package/android/src/main/java/expo/modules/audio/AudioModule.kt",
+          "sha256": "637fe9bed875e47c3348a1f9623c4e049965efec2ebbe77cff6836c94544177a",
+          "claim": "Android中断策略；Class(AudioPlaylist)没有锁屏服务入口",
+          "excerpts": [
+            {
+              "start_line": 80,
+              "end_line": 130,
+              "text": "  private val audioFocusChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->\n    appContext.mainQueue.launch {\n      when (focusChange) {\n        AudioManager.AUDIOFOCUS_LOSS -> {\n          focusAcquired = false\n          allPlayables.forEach { it.pause() }\n        }\n\n        AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {\n          focusAcquired = false\n          allPlayables.forEach { playable ->\n            if (playable.isPlaying) {\n              playable.isPaused = true\n              playable.pause()\n            }\n          }\n        }\n\n        AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {\n          if (interruptionMode == InterruptionMode.DUCK_OTHERS) {\n            allPlayables.forEach { playable ->\n              if (playable.previousVolume != playable.volume) {\n                playable.previousVolume = playable.volume\n              }\n              playable.setVolume(playable.previousVolume * 0.5f)\n            }\n          } else {\n            allPlayables.forEach { playable ->\n              if (playable.isPlaying) {\n                playable.isPaused = true\n                playable.pause()\n              }\n            }\n          }\n        }\n\n        AudioManager.AUDIOFOCUS_GAIN -> {\n          focusAcquired = true\n\n          if (!shouldPlayInSilentMode()) {\n            return@launch\n          }\n\n          allPlayables.forEach { playable ->\n            playable.setVolume(playable.previousVolume)\n            if (playable.isPaused) {\n              playable.isPaused = false\n              playable.play()\n            }\n          }\n        }"
+            },
+            {
+              "start_line": 510,
+              "end_line": 527,
+              "text": "      Function(\"setActiveForLockScreen\") { ref: AudioPlayer, active: Boolean, metadata: Metadata?, options: AudioLockScreenOptions? ->\n        runOnMain {\n          ref.setActiveForLockScreen(active, metadata, options)\n        }\n      }\n\n      Function(\"updateLockScreenMetadata\") { ref: AudioPlayer, metadata: Metadata ->\n        runOnMain {\n          ref.updateLockScreenMetadata(metadata)\n        }\n      }\n\n      Function(\"clearLockScreenControls\") { ref: AudioPlayer ->\n        runOnMain {\n          ref.clearLockScreenControls()\n        }\n      }\n"
+            },
+            {
+              "start_line": 663,
+              "end_line": 696,
+              "text": "    Class(AudioPlaylist::class) {\n      Constructor { sources: List<AudioSource>, updateInterval: Double, loop: LoopMode ->\n        runOnMain {\n          val playlist = AudioPlaylist(\n            context,\n            appContext,\n            sources,\n            updateInterval,\n            DefaultDataSource.Factory(context)\n          )\n          playlist.loopMode = loop\n          playlist.setMediaItemCreator { source ->\n            source.uri?.let { uriString ->\n              val uri = uriString.toUri()\n              when {\n                isRawResource(uri) -> {\n                  val file = getResourceName(uri, uriString)\n                  MediaItem.fromUri(getRawResourceURI(file))\n                }\n                else -> MediaItem.fromUri(uri)\n              }\n            }\n          }\n          playlist.loadInitialPlaylist()\n          playlist.onPlaybackStateChange = { isPlaying ->\n            if (!isPlaying && shouldReleaseFocus()) {\n              releaseAudioFocus()\n            }\n          }\n          playlists[playlist.id] = playlist\n          playlist\n        }\n      }\n"
+            },
+            {
+              "start_line": 787,
+              "end_line": 860,
+              "text": "      Function(\"play\") { playlist: AudioPlaylist ->\n        if (!audioEnabled) {\n          Log.e(TAG, \"Audio has been disabled. Re-enable to start playing\")\n          return@Function\n        }\n        if (!shouldPlayInSilentMode()) {\n          return@Function\n        }\n        runOnMain {\n          if (!focusAcquired) {\n            requestAudioFocus()\n          }\n          playlist.ref.play()\n        }\n      }\n\n      Function(\"pause\") { playlist: AudioPlaylist ->\n        runOnMain {\n          playlist.ref.pause()\n        }\n      }\n\n      Function(\"next\") { playlist: AudioPlaylist ->\n        runOnMain {\n          playlist.next()\n        }\n      }\n\n      Function(\"previous\") { playlist: AudioPlaylist ->\n        runOnMain {\n          playlist.previous()\n        }\n      }\n\n      Function(\"skipTo\") { playlist: AudioPlaylist, index: Int ->\n        runOnMain {\n          playlist.skipTo(index)\n        }\n      }\n\n      AsyncFunction(\"seekTo\") { playlist: AudioPlaylist, seconds: Double ->\n        playlist.seekTo(seconds)\n      }.runOnQueue(Queues.MAIN)\n\n      Function(\"add\") { playlist: AudioPlaylist, source: AudioSource ->\n        runOnMain {\n          playlist.add(source)\n        }\n      }\n\n      Function(\"insert\") { playlist: AudioPlaylist, source: AudioSource, index: Int ->\n        runOnMain {\n          playlist.insert(source, index)\n        }\n      }\n\n      Function(\"remove\") { playlist: AudioPlaylist, index: Int ->\n        runOnMain {\n          playlist.remove(index)\n        }\n      }\n\n      Function(\"clear\") { playlist: AudioPlaylist ->\n        runOnMain {\n          playlist.clear()\n        }\n      }\n\n      Function(\"destroy\") { playlist: AudioPlaylist ->\n        playlists.remove(playlist.id)\n      }\n    }\n  }\n"
+            }
+          ]
+        },
+        {
+          "path": "package/android/src/main/java/expo/modules/audio/AudioPlaylist.kt",
+          "sha256": "9bdfdbce6292de8198b1776c6058601a292e8bef38354a784742ad4dfe830015",
+          "claim": "Media3 ExoPlayer多条MediaItem队列",
+          "excerpts": [
+            {
+              "start_line": 18,
+              "end_line": 39,
+              "text": "class AudioPlaylist(\n  context: Context,\n  appContext: AppContext,\n  initialSources: List<AudioSource>,\n  updateInterval: Double,\n  dataSourceFactory: DataSource.Factory\n) : BaseAudioPlayer(\n  player = ExoPlayer.Builder(context)\n    .setLooper(context.mainLooper)\n    .setAudioAttributes(AudioAttributes.DEFAULT, false)\n    .setMediaSourceFactory(DefaultMediaSourceFactory(context).setDataSourceFactory(dataSourceFactory))\n    .build(),\n  appContext = appContext,\n  updateInterval = updateInterval,\n  statusEventName = PLAYLIST_STATUS_UPDATE\n) {\n  private var sources: MutableList<AudioSource> = initialSources.toMutableList()\n  private var currentRate = 1f\n  private var previousMediaItemIndex = 0\n\n  val currentTrackIndex get() = ref.currentMediaItemIndex\n  val trackCount get() = ref.mediaItemCount"
+            },
+            {
+              "start_line": 52,
+              "end_line": 75,
+              "text": "  fun loadInitialPlaylist() {\n    val validSources = mutableListOf<AudioSource>()\n    sources.forEach { source ->\n      createMediaItemForSource?.invoke(source)?.let { mediaItem ->\n        validSources.add(source)\n        ref.addMediaItem(mediaItem)\n      }\n    }\n    sources = validSources\n    ref.prepare()\n  }\n\n  var loopMode: LoopMode\n    get() = when (ref.repeatMode) {\n      Player.REPEAT_MODE_ONE -> LoopMode.SINGLE\n      Player.REPEAT_MODE_ALL -> LoopMode.ALL\n      else -> LoopMode.NONE\n    }\n    set(value) {\n      ref.repeatMode = when (value) {\n        LoopMode.SINGLE -> Player.REPEAT_MODE_ONE\n        LoopMode.ALL -> Player.REPEAT_MODE_ALL\n        LoopMode.NONE -> Player.REPEAT_MODE_OFF\n      }"
+            }
+          ]
+        },
+        {
+          "path": "package/android/src/main/java/expo/modules/audio/AudioPreloadManager.kt",
+          "sha256": "e64f53cd2f68c57b8b234bed52d05ca38ae5d8cbe8a8c7b73c7c30788ce9fff8",
+          "claim": "Android preload读至EOF存入ByteArray内存，并非磁盘离线缓存",
+          "excerpts": [
+            {
+              "start_line": 12,
+              "end_line": 49,
+              "text": "@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)\nobject AudioPreloadManager {\n  private val store = ConcurrentHashMap<String, ByteArray>()\n\n  private inline fun <T : DataSource, R> T.use(block: (T) -> R): R {\n    try {\n      return block(this)\n    } finally {\n      close()\n    }\n  }\n\n  suspend fun preload(uri: String, factory: DataSource.Factory) = withContext(Dispatchers.IO) {\n    val dataSpec = DataSpec.Builder().setUri(uri.toUri()).build()\n\n    factory.createDataSource().use { dataSource ->\n      ByteArrayOutputStream().use { outputStream ->\n        dataSource.open(dataSpec)\n        val buffer = ByteArray(8 * 1024)\n        generateSequence {\n          dataSource\n            .read(buffer, 0, buffer.size)\n            .takeIf { it != -1 }\n        }.forEach {\n          outputStream.write(buffer, 0, it)\n        }\n        store[uri] = outputStream.toByteArray()\n      }\n    }\n  }\n\n  fun get(uri: String): ByteArray? = store[uri]\n\n  fun clearSource(uri: String) = store.remove(uri)\n\n  fun clearAll() = store.clear()\n\n  fun getPreloadedSources(): List<String> = store.keys().toList()"
+            }
+          ]
+        },
+        {
+          "path": "package/plugin/src/withAudio.ts",
+          "sha256": "76b4efe8e0e12673a3c775d26b75cb0fe5289e8230d4367e1927c414987e9c87",
+          "claim": "原生后台音频配置",
+          "excerpts": [
+            {
+              "start_line": 43,
+              "end_line": 63,
+              "text": "  {\n    microphonePermission,\n    recordAudioAndroid = true,\n    enableBackgroundRecording = false,\n    enableBackgroundPlayback = true,\n  } = {}\n) => {\n  IOSConfig.Permissions.createPermissionsPlugin({\n    NSMicrophoneUsageDescription: MICROPHONE_USAGE,\n  })(config, {\n    NSMicrophoneUsageDescription: microphonePermission,\n  });\n\n  if (enableBackgroundRecording || enableBackgroundPlayback) {\n    config = withInfoPlist(config, (config) => {\n      if (!Array.isArray(config.modResults.UIBackgroundModes)) {\n        config.modResults.UIBackgroundModes = [];\n      }\n      if (!config.modResults.UIBackgroundModes.includes('audio')) {\n        config.modResults.UIBackgroundModes.push('audio');\n      }"
+            },
+            {
+              "start_line": 73,
+              "end_line": 87,
+              "text": "  if (enableBackgroundRecording) {\n    androidPermissions.push('android.permission.POST_NOTIFICATIONS');\n  }\n\n  if (enableBackgroundPlayback || enableBackgroundRecording) {\n    androidPermissions.push('android.permission.FOREGROUND_SERVICE');\n  }\n\n  if (enableBackgroundPlayback) {\n    androidPermissions.push('android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK');\n  }\n\n  if (enableBackgroundRecording) {\n    androidPermissions.push('android.permission.FOREGROUND_SERVICE_MICROPHONE');\n  }"
+            },
+            {
+              "start_line": 110,
+              "end_line": 125,
+              "text": "          application.service = application.service.filter(\n            (service) => service.$?.['android:name'] !== serviceName\n          );\n        }\n      }\n    };\n\n    toggleService(PLAYBACK_SERVICE_NAME, enableBackgroundPlayback, {\n      $: {\n        'android:name': PLAYBACK_SERVICE_NAME,\n        'android:exported': 'false',\n        'android:foregroundServiceType': 'mediaPlayback',\n      },\n      'intent-filter': [\n        {\n          action: [{ $: { 'android:name': 'androidx.media3.session.MediaSessionService' } }],"
+            }
+          ]
+        }
+      ],
+      "scoped_negative_checks": [
+        {
+          "scope": "src/AudioModule.types.ts:396-538 + ios/AudioModule.swift:289-408 + android/.../AudioModule.kt:663-860",
+          "query": "AudioPlaylist.setActiveForLockScreen / updateLockScreenMetadata / clearLockScreenControls",
+          "result": "这些Playlist公开类块中均未发现。AudioPlayer类块有这些方法。"
+        },
+        {
+          "scope": "ios/MediaController.swift + src/AudioConstants.ts + src/AudioModule.types.ts AudioEvents",
+          "query": "nextTrackCommand / previousTrackCommand / remote-next / remote-previous callbacks",
+          "result": "未发现；已实现的是播放、暂停、切换播放暂停、位置seek、±10秒seek。"
+        },
+        {
+          "scope": "expo-audio 57.0.4 public API / native volume setters",
+          "query": "系统输出音量get/set/listener",
+          "result": "未找到此类公开API；现有volume写到AVPlayer/ExoPlayer增益。"
+        }
+      ]
+    },
+    {
+      "id": "audio_api_0133",
+      "package": "react-native-audio-api",
+      "version": "0.13.3",
+      "url": "https://registry.npmjs.org/react-native-audio-api/-/react-native-audio-api-0.13.3.tgz",
+      "fetched_at": "2026-09-09T14:41:42.934576+00:00",
+      "sha256": "8f424004c036207ce98e2a66703a7e78abc31c31d24426393dd01b6c36ae44cc",
+      "files": [
+        {
+          "path": "package/src/specs/NativeAudioAPIModule.ts",
+          "sha256": "2a04792549e764877744cf293365e6d83c7cbaad102a07125053046f054227bc",
+          "claim": "真正TurboModule入口；系统事件和通知入口",
+          "excerpts": [
+            {
+              "start_line": 1,
+              "end_line": 17,
+              "text": "'use strict';\nimport type { TurboModule } from 'react-native';\nimport { TurboModuleRegistry } from 'react-native';\nimport { AudioDevicesInfo, PermissionStatus } from '../system/types';\n\ntype OptionsMap = { [key: string]: string | boolean | number | undefined };\ntype NotificationOpResponse = { success: boolean; error?: string };\ntype NotificationType = 'playback' | 'recording' | 'simple';\ntype AudioFocusType =\n  | 'gain'\n  | 'gainTransient'\n  | 'gainTransientExclusive'\n  | 'gainTransientMayDuck';\n\ninterface Spec extends TurboModule {\n  install(): boolean;\n  getDevicePreferredSampleRate(): number;"
+            },
+            {
+              "start_line": 30,
+              "end_line": 57,
+              "text": "\n  // system events and interruptions\n  observeAudioInterruptions(focusType: AudioFocusType, enabled: boolean): void;\n  activelyReclaimSession(enabled: boolean): void;\n  observeVolumeChanges(enabled: boolean): void;\n\n  // Permissions\n  requestRecordingPermissions(): Promise<PermissionStatus>;\n  checkRecordingPermissions(): Promise<PermissionStatus>;\n  requestNotificationPermissions(): Promise<PermissionStatus>;\n  checkNotificationPermissions(): Promise<PermissionStatus>;\n\n  // Audio devices\n  getDevicesInfo(): Promise<AudioDevicesInfo>;\n  setInputDevice(deviceId: string): Promise<void>;\n\n  // Notification system\n  showNotification(\n    type: NotificationType,\n    key: string,\n    options: OptionsMap\n  ): Promise<NotificationOpResponse>;\n  hideNotification(key: string): Promise<NotificationOpResponse>;\n  isNotificationActive(key: string): Promise<boolean>;\n  // Android-only: reads bundled asset bytes and returns a Base64 string.\n  readAndroidReleaseAssetBytesAsBase64(assetPath: string): Promise<string>;\n}\n"
+            }
+          ]
+        },
+        {
+          "path": "package/src/AudioAPIModule/AudioAPIModule.ts",
+          "sha256": "52c3a2034327f446f6fb59af66ef2a8fb0cca2a8002c97f212794c385ad650f7",
+          "claim": "JSI安装/全局音频引擎对象",
+          "excerpts": [
+            {
+              "start_line": 17,
+              "end_line": 34,
+              "text": "  constructor() {\n    // Important! Verify and import worklets first\n    // otherwise the native module installation might crash\n    // if react-native-worklets is not imported before audio-api\n    this.#verifyWorklets();\n\n    if (this.#verifyInstallation()) {\n      return;\n    }\n\n    if (!NativeAudioAPIModule) {\n      throw new AudioApiError(\n        `Failed to install react-native-audio-api: The native module could not be found.`\n      );\n    }\n\n    NativeAudioAPIModule.install();\n  }"
+            },
+            {
+              "start_line": 60,
+              "end_line": 70,
+              "text": "    return (\n      globalThis.createAudioContext != null &&\n      globalThis.createOfflineAudioContext != null &&\n      globalThis.createAudioRecorder != null &&\n      globalThis.createAudioBuffer != null &&\n      globalThis.createAudioDecoder != null &&\n      globalThis.createAudioFileUtils != null &&\n      globalThis.AudioEventEmitter != null\n    );\n  }\n"
+            }
+          ]
+        },
+        {
+          "path": "package/src/system/notification/types.ts",
+          "sha256": "6b88a85e2f3a523f588954f0c05f0874a9dd43784333920e6d220d83d429367c",
+          "claim": "原生通知支持nextTrack/previousTrack/seek并回调JS",
+          "excerpts": [
+            {
+              "start_line": 28,
+              "end_line": 69,
+              "text": "export interface PlaybackNotificationInfo {\n  title?: string;\n  artist?: string;\n  album?: string;\n  artwork?: string | { uri: string };\n  androidSmallIcon?: string | { uri: string };\n  duration?: number;\n  elapsedTime?: number;\n  speed?: number;\n  state?: 'playing' | 'paused';\n}\n\n/// Available playback control actions.\nexport type PlaybackControlName =\n  | 'play'\n  | 'pause'\n  | 'stop'\n  | 'nextTrack'\n  | 'previousTrack'\n  | 'skipForward'\n  | 'skipBackward'\n  | 'seekTo';\n\n/// Event names for playback notification actions.\ninterface PlaybackNotificationEvent {\n  playbackNotificationPlay: EventEmptyType;\n  playbackNotificationPause: EventEmptyType;\n  playbackNotificationStop: EventEmptyType;\n  playbackNotificationNextTrack: EventEmptyType;\n  playbackNotificationPreviousTrack: EventEmptyType;\n  playbackNotificationSkipForward: EventTypeWithValue;\n  playbackNotificationSkipBackward: EventTypeWithValue;\n  playbackNotificationSeekTo: EventTypeWithValue;\n  playbackNotificationDismissed: EventEmptyType;\n}\n\nexport interface RecordingNotificationInfo {\n  title?: string;\n  contentText?: string;\n  paused?: boolean;\n  smallIconResourceName?: string;\n  largeIconResourceName?: string;"
+            }
+          ]
+        },
+        {
+          "path": "package/src/system/notification/PlaybackNotificationManager.ts",
+          "sha256": "bb54690af5159d091a1f00821cff9b8e4e091bc1d4cbc661eb943e301807cd41",
+          "claim": "通知展示和事件订阅与播放引擎分离",
+          "excerpts": [
+            {
+              "start_line": 32,
+              "end_line": 48,
+              "text": "  async show(info: PlaybackNotificationInfo): Promise<void> {\n    if (!NativeAudioAPIModule) {\n      throw new AudioApiError('NativeAudioAPIModule is not available');\n    }\n\n    const result = await NativeAudioAPIModule.showNotification(\n      'playback',\n      this.notificationKey,\n      info as Record<string, string | number | boolean | undefined>\n    );\n\n    if (result.error) {\n      throw new AudioApiError(result.error);\n    }\n  }\n\n  /**"
+            },
+            {
+              "start_line": 119,
+              "end_line": 125,
+              "text": "  ): AudioEventSubscription {\n    return this.audioEventEmitter.addAudioEventListener(eventName, callback);\n  }\n}\n\nexport default new PlaybackNotificationManager();\n"
+            }
+          ]
+        },
+        {
+          "path": "package/src/system/AudioManager.ts",
+          "sha256": "660c2b5262056d43b7b8b70733d78ceba6fc993bfbd294360fca955501104ad8",
+          "claim": "中断、音量变化监听；未提供系统音量setter",
+          "excerpts": [
+            {
+              "start_line": 53,
+              "end_line": 93,
+              "text": "\n  observeAudioInterruptions(param: AudioFocusType | boolean | null) {\n    if (typeof param === 'string') {\n      NativeAudioAPIModule.observeAudioInterruptions(param, true);\n    } else {\n      // audiofocusgain as default value if not provided\n      NativeAudioAPIModule.observeAudioInterruptions('gain', param === true);\n    }\n  }\n\n  /**\n   * @param enabled - Whether to actively reclaim the session or not\n   * @experimental more aggressively try to reactivate the audio session during interruptions.\n   * It is subject to change in the future and might be removed.\n   *\n   * In some cases (depends on app session settings and other apps using audio) system may never\n   * send the `interruption ended` event. This method will check if any other audio is playing\n   * and try to reactivate the audio session, as soon as there is \"silence\".\n   * Although this might change the expected behavior.\n   *\n   * Internally method uses `AVAudioSessionSilenceSecondaryAudioHintNotification` as well as\n   * interval polling to check if other audio is playing.\n   */\n  activelyReclaimSession(enabled: boolean) {\n    NativeAudioAPIModule.activelyReclaimSession(enabled);\n  }\n\n  observeVolumeChanges(enabled: boolean) {\n    NativeAudioAPIModule.observeVolumeChanges(enabled);\n  }\n\n  addSystemEventListener<Name extends SystemEventName>(\n    name: Name,\n    callback: SystemEventCallback<Name>\n  ): AudioEventSubscription {\n    return this.audioEventEmitter.addAudioEventListener(name, callback);\n  }\n\n  async requestRecordingPermissions(): Promise<PermissionStatus> {\n    return NativeAudioAPIModule.requestRecordingPermissions();\n  }"
+            }
+          ]
+        },
+        {
+          "path": "package/src/core/StreamerNode.ts",
+          "sha256": "4ad0b9d22edf46dfe3e56bcf66678fdc637d00f37308dcce3d81a21bd19b4569",
+          "claim": "StreamerNode已弃用，应评估<Audio>而非旧StreamerNode方案",
+          "excerpts": [
+            {
+              "start_line": 6,
+              "end_line": 31,
+              "text": "/**\n * StreamerNode is an AudioNode that allows you to stream audio from a file or\n * URL. It uses FFmpeg to decode the audio data and provides it as an audio\n * source. Note: This node requires the build to use FFmpeg, and will throw an\n * error if FFmpeg is not available.\n *\n * @deprecated Use the `<Audio>` element with MediaElementAudioSourceNode for\n *   streaming audio instead to achieve the same functionality.\n */\nexport default class StreamerNode extends AudioScheduledSourceNode {\n  readonly streamPath: string;\n\n  constructor(context: BaseAudioContext, options: StreamerOptions) {\n    if (__DEV__) {\n      console.warn(\n        'StreamerNode is deprecated and will be removed in a future version. ' +\n          'Please migrate to using the <Audio> element for streaming audio.'\n      );\n    }\n\n    const node = context.context.createStreamer(options);\n    if (!node) {\n      throw new NotSupportedError('StreamerNode requires FFmpeg build');\n    }\n    super(context, node);\n    this.streamPath = options.streamPath;"
+            }
+          ]
+        },
+        {
+          "path": "package/src/core/AudioBufferQueueSourceNode.ts",
+          "sha256": "39c77389a55f87715ef41388a47b50f66520b250c6ab3ed6e763b3ed366e4399",
+          "claim": "队列为已解码AudioBuffer队列，不能当URI歌曲队列",
+          "excerpts": [
+            {
+              "start_line": 9,
+              "end_line": 35,
+              "text": "export default class AudioBufferQueueSourceNode extends AudioBufferBaseSourceNode {\n  private onBufferEndedCallback?: (event: OnBufferEndEventType) => void;\n\n  constructor(\n    context: BaseAudioContext,\n    options?: BaseAudioBufferSourceOptions\n  ) {\n    const node = context.context.createBufferQueueSource(options || {});\n    super(context, node);\n  }\n\n  public enqueueBuffer(buffer: AudioBuffer): string {\n    return (this.node as IAudioBufferQueueSourceNode).enqueueBuffer(\n      buffer.buffer\n    );\n  }\n\n  public dequeueBuffer(bufferId: string): void {\n    const id = parseInt(bufferId, 10);\n    if (isNaN(id) || id < 0) {\n      throw new RangeError(\n        `bufferId must be a non-negative integer: ${bufferId}`\n      );\n    }\n    (this.node as IAudioBufferQueueSourceNode).dequeueBuffer(id);\n  }\n"
+            }
+          ]
+        },
+        {
+          "path": "package/src/Audio/types.ts",
+          "sha256": "d4e958ea4a1b12b64f867e0f09aac64ddefb6fcb137a9ff8ac22c2c7bcc9726e",
+          "claim": "<Audio>具有播放/暂停/seek、preload、完整文件下载和事件接口",
+          "excerpts": [
+            {
+              "start_line": 24,
+              "end_line": 61,
+              "text": "export type PreloadType = 'auto' | 'metadata' | 'none';\n\nexport type AudioTagPlaybackState = 'idle' | 'playing' | 'paused';\n\nexport interface AudioTagHandle {\n  play: () => void;\n  pause: () => void;\n  seekToTime: (seconds: number) => void;\n  setVolume: (volume: number) => void;\n  setMuted: (muted: boolean) => void;\n  setPlaybackRate: (playbackRate: number) => void;\n}\n\n/**\n * Internal handle surface used by MediaElementAudioSourceNode to obtain the\n * underlying file source. Not exported from the package public API.\n */\nexport interface InternalAudioTagHandle extends AudioTagHandle {\n  getFileSourceNode: () => IAudioFileSourceNode | null;\n}\n\ninterface AudioControlProps {\n  autoPlay: boolean;\n  controls: boolean; // TBD: should we support control display at all?\n  loop: boolean;\n  muted: boolean;\n  preload: PreloadType;\n  /**\n   * When true, download the full remote file instead of streaming via HTTP\n   * ranges. Native only — ignored on web.\n   */\n  forceDownload: boolean;\n  source: AudioSource;\n  playbackRate: number;\n  preservesPitch: boolean;\n  volume: number;\n  children?: ReactNode;\n  context?: BaseAudioContext; // optional on web, since web do not use AudioContext for audio tag"
+            },
+            {
+              "start_line": 79,
+              "end_line": 92,
+              "text": "  onLoad: TMPEmptyEventHandler;\n  onError: TMPErrorEventHandler;\n  onPositionChange: TMPNumberEventHandler;\n  onEnded: TMPEmptyEventHandler;\n  onPlay: TMPEmptyEventHandler;\n  onPause: TMPEmptyEventHandler;\n  onVolumeChange: TMPNumberEventHandler;\n}\n\nexport interface AudioPropsBase\n  extends AudioControlProps, AudioReadonlyProps, AudioEventProps {}\n\nexport type AudioProps = Partial<AudioPropsBase> & { source: AudioSource };\n"
+            }
+          ]
+        },
+        {
+          "path": "package/src/Audio/Audio.tsx",
+          "sha256": "eaf07c65022df58f21f8037193270421bf1264da959732c9c9b5aa9d264be275",
+          "claim": "<Audio>卸载时释放音源/上下文，必须设计根级生命周期",
+          "excerpts": [
+            {
+              "start_line": 54,
+              "end_line": 65,
+              "text": "\n    const lastEffectiveVolumeRef = useRef(muted ? 0 : volume);\n\n    useEffect(() => {\n      return () => {\n        fileSourceRef.current?.disconnect();\n        fileSourceRef.current?.pause();\n        fileSourceRef.current?.dispose();\n        fileSourceRef.current = null;\n      };\n    }, []); // eslint-disable-line react-hooks/exhaustive-deps\n"
+            }
+          ]
+        },
+        {
+          "path": "package/src/Audio/useAudioSourceLoader.ts",
+          "sha256": "80ab62570327243e0f7639a990d50aa05592c8dc8d3da4c8b3b17f6e95d5dacf",
+          "claim": "来源加载和释放由React生命周期管理",
+          "excerpts": [
+            {
+              "start_line": 150,
+              "end_line": 174,
+              "text": "      return false;\n    }\n\n    isFetchingCancelled.current = false;\n    setReady(false);\n    onLoadStartRef.current();\n\n    const headers = getSourceHeaders(source);\n\n    try {\n      if (isRemoteHttpUrl(path)) {\n        sourceRef.current = await loadRemoteHttpSource(\n          path,\n          headers,\n          forceDownload\n        );\n      } else if (\n        Platform.OS === 'android' &&\n        !__DEV__ &&\n        !path.startsWith('file://')\n      ) {\n        const base64Payload =\n          await NativeAudioAPIModule.readAndroidReleaseAssetBytesAsBase64(path);\n        sourceRef.current = base64ToArrayBuffer(base64Payload);\n      } else if (path.startsWith('file://')) {"
+            },
+            {
+              "start_line": 239,
+              "end_line": 277,
+              "text": "\n    if (!path) {\n      setReady(false);\n      setDuration(0);\n      disposeSource();\n      return () => {\n        isFetchingCancelled.current = true;\n        disposeSource();\n      };\n    }\n\n    if (preloadMode === 'none') {\n      setReady(true);\n      return () => {\n        isFetchingCancelled.current = true;\n        disposeSource();\n      };\n    }\n\n    if (preloadMode === 'metadata') {\n      if (!isFfmpegEnabled()) {\n        setReady(true);\n      } else {\n        probeMetadataOnly();\n      }\n\n      return () => {\n        isFetchingCancelled.current = true;\n        disposeSource();\n      };\n    }\n\n    loadPlaybackSource();\n\n    return () => {\n      isFetchingCancelled.current = true;\n      disposeSource();\n    };\n  }, [disposeSource, loadPlaybackSource, path, preloadMode, probeMetadataOnly]);"
+            }
+          ]
+        },
+        {
+          "path": "package/ios/audioapi/ios/system/notification/PlaybackNotification.mm",
+          "sha256": "fba2b0753229f749eac7a908d0c9b130b5471a1324d0036bf6041a013a8e47c4",
+          "fetched_at": "2026-09-09T15:01:08.446775+00:00",
+          "claim": "iOS真正绑定nextTrackCommand/previousTrackCommand，不只是TypeScript声明",
+          "excerpts": [
+            {
+              "start_line": 294,
+              "end_line": 301,
+              "text": "  } else if ([name isEqualToString:@\"nextTrack\"]) {\n    [self enableCommand:remoteCenter.nextTrackCommand\n           withSelector:@selector(onNextTrack:)\n                enabled:enabled];\n  } else if ([name isEqualToString:@\"previousTrack\"]) {\n    [self enableCommand:remoteCenter.previousTrackCommand\n           withSelector:@selector(onPreviousTrack:)\n                enabled:enabled];"
+            }
+          ]
+        }
+      ],
+      "native_search": [
+        {
+          "path": "package/ios/audioapi/ios/AudioAPIModule.mm",
+          "sha256": "df8bf080160c5e4f4b09a40210bf63fb71d8accd0e2decd3c6b658e54e11f5c6",
+          "matches": [
+            {
+              "line": 328,
+              "text": "- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:"
+            },
+            {
+              "line": 331,
+              "text": "  return std::make_shared<facebook::react::NativeAudioAPIModuleSpecJSI>(params);"
+            }
+          ]
+        }
+      ],
+      "scoped_negative_checks": [
+        {
+          "scope": "0.13.3发布包全部.kt/.java/.mm/.h/.cpp/.swift",
+          "query": "HeadlessJsTask",
+          "result": "未发现；不能据此声称支持等价于RNTP4的Android Headless JS播放服务。"
+        },
+        {
+          "scope": "公开src/specs + src/system/AudioManager.ts",
+          "query": "setSystemVolume / setVolume",
+          "result": "有系统音量变化监听；未发现系统音量setter；<Audio>.setVolume为播放器增益。"
+        },
+        {
+          "scope": "发布包源文件与公开入口",
+          "query": "完整歌曲URI列表的native playlist owner",
+          "result": "只确认<Audio>单曲与AudioBufferQueueSourceNode PCM队列；本次没有确认现成RNTP等价播放器队列。"
+        }
+      ],
+      "license_notes": [
+        "0.13.3项目LICENSE为MIT；THIRD_PARTY.md标明WebKit BSD2/BSD3及FFmpeg LGPL2.1-or-later。",
+        "发布tarball未包含项目根LICENSE；检查使用确切版本tag的官方LICENSE，不能仅依据README。"
+      ]
+    }
+  ],
+  "application_findings": [
+    "真实业务队列是music.play-list；RNTP native queue只有当前曲目和假下一曲标记，事件回到JS解析真实来源。",
+    "后台remote next/previous调用业务facade；不是让native queue直接advance就等价。",
+    "源地址预取、native音频缓冲、持久下载缓存是三个不同功能。",
+    "PlayerVolumeBar使用系统音量读写及硬件音量监听；useTrackPlayerVolume只找到定义，无消费者。",
+    "业务层未订阅RemoteDuck；setupPlayer({})未启用autoHandleInterruptions。保留用户已确认结果，不虚构已有自动恢复策略。",
+    "本轮建议RNTP4.1.2过渡保留；Expo57.0.4与audio-api0.13.3均不是已确认的全功能等价替换；不引入商业RNTP5。"
+  ],
+  "related_specs": [
+    ".trellis/workflow.md",
+    ".trellis/spec/frontend/native-upgrade-contracts.md",
+    ".trellis/tasks/09-05-rn-expo-new-architecture/prd.md:R2/R3/R8/R9/A04",
+    ".trellis/tasks/09-05-rn-expo-new-architecture/design.md:35-68"
+  ],
+  "limitations": [
+    "本轮是静态及官方资料评估，不是候选安装/兼容性实测；不新增或重跑人工M01-M12。",
+    "目标SDK57映射与获取日Expo Audio stable均为57.0.4；Expo58 canary不当稳定候选。",
+    "main文档是获取时点的活动页面；发布tarball版本和SHA256用于绑定本报告的源代码事实。",
+    "过渡保留RNTP4承认其interop债务；不得据此把整个依赖图标为全部原生New Architecture。"
+  ],
+  "local_evidence": {
+    "observed_at": "2026-09-09T15:01:07.695909+00:00",
+    "files": [
+      {
+        "path": "package.json",
+        "sha256": "8f8d95558ee21a5502ccc92adc8f802a1bf2909eb7cc12049c7ce43947e7817a",
+        "line_count": 97,
+        "excerpts": [
+          {
+            "start_line": 45,
+            "end_line": 60,
+            "text": "\t\t\"react-native\": \"0.86.3\",\n\t\t\"react-native-awesome-slider\": \"2.5.1\",\n\t\t\"react-native-background-timer\": \"2.4.1\",\n\t\t\"react-native-fs\": \"2.20.0\",\n\t\t\"react-native-gesture-handler\": \"2.32.0\",\n\t\t\"react-native-image-colors\": \"2.6.0\",\n\t\t\"react-native-loader-kit\": \"4.1.0\",\n\t\t\"react-native-mmkv\": \"4.3.2\",\n\t\t\"react-native-nitro-modules\": \"0.35.9\",\n\t\t\"react-native-reanimated\": \"4.5.1\",\n\t\t\"react-native-safe-area-context\": \"5.7.0\",\n\t\t\"react-native-screens\": \"4.26.0\",\n\t\t\"react-native-toast-message\": \"2.2.1\",\n\t\t\"react-native-track-player\": \"4.1.2\",\n\t\t\"react-native-volume-manager\": \"2.2.0\",\n\t\t\"react-native-worklets\": \"0.10.1\","
+          }
+        ]
+      },
+      {
+        "path": "src/helpers/trackPlayerIndex.ts",
+        "sha256": "7cd61365405f70e3fb172873779fb0d8995562dbcecde44d1a5ce0f9f97ec8cd",
+        "line_count": 1223,
+        "excerpts": [
+          {
+            "start_line": 187,
+            "end_line": 198,
+            "text": "\tif (!hasSetupListener) {\n\t\tReactNativeTrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, async (evt) => {\n\t\t\tif (evt.index === 1 && evt.lastIndex === 0 && evt.track?.$ === internalFakeSoundKey) {\n\t\t\t\tlogInfo('队列末尾，播放下一首')\n\t\t\t\tif (repeatModeStore.getValue() === MusicRepeatMode.SINGLE) {\n\t\t\t\t\tawait play(null, true)\n\t\t\t\t} else {\n\t\t\t\t\t// 当前生效的歌曲是下一曲的标记\n\t\t\t\t\tawait skipToNext()\n\t\t\t\t}\n\t\t\t}\n\t\t})"
+          },
+          {
+            "start_line": 234,
+            "end_line": 253,
+            "text": "const getFakeNextTrack = () => {\n\tlet track: Track | undefined\n\n\tconst repeatMode = repeatModeStore.getValue()\n\n\tif (repeatMode === MusicRepeatMode.SINGLE) {\n\t\t// 单曲循环\n\t\ttrack = getPlayListMusicAt(currentIndex) as Track\n\t} else {\n\t\t// 下一曲\n\t\ttrack = getPlayListMusicAt(currentIndex + 1) as Track\n\t}\n\n\ttry {\n\t\tconst soundAssetSource = Image.resolveAssetSource(SoundAsset.fakeAudio).uri\n\t\tif (track) {\n\t\t\tconst a = produce(track, (_) => {\n\t\t\t\t_.url = soundAssetSource\n\t\t\t\t_.$ = internalFakeSoundKey\n\t\t\t\tif (!_.artwork?.trim()?.length) {"
+          },
+          {
+            "start_line": 406,
+            "end_line": 429,
+            "text": "const setRepeatMode = (mode: MusicRepeatMode) => {\n\tconst playList = getPlayList()\n\tlet newPlayList\n\tconst prevMode = repeatModeStore.getValue()\n\n\tif (\n\t\t(prevMode === MusicRepeatMode.SHUFFLE && mode !== MusicRepeatMode.SHUFFLE) ||\n\t\t(mode === MusicRepeatMode.SHUFFLE && prevMode !== MusicRepeatMode.SHUFFLE)\n\t) {\n\t\tif (mode === MusicRepeatMode.SHUFFLE) {\n\t\t\tnewPlayList = shuffle(playList)\n\t\t} else {\n\t\t\tnewPlayList = sortByTimestampAndIndex(playList, true)\n\t\t}\n\t\tsetPlayList(newPlayList)\n\t}\n\n\tconst currentMusicItem = currentMusicStore.getValue()\n\tcurrentIndex = getMusicIndex(currentMusicItem)\n\trepeatModeStore.setValue(mode)\n\t// 更新下一首歌的信息\n\tReactNativeTrackPlayer.updateMetadataForTrack(1, getFakeNextTrack())\n\t// 记录\n\tPersistStatus.set('music.repeatMode', mode)"
+          },
+          {
+            "start_line": 467,
+            "end_line": 481,
+            "text": "const setTrackSource = async (track: Track, autoPlay = true) => {\n\tif (!track.artwork?.trim()?.length) {\n\t\ttrack.artwork = undefined\n\t}\n\n\t//播放器队列加入track 和一个假音频，假音频的信息为实际下一首音乐的信息\n\tawait ReactNativeTrackPlayer.setQueue([track, getFakeNextTrack()])\n\n\tPersistStatus.set('music.musicItem', track as IMusic.IMusicItem)\n\n\tPersistStatus.set('music.progress', 0)\n\n\tif (autoPlay) {\n\t\tawait ReactNativeTrackPlayer.play()\n\t}"
+          },
+          {
+            "start_line": 831,
+            "end_line": 850,
+            "text": "\t\ttrackSourceLoadingToken = createTrackSourceLoadingToken(musicItem)\n\t\ttrackSourceLoadingStore.setValue(trackSourceLoadingToken)\n\n\t\t// 3. Update current music state immediately (UI updates instantly)\n\t\tsetCurrentMusic(musicItem)\n\n\t\t// 4. Resolve source (cache check + network if needed)\n\t\tconst { url: sourceUrl, wasCached } = await resolveSource(musicItem, {\n\t\t\trequestType: 'current',\n\t\t})\n\n\t\t// 5. Race condition guard\n\t\tif (!isCurrentMusic(musicItem)) {\n\t\t\treturn\n\t\t}\n\n\t\t// 6. Build track and set source\n\t\tconst track = mergeProps(musicItem, { url: sourceUrl }) as IMusic.IMusicItem\n\t\tlogInfo('获取音源成功：', track)\n\t\tawait setTrackSource(track as Track)"
+          },
+          {
+            "start_line": 861,
+            "end_line": 891,
+            "text": "\t\t// 8. Auto-cache in background\n\t\tif (\n\t\t\tsourceUrl !== fakeAudioMp3Uri &&\n\t\t\t!sourceUrl.includes('fake') &&\n\t\t\t!wasCached &&\n\t\t\tautoCacheLocalStore.getValue() &&\n\t\t\t!sourceUrl.startsWith('file://')\n\t\t) {\n\t\t\tsetTimeout(() => {\n\t\t\t\tdownloadToCache(track)\n\t\t\t\t\t.then((localUri) => {\n\t\t\t\t\t\tlogInfo('音乐已缓存到本地:', localUri)\n\t\t\t\t\t\tconst newTrack = { ...track, url: localUri }\n\t\t\t\t\t\taddImportedLocalMusic([newTrack], false)\n\t\t\t\t\t})\n\t\t\t\t\t.catch((error) => {\n\t\t\t\t\t\tlogError('缓存音乐时出错:', error)\n\t\t\t\t\t})\n\t\t\t}, 5000)\n\t\t}\n\n\t\t// 9. 仅在当前曲目为远端音源时才预加载下一首，避免播放本地/缓存歌曲时继续发起音源请求\n\t\tconst shouldPreloadNextTrack =\n\t\t\tsourceUrl !== fakeAudioMp3Uri &&\n\t\t\t!sourceUrl.includes('fake') &&\n\t\t\t!sourceUrl.startsWith('file://')\n\t\tconst nextTrack = getPlayListMusicAt(currentIndex + 1)\n\t\tif (shouldPreloadNextTrack && nextTrack && !isSameMediaItem(nextTrack, musicItem)) {\n\t\t\tsetTimeout(() => {\n\t\t\t\tpreloadSource(nextTrack).catch(() => {})\n\t\t\t}, NEXT_TRACK_PRELOAD_DELAY_MS)"
+          }
+        ]
+      },
+      {
+        "path": "src/constants/playbackService.ts",
+        "sha256": "924c81c1e302dbaad05b6814aaeecc7c6417b12bf8b8eaeafd60136d99080002",
+        "line_count": 29,
+        "excerpts": [
+          {
+            "start_line": 1,
+            "end_line": 29,
+            "text": "import myTrackPlayer from '@/helpers/trackPlayerIndex'\nimport TrackPlayer, { Event } from 'react-native-track-player'\n\nexport const playbackService = async () => {\n\tTrackPlayer.addEventListener(Event.RemotePlay, () => {\n\t\tTrackPlayer.play()\n\t})\n\n\tTrackPlayer.addEventListener(Event.RemotePause, () => {\n\t\tTrackPlayer.pause()\n\t})\n\n\tTrackPlayer.addEventListener(Event.RemoteStop, () => {\n\t\tTrackPlayer.stop()\n\t})\n\n\tTrackPlayer.addEventListener(Event.RemoteNext, () => {\n\t\tmyTrackPlayer.skipToNext()\n\t})\n\n\tTrackPlayer.addEventListener(Event.RemotePrevious, () => {\n\t\tmyTrackPlayer.skipToPrevious()\n\t})\n\n\tTrackPlayer.addEventListener(Event.RemoteSeek, (event) => {\n\t\tconst position = event.position\n\t\tTrackPlayer.seekTo(position)\n\t})\n}"
+          }
+        ]
+      },
+      {
+        "path": "src/app/_layout.tsx",
+        "sha256": "d911da74deace0fd3df7fe3974534fe319b577b4cfa9de049d35aede481a0ade",
+        "line_count": 216,
+        "excerpts": [
+          {
+            "start_line": 22,
+            "end_line": 25,
+            "text": "import TrackPlayer from 'react-native-track-player'\nSplashScreen.preventAutoHideAsync()\n\nTrackPlayer.registerPlaybackService(() => playbackService)"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/useSetupTrackPlayer.tsx",
+        "sha256": "da7280748155689f08e2c64821bd29c6b45a72241729a90a6964292c32b0230a",
+        "line_count": 55,
+        "excerpts": [
+          {
+            "start_line": 5,
+            "end_line": 35,
+            "text": "const setupPlayer = async () => {\n\tawait TrackPlayer.setupPlayer({})\n\n\tawait TrackPlayer.updateOptions({\n\t\tratingType: RatingType.Heart,\n\t\tcapabilities: [\n\t\t\tCapability.Play,\n\t\t\tCapability.Pause,\n\t\t\tCapability.SkipToNext,\n\t\t\tCapability.SkipToPrevious,\n\t\t\tCapability.Stop,\n\t\t\tCapability.SeekTo,\n\t\t],\n\t\tprogressUpdateEventInterval: 1,\n\t})\n\n\tawait TrackPlayer.setVolume(1) // 默认音量1\n\tawait TrackPlayer.setRepeatMode(RepeatMode.Queue)\n}\n\nlet initialization: Promise<void> | undefined\n\nconst initializePlayer = () => {\n\tif (!initialization) {\n\t\tinitialization = setupPlayer()\n\t\t\t.then(() => myTrackPlayer.setupTrackPlayer())\n\t\t\t.catch((error) => {\n\t\t\t\tinitialization = undefined\n\t\t\t\tthrow error\n\t\t\t})\n\t}"
+          }
+        ]
+      },
+      {
+        "path": "src/components/PlayerVolumeBar.tsx",
+        "sha256": "ce1a8bc11287ef022633ea2009fd9116822582e09c9bdbd3fb4abee466ca0a74",
+        "line_count": 90,
+        "excerpts": [
+          {
+            "start_line": 8,
+            "end_line": 33,
+            "text": "import { VolumeManager } from 'react-native-volume-manager'\n\nexport const PlayerVolumeBar = React.memo(({ style }: ViewProps) => {\n\tconst colors = useThemeColors()\n\tconst utilsStyles = useUtilsStyles()\n\tconst progress = useSharedValue(0)\n\tconst min = useSharedValue(0)\n\tconst max = useSharedValue(1)\n\tconst isSliding = useSharedValue(false)\n\n\tuseEffect(() => {\n\t\tconst getInitialVolume = async () => {\n\t\t\tawait VolumeManager.showNativeVolumeUI({ enabled: true })\n\t\t\tconst initialVolume = await VolumeManager.getVolume()\n\t\t\tprogress.value = initialVolume.volume\n\t\t}\n\t\tgetInitialVolume()\n\n\t\tconst volumeListener = VolumeManager.addVolumeListener((result) => {\n\t\t\tprogress.value = result.volume\n\t\t})\n\n\t\treturn () => {\n\t\t\tvolumeListener.remove()\n\t\t}\n\t}, [])"
+          },
+          {
+            "start_line": 49,
+            "end_line": 56,
+            "text": "\tconst handleValueChange = useCallback(async (value: number) => {\n\t\tawait VolumeManager.setVolume(value, {\n\t\t\ttype: 'system',\n\t\t\tshowUI: true,\n\t\t\tplaySound: false,\n\t\t})\n\t}, [])\n"
+          }
+        ]
+      },
+      {
+        "path": "src/hooks/useTrackPlayerVolume.tsx",
+        "sha256": "711b04b84409322c8f20fc49fdede2eb05f1e722742371625342eb4c2cbd6229",
+        "line_count": 25,
+        "excerpts": [
+          {
+            "start_line": 1,
+            "end_line": 25,
+            "text": "import { useCallback, useEffect, useState } from 'react'\nimport TrackPlayer from 'react-native-track-player'\n\nexport const useTrackPlayerVolume = () => {\n\tconst [volume, setVolume] = useState<number | undefined>(1)\n\n\tconst getVolume = useCallback(async () => {\n\t\tconst currentVolume = await TrackPlayer.getVolume()\n\t\tsetVolume(currentVolume)\n\t}, [])\n\n\tconst updateVolume = useCallback(async (newVolume: number) => {\n\t\tif (newVolume < 0 || newVolume > 1) return\n\n\t\tsetVolume(newVolume)\n\n\t\tawait TrackPlayer.setVolume(newVolume)\n\t}, [])\n\n\tuseEffect(() => {\n\t\tTrackPlayer.setVolume(1).then(() => getVolume())\n\t}, [getVolume])\n\n\treturn { volume, updateVolume }\n}"
+          }
+        ]
+      },
+      {
+        "path": "src/utils/timingClose.ts",
+        "sha256": "f37bdbaafb89b4c16d13bd43d87c96ac86aa8f1b9813f63b5e30610c0c2886c7",
+        "line_count": 72,
+        "excerpts": [
+          {
+            "start_line": 23,
+            "end_line": 41,
+            "text": "function setTimingClose(_deadline: number | null) {\n\tdeadline = _deadline\n\tstateMapper.notify()\n\ttimerId && BackgroundTimer.clearTimeout(timerId)\n\tif (_deadline) {\n\t\tlogInfo('将在', (_deadline - Date.now()) / 1000 / 60, '分钟后暂停播放')\n\t\ttimerId = BackgroundTimer.setTimeout(async () => {\n\t\t\t// todo: 播完整首歌再关闭\n\t\t\tawait myTrackPlayer.pause()\n\t\t\t// NativeUtils.exitApp()\n\t\t\t// if(closeAfterPlayEnd) {\n\t\t\t//     myTrackPlayer.addEventListener()\n\t\t\t// } else {\n\t\t\t//     // 立即关闭\n\t\t\t//     NativeUtils.exitApp();\n\t\t\t// }\n\t\t}, _deadline - Date.now())\n\t} else {\n\t\ttimerId = null"
+          }
+        ]
+      },
+      {
+        "path": "src/player/MusicSourceResolver.ts",
+        "sha256": "7fb9782b7698e14ef0b75371a5295920c0a2c8308b35667452c7a1129ac1238a",
+        "line_count": 218,
+        "excerpts": [
+          {
+            "start_line": 63,
+            "end_line": 81,
+            "text": "export const getPreloadedUrl = (item: IMusic.IMusicItem): string | undefined => {\n\treturn preloadCache.get(makePreloadKey(item))\n}\n\nexport const preloadSource = async (item: IMusic.IMusicItem): Promise<void> => {\n\tconst key = makePreloadKey(item)\n\tif (preloadCache.has(key)) return\n\ttry {\n\t\tconst result = await resolveSource(item, { requestType: 'preload' })\n\t\tif (result.url && !result.url.includes('fake')) {\n\t\t\tpreloadCache.set(key, result.url)\n\t\t\tif (preloadCache.size > 10) {\n\t\t\t\tconst firstKey = preloadCache.keys().next().value\n\t\t\t\tif (firstKey) preloadCache.delete(firstKey)\n\t\t\t}\n\t\t}\n\t} catch {\n\t\t// preload failures are silent\n\t}"
+          },
+          {
+            "start_line": 109,
+            "end_line": 122,
+            "text": "\tconst cached = await isCached(musicItem)\n\tif (cached) {\n\t\tconst localPath = getLocalFilePath(musicItem)\n\t\tpreloadCache.delete(preloadKey)\n\t\tlogInfo('使用缓存的音频路径播放:', localPath)\n\t\treturn { url: localPath, wasCached: true }\n\t}\n\n\t// 只在本地与磁盘缓存都未命中时，才复用预加载的远端音源\n\tconst preloaded = getPreloadedUrl(musicItem)\n\tif (preloaded) {\n\t\tlogInfo(`[sourceResolver][${requestType}] 使用预加载的音源:`, preloaded)\n\t\tpreloadCache.delete(preloadKey)\n\t\treturn { url: preloaded, wasCached: false }"
+          },
+          {
+            "start_line": 139,
+            "end_line": 153,
+            "text": "\t\t\tconst qualityOrder: IMusic.IQualityKey[] = ['flac', '320k', '128k']\n\t\t\tlet currentQualityIndex = qualityOrder.indexOf(qualityStore.getValue())\n\t\t\tlet resp_url: string | null = null\n\n\t\t\tlogInfo(`${logPrefix} 开始请求音源: ${musicItem.title} - ${musicItem.artist}`)\n\n\t\t\twhile (currentQualityIndex < qualityOrder.length && !resp_url) {\n\t\t\t\tconst currentQuality = qualityOrder[currentQualityIndex]\n\t\t\t\ttry {\n\t\t\t\t\tresp_url = await Promise.race([\n\t\t\t\t\t\tnowMusicApi.getMusicUrl(\n\t\t\t\t\t\t\tmusicItem.title,\n\t\t\t\t\t\t\tmusicItem.artist,\n\t\t\t\t\t\t\tmusicItem.id,\n\t\t\t\t\t\t\tcurrentQuality,"
+          }
+        ]
+      },
+      {
+        "path": "src/player/CacheManager.ts",
+        "sha256": "c24f212255703504856e3df580e863b1d143abfb635006f9ea4ce05bacc1da24",
+        "line_count": 87,
+        "excerpts": [
+          {
+            "start_line": 4,
+            "end_line": 7,
+            "text": "import * as FileSystem from 'expo-file-system/legacy'\nimport RNFS from 'react-native-fs'\n\nconst cacheDir = FileSystem.documentDirectory + 'musicCache/'"
+          },
+          {
+            "start_line": 43,
+            "end_line": 59,
+            "text": "export const downloadToCache = async (musicItem: IMusic.IMusicItem): Promise<string> => {\n\ttry {\n\t\tawait ensureCacheDirExists()\n\t\tconst localPath = getLocalFilePath(musicItem)\n\t\tconst downloadResult = await RNFS.downloadFile({\n\t\t\tfromUrl: musicItem.url,\n\t\t\ttoFile: localPath,\n\t\t\tprogressDivider: 1,\n\t\t\tprogress: (res) => {\n\t\t\t\tconst progress = res.bytesWritten / res.contentLength\n\t\t\t\tlogInfo(`下载进度: ${(progress * 100).toFixed(2)}%`)\n\t\t\t},\n\t\t}).promise\n\n\t\tif (downloadResult.statusCode === 200) {\n\t\t\tlogInfo('音频文件已缓存到本地:', localPath)\n\t\t\treturn localPath"
+          }
+        ]
+      },
+      {
+        "path": "src/store/playList.ts",
+        "sha256": "b534dcef294989e0bebf829c92fc9195d4481c15ea7c15022de060590157035a",
+        "line_count": 112,
+        "excerpts": [
+          {
+            "start_line": 33,
+            "end_line": 51,
+            "text": "export function setPlayList(\n    newPlayList: IMusic.IMusicItem[],\n    shouldSave = true,\n    lazy = false,\n) {\n    playListStore.setValue(newPlayList);\n    if (lazy) {\n        indexMapDirty = true;\n    } else {\n        const newMap = new Map<string, number>();\n        for (let i = 0; i < newPlayList.length; i++) {\n            newMap.set(makeKey(newPlayList[i].platform, newPlayList[i].id), i);\n        }\n        playListIndexMap = newMap;\n        indexMapDirty = false;\n    }\n    if (shouldSave) {\n        PersistStatus.set('music.play-list', newPlayList);\n    }"
+          }
+        ]
+      },
+      {
+        "path": "src/helpers/lyricManager.ts",
+        "sha256": "1bf96b2d11322135894d008183a32f7da5b4886b62f5c69a91ca826455d620c2",
+        "line_count": 210,
+        "excerpts": [
+          {
+            "start_line": 181,
+            "end_line": 192,
+            "text": "\trefreshLyric(false, true, data.position).catch((e) => {\n\t\tconsole.log(e, 'LRC_PROGRESS')\n\t})\n})\n\nReactNativeTrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, () => {\n\trefreshLyric(true, true, 0).catch((e) => {\n\t\tconsole.log(e, 'LRC_ACTIVE_TRACK')\n\t})\n})\n\n// 获取歌词"
+          }
+        ]
+      },
+      {
+        "path": "node_modules/react-native-track-player/package.json",
+        "sha256": "c466afdf15280450b999a8f879388741c69b93c3577ea9d98e92ed3f8a6bc400",
+        "line_count": 122,
+        "excerpts": [],
+        "metadata": {
+          "name": "react-native-track-player",
+          "version": "4.1.2",
+          "license": "Apache-2.0",
+          "peerDependencies": {
+            "react": ">=16.8.6",
+            "react-native": ">=0.60.0-rc.2",
+            "react-native-windows": ">=0.63.0",
+            "shaka-player": "^4.7.9"
+          },
+          "codegenConfig": null
+        }
+      },
+      {
+        "path": "node_modules/react-native-track-player/src/TrackPlayerModule.ts",
+        "sha256": "1635bb7c5d3df4fd989d481aef9b59fabdf2de8c2e9106af40d0b22053b0d75a",
+        "line_count": 3,
+        "excerpts": [
+          {
+            "start_line": 1,
+            "end_line": 3,
+            "text": "import { NativeModules } from 'react-native';\nconst { TrackPlayerModule } = NativeModules;\nexport default TrackPlayerModule;"
+          }
+        ]
+      },
+      {
+        "path": "node_modules/react-native-track-player/src/trackPlayer.ts",
+        "sha256": "e2c347fb056c73c2f7db756da9be40b41235bcb6e16185c25e941eaa3d0de2eb",
+        "line_count": 512,
+        "excerpts": [
+          {
+            "start_line": 62,
+            "end_line": 74,
+            "text": "/**\n * Register the playback service. The service will run as long as the player runs.\n */\nexport function registerPlaybackService(factory: () => ServiceHandler) {\n  if (Platform.OS === 'android') {\n    // Registers the headless task\n    AppRegistry.registerHeadlessTask('TrackPlayer', factory);\n  } else if (Platform.OS === 'web') {\n    factory()();\n  } else {\n    // Initializes and runs the service in the next tick\n    setImmediate(factory());\n  }"
+          }
+        ]
+      },
+      {
+        "path": "node_modules/react-native-track-player/ios/RNTrackPlayer/RNTrackPlayerBridge.m",
+        "sha256": "1c9deac9ea4e6f85251c1e5d3e79bec80959390aae00155c1cbe412216cf7ced",
+        "line_count": 167,
+        "excerpts": [
+          {
+            "start_line": 9,
+            "end_line": 16,
+            "text": "#import \"RNTrackPlayerBridge.h\"\n#import <React/RCTBridgeModule.h>\n\n@interface RCT_EXTERN_REMAP_MODULE(TrackPlayerModule, RNTrackPlayer, NSObject)\n\nRCT_EXTERN_METHOD(setupPlayer:(NSDictionary *)data\n                  resolver:(RCTPromiseResolveBlock)resolve\n                  rejecter:(RCTPromiseRejectBlock)reject);"
+          }
+        ]
+      },
+      {
+        "path": "node_modules/react-native-track-player/ios/RNTrackPlayer/RNTrackPlayer.swift",
+        "sha256": "b535743c10905058cb10041fb0fb49133416a03bb264fde7f7b7926e02e2e349",
+        "line_count": 924,
+        "excerpts": [
+          {
+            "start_line": 13,
+            "end_line": 22,
+            "text": "@objc(RNTrackPlayer)\npublic class RNTrackPlayer: RCTEventEmitter, AudioSessionControllerDelegate {\n\n    // MARK: - Attributes\n\n    private var hasInitialized = false\n    private let player = QueuedAudioPlayer()\n    private let audioSessionController = AudioSessionController.shared\n    private var shouldEmitProgressEvent: Bool = false\n    private var shouldResumePlaybackAfterInterruptionEnds: Bool = false"
+          },
+          {
+            "start_line": 112,
+            "end_line": 134,
+            "text": "    public func handleInterruption(type: InterruptionType) {\n        switch type {\n        case .began:\n            // Interruption began, take appropriate actions (save state, update user interface)\n            emit(event: EventType.RemoteDuck, body: [\n                \"paused\": true\n            ])\n        case let .ended(shouldResume):\n            if shouldResume {\n                if (shouldResumePlaybackAfterInterruptionEnds) {\n                    player.play()\n                }\n                // Interruption Ended - playback should resume\n                emit(event: EventType.RemoteDuck, body: [\n                    \"paused\": false\n                ])\n            } else {\n                // Interruption Ended - playback should NOT resume\n                emit(event: EventType.RemoteDuck, body: [\n                    \"paused\": true,\n                    \"permanent\": true\n                ])\n            }"
+          },
+          {
+            "start_line": 173,
+            "end_line": 176,
+            "text": "\n        if let autoHandleInterruptions = config[\"autoHandleInterruptions\"] as? Bool {\n            self.shouldResumePlaybackAfterInterruptionEnds = autoHandleInterruptions\n        }"
+          }
+        ]
+      },
+      {
+        "path": "node_modules/react-native-track-player/android/src/main/java/com/doublesymmetry/trackplayer/module/MusicModule.kt",
+        "sha256": "be0de3b03f164def4a4c42bd793babd75cf3aa18af1fef76abc42ef6864a808b",
+        "line_count": 629,
+        "excerpts": [
+          {
+            "start_line": 28,
+            "end_line": 39,
+            "text": "\n/**\n * @author Milen Pivchev @mpivchev\n */\nclass MusicModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext),\n    ServiceConnection {\n    private var playerOptions: Bundle? = null\n    private var isServiceBound = false\n    private var playerSetUpPromise: Promise? = null\n    private val scope = MainScope()\n    private lateinit var musicService: MusicService\n    private val context = reactContext"
+          }
+        ]
+      },
+      {
+        "path": "node_modules/react-native-track-player/android/src/main/java/com/doublesymmetry/trackplayer/service/MusicService.kt",
+        "sha256": "373dde8d70514972162bdf42e87a0646a56d53736f4fb166116950732588b87c",
+        "line_count": 854,
+        "excerpts": [
+          {
+            "start_line": 32,
+            "end_line": 44,
+            "text": "import com.facebook.react.HeadlessJsTaskService\nimport com.facebook.react.bridge.Arguments\nimport com.facebook.react.jstasks.HeadlessJsTaskConfig\nimport com.facebook.react.modules.core.DeviceEventManagerModule\nimport com.google.android.exoplayer2.ui.R as ExoPlayerR\nimport kotlinx.coroutines.*\nimport kotlinx.coroutines.flow.flow\nimport java.util.concurrent.TimeUnit\nimport kotlin.system.exitProcess\nimport timber.log.Timber\n\n@MainThread\nclass MusicService : HeadlessJsTaskService() {"
+          },
+          {
+            "start_line": 140,
+            "end_line": 147,
+            "text": "        )\n\n        val cacheConfig = CacheConfig(playerOptions?.getDouble(MAX_CACHE_SIZE_KEY)?.toLong())\n        val playerConfig = PlayerConfig(\n            interceptPlayerActionsTriggeredExternally = true,\n            handleAudioBecomingNoisy = true,\n            handleAudioFocus = playerOptions?.getBoolean(AUTO_HANDLE_INTERRUPTIONS) ?: false,\n            audioContentType = when(playerOptions?.getString(ANDROID_AUDIO_CONTENT_TYPE)) {"
+          }
+        ]
+      },
+      {
+        "path": "node_modules/react-native-track-player/LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "line_count": 201,
+        "excerpts": [
+          {
+            "start_line": 1,
+            "end_line": 4,
+            "text": "                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n"
+          }
+        ]
+      },
+      {
+        "path": "node_modules/expo/bundledNativeModules.json",
+        "sha256": "8742c9fd3175187e6b26dcc7b3be9d5b20b3eae94c7ffc525b1a3dfc12f987c9",
+        "line_count": 125,
+        "excerpts": [],
+        "metadata": {
+          "expo-audio": "~57.0.4"
+        }
+      }
+    ],
+    "scoped_searches": [
+      {
+        "scope": "src/**",
+        "query": "useTrackPlayerVolume",
+        "result": "仅 src/hooks/useTrackPlayerVolume.tsx:4 定义，无其他消费者"
+      },
+      {
+        "scope": "src/**",
+        "query": "Event.RemoteDuck or autoHandleInterruptions",
+        "result": "未发现业务订阅/初始化设置；src/store/config.ts 中 tempRemoteDuck 只是配置类型"
+      }
+    ]
+  }
+}

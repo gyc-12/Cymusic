@@ -49,4 +49,4 @@ android
 
 # Local audit downloads, build evidence and simulator captures.
 # Curated findings live in docs/audit/ and .trellis/spec/.
-/.trellis/tasks/09-05-rn-expo-new-architecture/research/
+/.trellis/tasks/**/research/

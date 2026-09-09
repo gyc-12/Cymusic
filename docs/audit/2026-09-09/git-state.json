@@ -1,0 +1,154 @@
+{
+  "before": {
+    "capturedAtUTC": "2026-09-09T14:31:47.391108+00:00",
+    "branch": "main",
+    "head": "305b9cd9096247303b19507d257075100e10c6ce",
+    "tracked": 251,
+    "trackedStatus": {
+      "  ": 171,
+      " M": 66,
+      " D": 14
+    },
+    "untracked": 68012,
+    "untrackedByRoot": {
+      ".agent": 46,
+      ".agents": 46,
+      ".claude": 52,
+      ".codex": 8,
+      ".factory": 53,
+      ".gitattributes": 1,
+      ".github": 53,
+      ".trellis": 67745,
+      "AGENTS.md": 1,
+      "ios": 2,
+      "metro.config.js": 1,
+      "patches": 3,
+      "src": 1
+    },
+    "untrackedBytesByRoot": {
+      ".agent": 241952,
+      ".agents": 243009,
+      ".claude": 346136,
+      ".codex": 89968,
+      ".factory": 355084,
+      ".gitattributes": 530,
+      ".github": 295076,
+      ".trellis": 1290384545,
+      "AGENTS.md": 1073,
+      "ios": 3539,
+      "metro.config.js": 653,
+      "patches": 9963,
+      "src": 7070
+    },
+    "trackedIgnored": [],
+    "runtimeDependencies": 51,
+    "devDependencies": 14,
+    "headVersions": {
+      "expo": "~50.0.14",
+      "react": "18.2.0",
+      "react-native": "0.73.6",
+      "react-native-track-player": "^4.1.1"
+    },
+    "workingVersions": {
+      "expo": "57.0.20",
+      "react": "19.2.3",
+      "react-native": "0.86.3",
+      "react-native-track-player": "4.1.2"
+    }
+  },
+  "after": {
+    "capturedAtUTC": "2026-09-09T15:14:05.388592+00:00",
+    "branch": "main",
+    "head": "305b9cd9096247303b19507d257075100e10c6ce",
+    "tracked": 251,
+    "trackedStatus": {
+      "  ": 170,
+      " M": 67,
+      " D": 14
+    },
+    "stagedChanges": 0,
+    "untracked": 389,
+    "untrackedByRoot": {
+      ".agent": 46,
+      ".agents": 46,
+      ".claude": 52,
+      ".codex": 8,
+      ".factory": 53,
+      "(root)": 3,
+      ".github": 53,
+      ".trellis": 110,
+      "docs": 12,
+      "ios": 2,
+      "patches": 3,
+      "src": 1
+    },
+    "trackedByRoot": {
+      "(root)": {
+        "unchanged": 8,
+        "modified": 7,
+        "deleted": 1
+      },
+      ".claude": {
+        "unchanged": 5
+      },
+      ".github": {
+        "modified": 1
+      },
+      ".idea": {
+        "deleted": 7
+      },
+      ".vscode": {
+        "unchanged": 1
+      },
+      "assets": {
+        "unchanged": 14
+      },
+      "ios": {
+        "unchanged": 22,
+        "modified": 7,
+        "deleted": 3
+      },
+      "patches": {
+        "deleted": 3,
+        "unchanged": 1
+      },
+      "src": {
+        "unchanged": 119,
+        "modified": 52
+      }
+    },
+    "sourceTrackedSubgroups": {
+      "app": 24,
+      "components": 52,
+      "constants": 7,
+      "helpers": 18,
+      "hooks": 10,
+      "locales": 2,
+      "player": 4,
+      "store": 10,
+      "styles": 1,
+      "types": 25,
+      "utils": 18
+    },
+    "newRequiredProductFiles": [
+      "ios/CyMusic/AppDelegate.swift",
+      "ios/CyMusic/PrivacyInfo.xcprivacy",
+      "metro.config.js",
+      "patches/expo-localization+57.0.1.patch",
+      "patches/expo-share-intent+8.0.1.patch",
+      "patches/react-native-awesome-slider+2.5.1.patch",
+      "src/helpers/localFile.ts"
+    ]
+  },
+  "cleanup": {
+    "completedAtUTC": "2026-09-09T14:58:29.167361+00:00",
+    "authorization": "2026-09-09 user retired sequential Expo SDK upgrade tasks; keep useful results",
+    "operation": "move outside project; no product source or installed-user data changed",
+    "gitCandidateFilesMoved": 66367,
+    "gitCandidateBytesMoved": 1161724182
+  },
+  "trackedSetUnchanged": true,
+  "changedTrackedStatusDuringAssessment": [
+    ".gitignore"
+  ]
+}

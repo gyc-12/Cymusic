@@ -7,7 +7,7 @@
 <p align="center">一个基于 React native 开发的音乐软件。支持开发可以点点star。</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Expo-57.0.20-blue" alt="Expo" />
+  <img src="https://img.shields.io/badge/Expo-57.0.21-blue" alt="Expo" />
   <img src="https://img.shields.io/badge/Node-24.19.0-brightgreen" alt="Node" />
   <img src="https://img.shields.io/badge/platforms-iOS-lightgrey" alt="platforms" />
 </p>
@@ -28,12 +28,13 @@
 ##  技术栈
 
 -  **React Native 0.86.3 / React 19.2.3**：New Architecture、Fabric 和 Hermes
--  **Expo 57.0.20**：与 React Native 配套的稳定版本
+-  **Expo 57.0.21**：与 React Native 配套的稳定版本
 -  **TypeScript**：JavaScript 的超集，添加了静态类型检查
 -  **React Native Track Player**：用于音频播放的库
 -  **Zustand**：轻量级状态管理库
 -  **Expo Router**：基于文件系统的路由，使用其配套的导航依赖
 -  **MMKV 4 / Nitro 与 AsyncStorage**：保留现有数据库和分块存储格式
+-  **本地 Expo Modules**：文件路径安全查询、自有 JavaScriptCore 音源运行时、系统音量和定时服务
 
 ##  开发指南
 
@@ -57,8 +58,9 @@ cd ..
 使用仓库中的 `yarn.lock`、`ios/Podfile.lock` 和 `patch-package --error-on-fail`。
 补丁失败时应修复对应版本的补丁；不要跳过 postinstall 或改用另一份锁文件。
 
-项目保留了 `ios/` 原生工程，其中包含自定义 JavaScriptCore 音源模块、
-`user-api-preload.js` 和分享扩展。修改 Expo 配置后，需要同步检查原生工程；
+项目保留了 `ios/` 原生工程，其中包含 `user-api-preload.js` 和分享扩展。
+自定义 JavaScriptCore 引擎与现代原生接口位于 `modules/cymusic-native/`，通过
+Expo 自动链接加入原生构建。修改 Expo 配置后，需要同步检查原生工程；
 不要运行 `expo prebuild` 重新生成原生工程：SDK 57 默认执行 clean，
 `--no-clean` 也可能重写自定义分享扩展。
 
@@ -123,6 +125,29 @@ xcodebuild -workspace ios/CyMusic.xcworkspace \
 
 升级已有安装时保留应用身份及 App Group，不要卸载应用。MMKV 升级前应备份
 完整应用数据；源码回退不能恢复新版存储核心写过的数据库。
+
+### 专项回归与当前状态
+
+使用上述 Node 24 环境运行；包含 Foundation、JavaScriptCore 或 Swift 的检查需要 macOS/Xcode：
+
+```bash
+node scripts/check-local-files.mjs
+node scripts/check-file-downloads.mjs
+node scripts/check-source-host.mjs
+node scripts/check-source-runtime.mjs
+node scripts/check-volume.mjs
+node scripts/check-volume-native.mjs
+node scripts/check-request-timers.mjs
+node scripts/check-sleep-timer.mjs
+node scripts/check-native-services.mjs
+```
+
+文件 I/O 已统一到 Expo FileSystem；系统音量、HTTP 有限后台执行时间和睡眠截止事件
+由本地 Expo Modules 提供。播放器仍保留 RNTP 4.1.2，输入分享保留现有扩展和协议。
+版本、依赖、构建结果及历史静态检查问题见
+[升级优化结果与验证范围](docs/maintenance/2026-09-10-results.md)，任务顺序见
+[执行计划](docs/maintenance/2026-09-10-plan.md)，全部 Git 追踪路径见
+[项目文件状态](docs/maintenance/2026-09-10-files.md)。
 
 ##  功能列表
 

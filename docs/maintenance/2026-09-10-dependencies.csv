@@ -1,0 +1,62 @@
+﻿package,scope,declared,installed,license,category,architecture,expo57_range,decision
+@babel/core,development,7.29.0,7.29.0,MIT,开发工具,不适用：构建/类型/检查工具,,保留7.x
+@react-native/metro-config,development,0.86.3,0.86.3,MIT,开发工具,不适用：构建/类型/检查工具,,保留配套版本
+@types/lodash.shuffle,development,4.2.9,4.2.9,MIT,开发工具,不适用：构建/类型/检查工具,,保留
+@types/node,development,24.13.3,24.13.3,MIT,开发工具,不适用：构建/类型/检查工具,,已对齐本轮 Node 24 工具链
+@types/react,development,19.2.14,19.2.14,MIT,开发工具,不适用：构建/类型/检查工具,,同系列补丁候选
+@typescript-eslint/eslint-plugin,development,8.69.0,8.69.0,MIT,开发工具,不适用：构建/类型/检查工具,,成对维护更新
+@typescript-eslint/parser,development,8.69.0,8.69.0,MIT,开发工具,不适用：构建/类型/检查工具,,成对维护更新
+babel-preset-expo,development,57.0.11,57.0.11,MIT,开发工具,不适用：构建/类型/检查工具,,已按 Expo 57 配套关系更新至 57.0.11
+eslint,development,8.57.0,8.57.0,MIT,开发工具,不适用：构建/类型/检查工具,,独立工具链任务
+eslint-plugin-react,development,7.34.1,7.34.1,MIT,开发工具,不适用：构建/类型/检查工具,,维护更新候选
+eslint-plugin-react-hooks,development,4.6.0,4.6.0,MIT,开发工具,不适用：构建/类型/检查工具,,独立规则升级
+prettier,development,3.2.5,3.2.5,MIT,开发工具,不适用：构建/类型/检查工具,,低优先级维护
+typescript,development,6.0.3,6.0.3,Apache-2.0,开发工具,不适用：构建/类型/检查工具,,暂缓大版本
+@babel/runtime,runtime,7.24.1,7.24.1,MIT,纯JS,不适用：无自有原生模块,,保留7.x
+@expo/vector-icons,runtime,15.0.3,15.0.3,MIT,Expo官方,Expo官方JS/组件封装,^15.0.2,按SDK维护
+@react-native-async-storage/async-storage,runtime,2.2.0,2.2.0,MIT,社区原生,TurboModule/codegen（兼容旧架构的双实现）,2.2.0,保留2.2.0
+@react-native-menu/menu,runtime,2.0.0,2.0.0,MIT,社区原生,Fabric/codegen（双实现）,,保留；可选替换
+@shopify/flash-list,runtime,2.0.2,2.0.2,MIT,社区JS组件,JS列表，v2要求RN新架构，无独立原生Pod,2.0.2,保留SDK版本
+axios,runtime,1.7.2,1.7.2,MIT,纯JS,不适用：无自有原生模块,,维护升级候选
+base-64,runtime,0.1.0,0.1.0,,纯JS,不适用：无自有原生模块,,低优先级更新
+buffer,runtime,5.7.1,5.7.1,MIT,纯JS,不适用：无自有原生模块,,已显式声明现有导入使用的运行依赖
+crypto-js,runtime,4.2.0,4.2.0,MIT,纯JS,不适用：无自有原生模块,,保留现有协议实现
+expo,runtime,57.0.21,57.0.21,MIT,框架,Expo/RN新架构基础,,已按 SDK 配套关系更新至 57.0.21
+expo-blur,runtime,57.0.2,57.0.2,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.2,保留
+expo-constants,runtime,57.0.17,57.0.17,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.17,保留
+expo-dev-client,runtime,57.0.18,57.0.18,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.18,保留开发用途
+expo-document-picker,runtime,57.0.1,57.0.1,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.1,保留
+expo-file-system,runtime,57.0.6,57.0.6,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.6,文件读写和下载已统一到该 Expo 模块；安全目录/lstat 由自有小模块补齐
+expo-font,runtime,57.0.3,57.0.3,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.3,保留peer/基础能力
+expo-haptics,runtime,57.0.2,57.0.2,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.2,保留
+expo-image,runtime,57.0.4,57.0.4,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.4,保留
+expo-image-picker,runtime,57.0.16,57.0.16,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.16,保留
+expo-keep-awake,runtime,57.0.1,57.0.1,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.1,保留
+expo-linear-gradient,runtime,57.0.1,57.0.1,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.1,保留
+expo-linking,runtime,57.0.9,57.0.9,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.9,保留peer/链接能力
+expo-localization,runtime,57.0.1,57.0.1,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.1,保留补丁
+expo-router,runtime,57.0.20,57.0.20,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.20,已按 Expo 57 配套关系更新至 57.0.20
+expo-share-intent,runtime,8.0.1,8.0.1,MIT,社区原生,Expo Modules（社区维护）,,保留 8.0.1 与现有补丁/分享扩展；官方替代尚需历史协议兼容迁移
+expo-splash-screen,runtime,57.0.8,57.0.8,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.8,保留配置插件
+expo-status-bar,runtime,57.0.1,57.0.1,MIT,Expo官方,Expo Modules/官方原生集成,~57.0.1,保留
+i18n-js,runtime,4.5.0,4.5.0,MIT,纯JS,不适用：无自有原生模块,,小版本维护候选
+immer,runtime,10.1.1,10.1.1,MIT,纯JS,不适用：无自有原生模块,,暂缓大版本
+lodash,runtime,4.17.21,4.17.21,MIT,纯JS,不适用：无自有原生模块,,同系列维护候选
+lodash.shuffle,runtime,4.2.0,4.2.0,MIT,纯JS,不适用：无自有原生模块,,保留
+patch-package,runtime,8.0.0,8.0.0,MIT,开发工具,不适用：构建/类型/检查工具,,保留安装工具
+react,runtime,19.2.3,19.2.3,MIT,框架,JS核心,19.2.3,保留Expo映射
+react-native,runtime,0.86.3,0.86.3,MIT,框架,Expo/RN新架构基础,0.86.3,保留Expo映射
+react-native-awesome-slider,runtime,2.5.1,2.5.1,MIT,社区JS组件,JS + Reanimated/Gesture，无独立原生模块,,更新或替换验证
+react-native-gesture-handler,runtime,2.32.0,2.32.0,MIT,社区原生,Fabric/TurboModule,~2.32.0,保留SDK版本
+react-native-image-colors,runtime,2.6.0,2.6.0,MIT,社区原生,Expo Modules（社区维护）,,保留
+react-native-loader-kit,runtime,4.1.0,4.1.0,MIT,社区原生,Fabric/codegen（双实现）,,可选精简
+react-native-mmkv,runtime,4.3.2,4.3.2,MIT,社区原生,Nitro/JSI,,保留
+react-native-nitro-modules,runtime,0.35.9,0.35.9,MIT,社区原生,Nitro/JSI基础层与Turbo安装入口,,跟随MMKV配套维护
+react-native-reanimated,runtime,4.5.1,4.5.1,MIT,社区原生,新架构原生/JSI（4.x）,4.5.1,保留配套组合
+react-native-safe-area-context,runtime,5.7.0,5.7.0,MIT,社区原生,Fabric/TurboModule,~5.7.0,按SDK维护
+react-native-screens,runtime,4.26.0,4.26.0,MIT,社区原生,Fabric/TurboModule,~4.26.0,按SDK维护
+react-native-toast-message,runtime,2.2.1,2.2.1,MIT,社区JS组件,纯JS，无自有原生模块,,可做小版本更新
+react-native-track-player,runtime,4.1.2,4.1.2,Apache-2.0,社区原生,旧 NativeModules/RCTEventEmitter，依赖interop,,保留 4.1.2 interop；候选开源播放器尚未证明队列/锁屏/后台音源功能等价
+react-native-worklets,runtime,0.10.1,0.10.1,MIT,社区原生,新架构原生/JSI,0.10.1,保留配套组合
+ts-pattern,runtime,5.0.8,5.0.8,MIT,纯JS,不适用：无自有原生模块,,低优先级维护
+zustand,runtime,4.5.2,4.5.2,MIT,纯JS,不适用：无自有原生模块,,暂缓大版本
