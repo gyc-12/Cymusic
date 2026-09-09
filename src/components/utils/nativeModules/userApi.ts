@@ -1,19 +1,40 @@
-import { NativeEventEmitter, NativeModules } from 'react-native'
-
-const { UserApiModule } = NativeModules
+import UserApiModule from '../../../../modules/cymusic-native/userApi'
 
 let loadScriptInfo: LX.UserApi.UserApiInfo | null = null
-export const loadScript = (info: LX.UserApi.UserApiInfo & { script: string }) => {
+let generation: string | null = null
+let disposeScript: (() => void) | null = null
+
+const retireScript = () => {
+  const dispose = disposeScript
+  disposeScript = null
+  generation = null
+  loadScriptInfo = null
+  dispose?.()
+}
+
+export const loadScript = (
+  info: LX.UserApi.UserApiInfo & { script: string },
+  onDispose?: () => void,
+): void => {
+  retireScript()
   loadScriptInfo = info
-  UserApiModule.loadScript({
-    id: info.id,
-    name: info.name,
-    description: info.description,
-    version: info.version ?? '',
-    author: info.author ?? '',
-    homepage: info.homepage ?? '',
-    script: info.script,
-  })
+  // The existing LX owner supplies one cleanup callback for this load. Keeping it
+  // here also pairs a direct facade destroy with its outstanding host requests.
+  disposeScript = onDispose ?? null
+  try {
+    generation = UserApiModule.loadScript({
+      id: info.id,
+      name: info.name,
+      description: info.description,
+      version: info.version ?? '',
+      author: info.author ?? '',
+      homepage: info.homepage ?? '',
+      script: info.script,
+    })
+  } catch (error) {
+    retireScript()
+    throw error
+  }
 }
 
 export interface SendResponseParams {
@@ -31,7 +52,8 @@ export interface SendActions {
   response: SendResponseParams
 }
 export const sendAction = <T extends keyof SendActions>(action: T, data: SendActions[T]) => {
-  UserApiModule.sendAction(action, JSON.stringify(data))
+  if (!generation) return
+  UserApiModule.sendAction(action, JSON.stringify(data), generation)
 }
 
 // export const clearAppCache = CacheModule.clearAppCache as () => Promise<void>
@@ -82,9 +104,12 @@ export interface Actions {
 export type ActionsEvent = { [K in keyof Actions]: { action: K, data: Actions[K] } }[keyof Actions]
 
 export const onScriptAction = (handler: (event: ActionsEvent) => void): () => void => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  const eventEmitter = new NativeEventEmitter(UserApiModule)
-  const eventListener = eventEmitter.addListener('api-action', event => {
+  const eventListener = UserApiModule.addListener('api-action', rawEvent => {
+    const { generation: eventGeneration, ...payload } = rawEvent
+    // This is the final delivery boundary: native/Expo may already have queued
+    // an event when another script is loaded. Never parse or enrich stale data.
+    if (!generation || eventGeneration !== generation) return
+    const event: { action: string, data?: any, type?: string, log?: string } = { ...payload }
     if (event.data) event.data = JSON.parse(event.data as string)
     if (event.action == 'init') {
       if (event.data.info) event.data.info = { ...loadScriptInfo, ...event.data.info }
@@ -101,5 +126,6 @@ export const onScriptAction = (handler: (event: ActionsEvent) => void): () => vo
 }
 
 export const destroy = () => {
+  retireScript()
   UserApiModule.destroy()
 }

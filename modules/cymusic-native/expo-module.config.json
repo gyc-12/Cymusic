@@ -1,6 +1,6 @@
 {
 	"platforms": ["ios"],
 	"apple": {
-		"modules": ["CyMusicFileSystemModule"]
+		"modules": ["CyMusicFileSystemModule", "CyMusicSourceModule"]
 	}
 }

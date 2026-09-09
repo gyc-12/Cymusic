@@ -1,15 +1,17 @@
 /**
  * lx-music 音源脚本适配器
  *
- * 使用 Cymusic 已有的 UserApiModule 原生模块（QuickJS 引擎）执行 lx-music 脚本，
+ * 使用 Cymusic 已有的 UserApiModule 原生模块（JavaScriptCore 引擎）执行 lx-music 脚本，
  * 将其事件通信机制包装为 Cymusic 的 getMusicUrl 函数。
  */
 
 import type {
 	RequestParams,
+	SendResponseParams,
 	ResponseParams,
 } from '@/components/utils/nativeModules/userApi'
 import {
+	destroy,
 	loadScript,
 	onScriptAction,
 	sendAction
@@ -77,7 +79,7 @@ export const parseLxMusicScriptInfo = (
 }
 
 // ============================================================
-// QuickJS 原生模块桥接
+// JavaScriptCore 原生模块桥接
 // ============================================================
 
 type LxRequestType = 'current' | 'preload'
@@ -88,29 +90,69 @@ type LxRequestContext = {
 	timeoutMs?: number
 }
 
-// 待处理的 getMusicUrl 请求映射
-let pendingRequests: Map<
-	string,
-	{
-		resolve: (url: string) => void
-		reject: (err: Error) => void
-		requestType: LxRequestType
-	}
-> = new Map()
-let settledRequestTypes: Map<string, LxRequestType> = new Map()
-
-// HTTP 请求映射（QuickJS 脚本发起的 HTTP 请求通过事件转发到 JS-land）
-let pendingHttpRequests: Map<string, AbortController> = new Map()
-
-// 脚本是否已初始化
-let scriptInited = false
-let scriptInitPromise: {
-	resolve: () => void
+type PendingRequest = {
+	resolve: (url: string) => void
 	reject: (err: Error) => void
-} | null = null
+	requestKey: string
+	requestType: LxRequestType
+}
 
-// 事件监听清理函数
-let removeListener: (() => void) | null = null
+type SettledRequest = {
+	requestKey: string
+	requestType: LxRequestType
+	timeout: ReturnType<typeof setTimeout>
+}
+
+type HttpRequest = {
+	controller: AbortController
+	timeout: ReturnType<typeof setTimeout> | null
+}
+
+type LxRuntime = {
+	pendingRequests: Map<string, PendingRequest>
+	settledRequestTypes: Map<string, SettledRequest>
+	pendingHttpRequests: Map<string, HttpRequest>
+	inited: boolean
+	disposed: boolean
+	init: { resolve: () => void, reject: (err: Error) => void } | null
+	removeListener: (() => void) | null
+}
+
+let activeRuntime: LxRuntime | null = null
+let nextRequestId = 0
+
+const isActiveRuntime = (runtime: LxRuntime) => activeRuntime === runtime && !runtime.disposed
+
+const retireRuntime = (runtime: LxRuntime, error: Error) => {
+	if (runtime.disposed) return
+	runtime.disposed = true
+	runtime.inited = false
+	if (activeRuntime === runtime) activeRuntime = null
+	runtime.init?.reject(error)
+	for (const request of runtime.pendingRequests.values()) request.reject(error)
+	runtime.pendingRequests.clear()
+	for (const request of runtime.settledRequestTypes.values()) clearTimeout(request.timeout)
+	runtime.settledRequestTypes.clear()
+	for (const request of runtime.pendingHttpRequests.values()) {
+		if (request.timeout !== null) clearTimeout(request.timeout)
+		request.controller.abort()
+	}
+	runtime.pendingHttpRequests.clear()
+	runtime.removeListener?.()
+	runtime.removeListener = null
+}
+
+const failRuntime = (runtime: LxRuntime, error: Error) => {
+	if (!isActiveRuntime(runtime)) return
+	retireRuntime(runtime, error)
+	destroy()
+}
+
+// Native facade destruction invokes the same per-load cleanup callback. Keeping
+// the import one-way avoids a facade/adapter cycle and does not add a second bus.
+export const disposeLxMusicScript = () => {
+	if (activeRuntime) destroy()
+}
 
 const getLxRequestLogPrefix = (
 	requestType: LxRequestType | 'unknown',
@@ -118,31 +160,36 @@ const getLxRequestLogPrefix = (
 ) => `[lxMusicAdapter][${requestType}][requestKey=${requestKey}]`
 
 const rememberSettledRequestType = (
-	requestKey: string,
-	requestType: LxRequestType,
+	runtime: LxRuntime,
+	wireRequestKey: string,
+	request: PendingRequest,
 ) => {
-	settledRequestTypes.set(requestKey, requestType)
-	setTimeout(() => {
-		if (settledRequestTypes.get(requestKey) === requestType) {
-			settledRequestTypes.delete(requestKey)
-		}
-	}, 30000)
+	const settled: SettledRequest = {
+		requestKey: request.requestKey,
+		requestType: request.requestType,
+		timeout: setTimeout(() => {
+			if (runtime.settledRequestTypes.get(wireRequestKey) === settled) {
+				runtime.settledRequestTypes.delete(wireRequestKey)
+			}
+		}, 30000),
+	}
+	runtime.settledRequestTypes.set(wireRequestKey, settled)
 }
 
-const shouldLogScriptAction = (event: any) => {
+const shouldLogScriptAction = (runtime: LxRuntime, event: any) => {
 	if (event.action !== 'response') return true
 	const data = event.data as ResponseParams
-	const pending = pendingRequests.get(data.requestKey)
-	const requestType = pending?.requestType ?? settledRequestTypes.get(data.requestKey)
+	const pending = runtime.pendingRequests.get(data.requestKey)
+	const requestType = pending?.requestType ?? runtime.settledRequestTypes.get(data.requestKey)?.requestType
 	return !(requestType === 'preload' && (!data.status || !pending))
 }
 
-const formatScriptActionLog = (event: any) => {
+const formatScriptActionLog = (runtime: LxRuntime, event: any) => {
 	switch (event.action) {
 		case 'request': {
 			const data = event.data as RequestParams
 			const parentPending = data.parentRequestKey
-				? pendingRequests.get(data.parentRequestKey)
+				? runtime.pendingRequests.get(data.parentRequestKey)
 				: null
 			const requestType = data.requestType ?? parentPending?.requestType
 			const requestTypeLabel = requestType ? `[${requestType}]` : ''
@@ -156,13 +203,14 @@ const formatScriptActionLog = (event: any) => {
 		}
 		case 'response': {
 			const data = event.data as ResponseParams
-			const pending = pendingRequests.get(data.requestKey)
-			const requestType = pending?.requestType ?? settledRequestTypes.get(data.requestKey)
+			const pending = runtime.pendingRequests.get(data.requestKey)
+			const requestType = pending?.requestType ?? runtime.settledRequestTypes.get(data.requestKey)?.requestType
 			const requestTypeLabel = requestType
 				? `[${requestType}]`
 				: ''
-			const requestKeyLabel = data.requestKey
-				? `[requestKey=${data.requestKey}]`
+			const businessKey = pending?.requestKey ?? runtime.settledRequestTypes.get(data.requestKey)?.requestKey ?? data.requestKey
+			const requestKeyLabel = businessKey
+				? `[requestKey=${businessKey}]`
 				: ''
 			return `[lxMusicAdapter] Script action: response${requestTypeLabel}${requestKeyLabel}`
 		}
@@ -172,11 +220,12 @@ const formatScriptActionLog = (event: any) => {
 }
 
 /**
- * 处理来自 QuickJS 脚本的事件
+ * 处理来自 JavaScriptCore 脚本的事件
  */
-const handleScriptAction = (event: any) => {
-	if (shouldLogScriptAction(event)) {
-		logInfo(formatScriptActionLog(event))
+const handleScriptAction = (runtime: LxRuntime, event: any) => {
+	if (!isActiveRuntime(runtime)) return
+	if (shouldLogScriptAction(runtime, event)) {
+		logInfo(formatScriptActionLog(runtime, event))
 	}
 
 	switch (event.action) {
@@ -185,46 +234,41 @@ const handleScriptAction = (event: any) => {
 			const data = event.data
 			if (data.status) {
 				logInfo('[lxMusicAdapter] Script initialized successfully')
-				scriptInited = true
-				scriptInitPromise?.resolve()
+				runtime.inited = true
+				runtime.init?.resolve()
 			} else {
 				logError(
 					`[lxMusicAdapter] Script init failed: ${data.errorMessage || 'unknown'}`,
 				)
-				scriptInitPromise?.reject(
+				failRuntime(runtime,
 					new Error(data.errorMessage || 'Script init failed'),
 				)
 			}
-			scriptInitPromise = null
 			break
 		}
 
 		case 'request': {
 			// 脚本发起 HTTP 请求 — 我们在 JS-land 代理执行
 			const reqData = event.data as RequestParams
-			handleHttpRequest(reqData)
+			void handleHttpRequest(runtime, reqData)
 			break
 		}
 
 		case 'cancelRequest': {
 			// 脚本取消 HTTP 请求
 			const requestKey = event.data as string
-			const controller = pendingHttpRequests.get(requestKey)
-			if (controller) {
-				controller.abort()
-				pendingHttpRequests.delete(requestKey)
-			}
+			abortHttpRequest(runtime, requestKey)
 			break
 		}
 
 		case 'response': {
 			// 脚本返回 musicUrl/lyric/pic 响应
 			const respData = event.data as ResponseParams
-			const pending = pendingRequests.get(respData.requestKey)
+			const pending = runtime.pendingRequests.get(respData.requestKey)
 			if (pending) {
 				const logPrefix = getLxRequestLogPrefix(
 					pending.requestType,
-					respData.requestKey,
+					pending.requestKey,
 				)
 				if (respData.status) {
 					const result = respData.result as any
@@ -249,9 +293,10 @@ const handleScriptAction = (event: any) => {
 						new Error(respData.errorMessage || 'Script returned error'),
 					)
 				}
-				pendingRequests.delete(respData.requestKey)
-				settledRequestTypes.delete(respData.requestKey)
 			}
+			const settled = runtime.settledRequestTypes.get(respData.requestKey)
+			if (settled) clearTimeout(settled.timeout)
+			runtime.settledRequestTypes.delete(respData.requestKey)
 			break
 		}
 
@@ -267,15 +312,45 @@ const handleScriptAction = (event: any) => {
 	}
 }
 
+const finishHttpRequest = (
+	runtime: LxRuntime,
+	requestKey: string,
+	request: HttpRequest,
+	result: SendResponseParams,
+) => {
+	if (runtime.pendingHttpRequests.get(requestKey) !== request) return
+	if (request.timeout !== null) clearTimeout(request.timeout)
+	runtime.pendingHttpRequests.delete(requestKey)
+	if (isActiveRuntime(runtime)) sendAction('response', result)
+}
+
+const abortHttpRequest = (runtime: LxRuntime, requestKey: string, expected?: HttpRequest) => {
+	const request = runtime.pendingHttpRequests.get(requestKey)
+	if (!request || (expected && request !== expected)) return
+	request.controller.abort()
+	const reason: unknown = request.controller.signal.reason
+	finishHttpRequest(runtime, requestKey, request, {
+		requestKey,
+		error: reason instanceof Error ? reason.message : 'Aborted',
+		response: null,
+	})
+}
+
 /**
- * 代理执行 HTTP 请求（脚本在 QuickJS 中发起，由 JS-land fetch 执行）
+ * 代理执行 HTTP 请求（脚本在 JavaScriptCore 中发起，由 JS-land fetch 执行）
  */
-const handleHttpRequest = async (reqData: RequestParams) => {
+const handleHttpRequest = async (runtime: LxRuntime, reqData: RequestParams) => {
 	const { requestKey, url, options } = reqData
+	const previous = runtime.pendingHttpRequests.get(requestKey)
+	if (previous) {
+		if (previous.timeout !== null) clearTimeout(previous.timeout)
+		previous.controller.abort()
+	}
 	const controller = new AbortController()
-	pendingHttpRequests.set(requestKey, controller)
-	const timeout = options.timeout > 0
-		? setTimeout(() => controller.abort(), Math.min(options.timeout, 60000))
+	const request: HttpRequest = { controller, timeout: null }
+	runtime.pendingHttpRequests.set(requestKey, request)
+	request.timeout = options.timeout > 0
+		? setTimeout(() => abortHttpRequest(runtime, requestKey, request), Math.min(options.timeout, 60000))
 		: null
 
 	try {
@@ -332,7 +407,7 @@ const handleHttpRequest = async (reqData: RequestParams) => {
 			headerObj[key] = value
 		})
 
-		sendAction('response', {
+		finishHttpRequest(runtime, requestKey, request, {
 			requestKey,
 			error: null,
 			response: {
@@ -343,14 +418,16 @@ const handleHttpRequest = async (reqData: RequestParams) => {
 			},
 		})
 	} catch (err) {
-		sendAction('response', {
+		finishHttpRequest(runtime, requestKey, request, {
 			requestKey,
 			error: err instanceof Error ? err.message : String(err),
 			response: null,
 		})
 	} finally {
-		if (timeout) clearTimeout(timeout)
-		pendingHttpRequests.delete(requestKey)
+		if (request.timeout !== null) clearTimeout(request.timeout)
+		if (runtime.pendingHttpRequests.get(requestKey) === request) {
+			runtime.pendingHttpRequests.delete(requestKey)
+		}
 	}
 }
 
@@ -359,61 +436,67 @@ const handleHttpRequest = async (reqData: RequestParams) => {
 // ============================================================
 
 /**
- * 初始化 lx-music 脚本到 QuickJS 引擎
+ * 初始化 lx-music 脚本到 JavaScriptCore 引擎
  */
 const initLxMusicScript = (
 	scriptId: string,
 	info: Record<string, string>,
 	script: string,
-): Promise<void> => {
+): Promise<LxRuntime> => {
+	const runtime: LxRuntime = {
+		pendingRequests: new Map(),
+		settledRequestTypes: new Map(),
+		pendingHttpRequests: new Map(),
+		inited: false,
+		disposed: false,
+		init: null,
+		removeListener: null,
+	}
+	activeRuntime = runtime
+
 	return new Promise((resolve, reject) => {
-		// 清理旧的监听
-		if (removeListener) {
-			removeListener()
-			removeListener = null
-		}
-		scriptInited = false
-
-		// 设置事件监听
-		removeListener = onScriptAction(handleScriptAction)
-
-		// 设置超时
 		const timeout = setTimeout(() => {
-			if (!scriptInited) {
-				reject(new Error('脚本初始化超时'))
-				scriptInitPromise = null
-			}
+			failRuntime(runtime, new Error('脚本初始化超时'))
 		}, 10000)
-
-		scriptInitPromise = {
+		const init = {
 			resolve: () => {
+				if (runtime.init !== init) return
+				runtime.init = null
 				clearTimeout(timeout)
-				resolve()
+				resolve(runtime)
 			},
-			reject: (err) => {
+			reject: (error: Error) => {
+				if (runtime.init !== init) return
+				runtime.init = null
 				clearTimeout(timeout)
-				reject(err)
+				reject(error)
 			},
 		}
+		runtime.init = init
 
-		// 加载脚本到 QuickJS
-		loadScript({
-			id: scriptId,
-			name: info.name || 'lx-music 音源',
-			description: info.description || '',
-			version: info.version || '',
-			author: info.author || '',
-			homepage: info.homepage || '',
-			script,
-			allowShowUpdateAlert: false,
-		})
+		try {
+			runtime.removeListener = onScriptAction(event => handleScriptAction(runtime, event))
+			loadScript({
+				id: scriptId,
+				name: info.name || 'lx-music 音源',
+				description: info.description || '',
+				version: info.version || '',
+				author: info.author || '',
+				homepage: info.homepage || '',
+				script,
+				allowShowUpdateAlert: false,
+			}, () => retireRuntime(runtime, new Error('音源脚本已替换或销毁')))
+		} catch (error) {
+			failRuntime(runtime, error instanceof Error ? error : new Error(String(error)))
+		}
 	})
 }
 
 /**
- * 通过 QuickJS 脚本获取音乐 URL
+ * 通过 JavaScriptCore 脚本获取音乐 URL
  */
 const getMusicUrlViaScript = (
+	runtime: LxRuntime,
 	title: string,
 	artist: string,
 	songmid: string,
@@ -421,59 +504,75 @@ const getMusicUrlViaScript = (
 	requestContext?: LxRequestContext,
 ): Promise<string> => {
 	return new Promise((resolve, reject) => {
+		if (!isActiveRuntime(runtime) || !runtime.inited) {
+			reject(new Error('音源脚本未初始化或已销毁'))
+			return
+		}
 		const requestType = requestContext?.requestType ?? 'current'
 		const requestKey =
 			requestContext?.requestKey ??
 			`req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+		// A quality retry may reuse its business key while the previous attempt is
+		// still completing. Only the envelope uses this unique correlation key.
+		const wireRequestKey = `${requestKey}#${++nextRequestId}`
 		const logPrefix = getLxRequestLogPrefix(requestType, requestKey)
 		const timeoutMs = requestContext?.timeoutMs ?? 15000
 
-		// 超时处理
 		const timeout = setTimeout(() => {
-			pendingRequests.delete(requestKey)
-			rememberSettledRequestType(requestKey, requestType)
-			reject(new Error('获取音乐 URL 超时'))
+			if (runtime.pendingRequests.get(wireRequestKey) !== pending) return
+			pending.reject(new Error('获取音乐 URL 超时'))
+			rememberSettledRequestType(runtime, wireRequestKey, pending)
 		}, timeoutMs)
 
-		pendingRequests.set(requestKey, {
+		const pending: PendingRequest = {
 			resolve: (url: string) => {
+				if (runtime.pendingRequests.get(wireRequestKey) !== pending) return
+				runtime.pendingRequests.delete(wireRequestKey)
 				clearTimeout(timeout)
 				resolve(url)
 			},
 			reject: (err: Error) => {
+				if (runtime.pendingRequests.get(wireRequestKey) !== pending) return
+				runtime.pendingRequests.delete(wireRequestKey)
 				clearTimeout(timeout)
 				reject(err)
 			},
+			requestKey,
 			requestType,
-		})
+		}
+		runtime.pendingRequests.set(wireRequestKey, pending)
 
 		logInfo(`${logPrefix} Sending musicUrl request: ${title} - ${artist}`)
 
-		// 向 QuickJS 脚本发送 musicUrl 请求
-		sendAction('request', {
-			requestKey,
-			data: {
-				action: 'musicUrl',
-				source: 'tx',
-				info: {
-					musicInfo: {
-						id: songmid,
-						songmid,
-						title,
-						name: title,
-						singer: artist,
-						artist,
-						source: 'tx',
-						hash: songmid,
+		// 向 JavaScriptCore 脚本发送 musicUrl 请求
+		try {
+			sendAction('request', {
+				requestKey: wireRequestKey,
+				data: {
+					action: 'musicUrl',
+					source: 'tx',
+					info: {
+						musicInfo: {
+							id: songmid,
+							songmid,
+							title,
+							name: title,
+							singer: artist,
+							artist,
+							source: 'tx',
+							hash: songmid,
+						},
+						requestContext: {
+							requestKey,
+							requestType,
+						},
+						type: quality || '128k',
 					},
-					requestContext: {
-						requestKey,
-						requestType,
-					},
-					type: quality || '128k',
 				},
-			},
-		} as any)
+			} as any)
+		} catch (error) {
+			pending.reject(error instanceof Error ? error : new Error(String(error)))
+		}
 	})
 }
 
@@ -489,8 +588,8 @@ export const adaptLxMusicScript = async (
 		? `lx_${info.name.replace(/\s+/g, '_')}_${Date.now()}`
 		: `lx_api_${Date.now()}`
 
-	// 初始化脚本到 QuickJS
-	await initLxMusicScript(scriptId, info, script)
+	// 初始化脚本到 JavaScriptCore
+	const runtime = await initLxMusicScript(scriptId, info, script)
 
 	logInfo(`[lxMusicAdapter] Script loaded successfully: ${info.name}`)
 
@@ -510,7 +609,7 @@ export const adaptLxMusicScript = async (
 			songmid: string,
 			quality: string,
 			requestContext?: LxRequestContext,
-		) => getMusicUrlViaScript(title, artist, songmid, quality, requestContext),
+		) => getMusicUrlViaScript(runtime, title, artist, songmid, quality, requestContext),
 	}
 
 	return musicApi
@@ -524,7 +623,7 @@ export const reloadLxMusicScript = async (
 ): Promise<IMusic.MusicApi> => {
 	try {
 		const info = parseLxMusicScriptInfo(musicApi.script)
-		await initLxMusicScript(musicApi.id, info, musicApi.script)
+		const runtime = await initLxMusicScript(musicApi.id, info, musicApi.script)
 
 		return {
 			...musicApi,
@@ -534,7 +633,7 @@ export const reloadLxMusicScript = async (
 				songmid: string,
 				quality: string,
 				requestContext?: LxRequestContext,
-			) => getMusicUrlViaScript(title, artist, songmid, quality, requestContext),
+			) => getMusicUrlViaScript(runtime, title, artist, songmid, quality, requestContext),
 		}
 	} catch (err) {
 		logError(

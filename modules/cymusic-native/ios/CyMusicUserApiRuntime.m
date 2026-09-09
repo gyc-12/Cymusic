@@ -1,82 +1,98 @@
-#import "UserApiModule.h"
+#import "CyMusicUserApiRuntime.h"
 
 #import <CommonCrypto/CommonCryptor.h>
 #import <CommonCrypto/CommonDigest.h>
 #import <JavaScriptCore/JavaScriptCore.h>
 #import <Security/Security.h>
+#import <math.h>
 
-#import <React/RCTLog.h>
-
-static NSString *const kApiActionEventName = @"api-action";
-
-@interface UserApiModule ()
+@interface CyMusicUserApiRuntime ()
 @property(nonatomic, strong) JSContext *context;
 @property(nonatomic, strong) dispatch_queue_t jsQueue;
 @property(nonatomic, copy) NSString *runtimeKey;
+@property(nonatomic, copy) NSString *generation;
 @property(nonatomic, assign) BOOL inited;
 @property(nonatomic, assign) BOOL hasListeners;
 @property(nonatomic, strong) NSMutableArray<NSDictionary *> *pendingEvents;
+@property(nonatomic, strong) NSMutableDictionary<NSNumber *, dispatch_source_t> *timers;
+@property(nonatomic, copy) NSURL *preloadURL;
+@property(nonatomic, copy) void (^eventHandler)(NSDictionary<NSString *, id> *);
 @end
 
-@implementation UserApiModule
+@implementation CyMusicUserApiRuntime
 
-RCT_EXPORT_MODULE();
-
-+ (BOOL)requiresMainQueueSetup {
-  return NO;
-}
-
-- (instancetype)init {
+- (instancetype)initWithPreloadURL:(NSURL *)preloadURL
+                     eventHandler:(void (^)(NSDictionary<NSString *, id> *))eventHandler {
   self = [super init];
   if (self) {
     _jsQueue = dispatch_queue_create("com.music.player.gyc.userapi", DISPATCH_QUEUE_SERIAL);
-    _inited = NO;
-    _hasListeners = NO;
+    _preloadURL = [preloadURL copy];
+    _eventHandler = [eventHandler copy];
     _pendingEvents = [NSMutableArray array];
+    _timers = [NSMutableDictionary dictionary];
   }
   return self;
 }
 
-- (NSArray<NSString *> *)supportedEvents {
-  return @[ kApiActionEventName ];
+- (void)dealloc {
+  for (dispatch_source_t timer in _timers.allValues) dispatch_source_cancel(timer);
+  _context.exceptionHandler = nil;
 }
 
 - (void)startObserving {
-  self.hasListeners = YES;
-  if (!self.pendingEvents.count) return;
-
-  NSArray<NSDictionary *> *events = [self.pendingEvents copy];
-  [self.pendingEvents removeAllObjects];
-  for (NSDictionary *event in events) {
-    [self sendEventWithName:kApiActionEventName body:event];
-  }
-}
-
-- (void)stopObserving {
-  self.hasListeners = NO;
-}
-
-RCT_EXPORT_METHOD(loadScript:(NSDictionary *)data) {
   dispatch_async(self.jsQueue, ^{
-    [self destroyRuntimeLocked];
-
-    NSString *error = [self createRuntimeAndLoadScriptLocked:data];
-    if (error.length > 0) {
-      [self sendInitFailedLocked:error];
+    self.hasListeners = YES;
+    NSArray<NSDictionary *> *events = [self.pendingEvents copy];
+    [self.pendingEvents removeAllObjects];
+    for (NSDictionary *event in events) {
+      if ([event[@"generation"] isEqualToString:self.generation] && self.eventHandler) {
+        self.eventHandler(event);
+      }
     }
   });
 }
 
-RCT_EXPORT_METHOD(sendAction:(NSString *)action info:(NSString *)info) {
+- (void)stopObserving {
   dispatch_async(self.jsQueue, ^{
-    if (!self.context) return;
+    self.hasListeners = NO;
+  });
+}
+
+- (NSString *)loadScript:(NSDictionary<NSString *, NSString *> *)data {
+  NSString *generation = NSUUID.UUID.UUIDString;
+  NSDictionary *scriptInfo = [data copy];
+  dispatch_async(self.jsQueue, ^{
+    [self destroyRuntimeLocked];
+    self.generation = generation;
+    NSString *error = [self createRuntimeAndLoadScriptLocked:scriptInfo];
+    if (error.length > 0) [self sendInitFailedLocked:error];
+  });
+  return generation;
+}
+
+- (void)sendAction:(NSString *)action info:(NSString *)info generation:(NSString *)generation {
+  dispatch_async(self.jsQueue, ^{
+    if (!self.context || ![self.generation isEqualToString:generation]) return;
     [self callJSLockedWithAction:action data:info ?: (id)kCFNull];
   });
 }
 
-RCT_EXPORT_METHOD(destroy) {
+- (NSString *)destroy {
+  NSString *generation = NSUUID.UUID.UUIDString;
   dispatch_async(self.jsQueue, ^{
     [self destroyRuntimeLocked];
+    self.generation = generation;
+  });
+  return generation;
+}
+
+- (void)invalidate {
+  NSString *generation = NSUUID.UUID.UUIDString;
+  dispatch_async(self.jsQueue, ^{
+    [self destroyRuntimeLocked];
+    self.generation = generation;
+    self.hasListeners = NO;
+    self.eventHandler = nil;
   });
 }
 
@@ -84,7 +100,7 @@ RCT_EXPORT_METHOD(destroy) {
 
 - (NSString *)createRuntimeAndLoadScriptLocked:(NSDictionary *)scriptInfo {
   self.context = [[JSContext alloc] init];
-  self.runtimeKey = NSUUID.UUID.UUIDString;
+  self.runtimeKey = self.generation;
   self.inited = NO;
 
   [self installExceptionHandlerLocked];
@@ -134,6 +150,9 @@ RCT_EXPORT_METHOD(destroy) {
 }
 
 - (void)destroyRuntimeLocked {
+  for (dispatch_source_t timer in self.timers.allValues) dispatch_source_cancel(timer);
+  [self.timers removeAllObjects];
+  [self.pendingEvents removeAllObjects];
   self.context.exceptionHandler = nil;
   self.context = nil;
   self.runtimeKey = nil;
@@ -195,19 +214,19 @@ RCT_EXPORT_METHOD(destroy) {
     [strongSelf handleScriptCallLockedWithKey:key action:action data:data];
   };
 
-  self.context[@"__lx_native_call__set_timeout"] = ^(id callbackId, id timeoutMs) {
+  self.context[@"__lx_native_call__set_timeout"] = ^(NSNumber *callbackId, NSNumber *timeoutMs) {
     __strong typeof(weakSelf) strongSelf = weakSelf;
     if (!strongSelf || !strongSelf.context) return;
+    [strongSelf scheduleTimeoutLocked:callbackId milliseconds:timeoutMs];
+  };
 
-    NSTimeInterval timeout = 0;
-    if ([timeoutMs respondsToSelector:@selector(doubleValue)]) {
-      timeout = [timeoutMs doubleValue] / 1000.0;
-    }
-
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MAX(timeout, 0) * NSEC_PER_SEC)), strongSelf.jsQueue, ^{
-      if (!strongSelf.context) return;
-      [strongSelf callJSLockedWithAction:@"__set_timeout__" data:callbackId ?: (id)kCFNull];
-    });
+  self.context[@"__lx_native_call__clear_timeout"] = ^(NSNumber *callbackId) {
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (!strongSelf) return;
+    dispatch_source_t timer = strongSelf.timers[callbackId];
+    if (!timer) return;
+    dispatch_source_cancel(timer);
+    [strongSelf.timers removeObjectForKey:callbackId];
   };
 
   self.context[@"__lx_native_call__utils_str2b64"] = ^NSString *(NSString *input) {
@@ -349,6 +368,39 @@ RCT_EXPORT_METHOD(destroy) {
   };
 }
 
+#pragma mark - Timers
+
+- (void)scheduleTimeoutLocked:(NSNumber *)callbackId milliseconds:(NSNumber *)timeoutMs {
+  if (!callbackId) return;
+  dispatch_source_t previous = self.timers[callbackId];
+  if (previous) dispatch_source_cancel(previous);
+
+  NSString *generation = self.generation;
+  dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, self.jsQueue);
+  self.timers[callbackId] = timer;
+  __weak typeof(self) weakSelf = self;
+  __weak dispatch_source_t weakTimer = timer;
+  dispatch_source_set_event_handler(timer, ^{
+    __strong typeof(weakSelf) strongSelf = weakSelf;
+    if (!strongSelf || ![strongSelf.generation isEqualToString:generation]) return;
+    dispatch_source_t currentTimer = strongSelf.timers[callbackId];
+    if (!currentTimer || currentTimer != weakTimer) return;
+    [strongSelf.timers removeObjectForKey:callbackId];
+    dispatch_source_cancel(currentTimer);
+    [strongSelf callJSLockedWithAction:@"__set_timeout__" data:callbackId];
+  });
+  // The preload converts delay to an integer; bound it before converting to nanoseconds.
+  double milliseconds = timeoutMs.doubleValue;
+  milliseconds = isfinite(milliseconds)
+    ? MAX(0, MIN(milliseconds, (double)INT64_MAX / NSEC_PER_MSEC - 1))
+    : 0;
+  dispatch_source_set_timer(timer,
+                            dispatch_time(DISPATCH_TIME_NOW, (int64_t)(milliseconds * NSEC_PER_MSEC)),
+                            DISPATCH_TIME_FOREVER,
+                            0);
+  dispatch_resume(timer);
+}
+
 #pragma mark - Bridge Callbacks
 
 - (void)handleScriptCallLockedWithKey:(NSString *)key action:(NSString *)action data:(NSString *)data {
@@ -411,13 +463,14 @@ RCT_EXPORT_METHOD(destroy) {
 }
 
 - (void)sendApiEvent:(NSDictionary *)payload {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    if (self.hasListeners) {
-      [self sendEventWithName:kApiActionEventName body:payload];
-      return;
-    }
-    [self.pendingEvents addObject:payload];
-  });
+  if (!self.generation) return;
+  NSMutableDictionary *event = [payload mutableCopy];
+  event[@"generation"] = self.generation;
+  if (self.hasListeners && self.eventHandler) {
+    self.eventHandler([event copy]);
+  } else {
+    [self.pendingEvents addObject:[event copy]];
+  }
 }
 
 #pragma mark - Utils
@@ -429,13 +482,13 @@ RCT_EXPORT_METHOD(destroy) {
 }
 
 - (NSString *)loadPreloadScript {
-  NSString *path = [[NSBundle mainBundle] pathForResource:@"user-api-preload" ofType:@"js"];
+  NSString *path = self.preloadURL.path;
   if (!path.length) return nil;
 
   NSError *error = nil;
   NSString *content = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:&error];
   if (error) {
-    RCTLogWarn(@"[UserApiModule] Failed to read preload script: %@", error.localizedDescription);
+    NSLog(@"[CyMusicUserApiRuntime] Failed to read preload script: %@", error.localizedDescription);
   }
   return content;
 }

@@ -19,7 +19,6 @@
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		C0F7E06345884D709A22F50E /* ShareExtension.appex in Copy Files */ = {isa = PBXBuildFile; fileRef = 2B883473F5A44E4D8EE03D91 /* ShareExtension.appex */; };
 		D9B007EEFF094458AFBDCC2E /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ABC9B499BA541288F93B6E6 /* noop-file.swift */; };
-		F1A100000000000000000001 /* UserApiModule.m in Sources */ = {isa = PBXBuildFile; fileRef = F1A100000000000000000012 /* UserApiModule.m */; };
 		F1A100000000000000000002 /* user-api-preload.js in Resources */ = {isa = PBXBuildFile; fileRef = F1A100000000000000000013 /* user-api-preload.js */; };
 		F1A100000000000000000004 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED297162215061F000B7C4FE /* JavaScriptCore.framework */; };
 /* End PBXBuildFile section */
@@ -56,8 +55,6 @@
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		DC4B2299B8B621F673C58FCE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = CyMusic/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F1A100000000000000000011 /* UserApiModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UserApiModule.h; path = CyMusic/UserApiModule.h; sourceTree = "<group>"; };
-		F1A100000000000000000012 /* UserApiModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = UserApiModule.m; path = CyMusic/UserApiModule.m; sourceTree = "<group>"; };
 		F1A100000000000000000013 /* user-api-preload.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.javascript; name = "user-api-preload.js"; path = "CyMusic/user-api-preload.js"; sourceTree = "<group>"; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-CyMusic/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -80,8 +77,6 @@
 			children = (
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FB01A68108700A75B9A /* AppDelegate.swift */,
-				F1A100000000000000000011 /* UserApiModule.h */,
-				F1A100000000000000000012 /* UserApiModule.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
@@ -407,7 +402,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.swift in Sources */,
-				F1A100000000000000000001 /* UserApiModule.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
 				D9B007EEFF094458AFBDCC2E /* noop-file.swift in Sources */,
 			);

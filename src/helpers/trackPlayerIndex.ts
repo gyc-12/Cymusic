@@ -39,7 +39,7 @@ import { showToast } from '@/utils/utils'
 import { resolveLocalFile } from './localFile'
 import { downloadFile } from './fileDownload'
 import { logError, logInfo } from './logger'
-import { isLxMusicScript, reloadLxMusicScript } from './userApi/lxMusicSourceAdapter'
+import { disposeLxMusicScript, isLxMusicScript, reloadLxMusicScript } from './userApi/lxMusicSourceAdapter'
 
 import {
 	currentMusicStore,
@@ -731,6 +731,7 @@ const reloadMusicApi = async (musicApi: IMusic.MusicApi, isTest: boolean = false
 
 		const scriptFunction = new Function('module', 'exports', 'require', musicApi.script)
 		scriptFunction.call(context, context.module, context.exports, context.require)
+		if (!isTest) disposeLxMusicScript()
 
 		return {
 			...musicApi,

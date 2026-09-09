@@ -4,7 +4,7 @@
 	"private": true,
 	"main": "index.ts",
 	"types": "index.ts",
-	"description": "Native filesystem path queries for CyMusic",
+	"description": "Native filesystem queries and source execution for CyMusic",
 	"license": "Apache-2.0",
 	"author": "CyMusic",
 	"homepage": "https://github.com/gyc-12/Cymusic"
