@@ -2,9 +2,12 @@ import { logError, logInfo } from '@/helpers/logger'
 import { importedLocalMusicStore, qualityStore } from './PlayerStore'
 import PersistStatus from '@/store/PersistStatus'
 import * as FileSystem from 'expo-file-system/legacy'
-import RNFS from 'react-native-fs'
+import { downloadFile } from '@/helpers/fileDownload'
+import { fileUriFromPath } from '@/helpers/localFile'
+import FileSystemNative from '../../modules/cymusic-native'
 
 const cacheDir = FileSystem.documentDirectory + 'musicCache/'
+const cacheDirectoryPath = `${FileSystemNative.documentDirectoryPath}/musicCache`
 
 function sanitizeFilename(str: string): string {
 	return str.replace(/[/\\?%*:|"<>]/g, '-')
@@ -34,9 +37,14 @@ export const getLocalFilePath = (musicItem: IMusic.IMusicItem): string => {
 	return `${cacheDir}${platformId}.${format}`
 }
 
+// Only accepts paths produced by getLocalFilePath. The filename is raw text,
+// while cacheDir is an Expo URI; decoding the whole string would change %/# names.
+export const getCacheFileUri = (localPath: string): string =>
+	fileUriFromPath(`${cacheDirectoryPath}/${localPath.slice(cacheDir.length)}`)
+
 export const isCached = async (musicItem: IMusic.IMusicItem): Promise<boolean> => {
 	const filePath = getLocalFilePath(musicItem)
-	const fileInfo = await FileSystem.getInfoAsync(filePath)
+	const fileInfo = await FileSystem.getInfoAsync(getCacheFileUri(filePath))
 	return fileInfo.exists
 }
 
@@ -44,22 +52,12 @@ export const downloadToCache = async (musicItem: IMusic.IMusicItem): Promise<str
 	try {
 		await ensureCacheDirExists()
 		const localPath = getLocalFilePath(musicItem)
-		const downloadResult = await RNFS.downloadFile({
-			fromUrl: musicItem.url,
-			toFile: localPath,
-			progressDivider: 1,
-			progress: (res) => {
-				const progress = res.bytesWritten / res.contentLength
-				logInfo(`下载进度: ${(progress * 100).toFixed(2)}%`)
-			},
-		}).promise
-
-		if (downloadResult.statusCode === 200) {
-			logInfo('音频文件已缓存到本地:', localPath)
-			return localPath
-		} else {
-			throw new Error(`下载失败，状态码: ${downloadResult.statusCode}`)
-		}
+		await downloadFile(musicItem.url, getCacheFileUri(localPath), (res) => {
+			const progress = res.bytesWritten / res.contentLength
+			logInfo(`下载进度: ${(progress * 100).toFixed(2)}%`)
+		})
+		logInfo('音频文件已缓存到本地:', localPath)
+		return localPath
 	} catch (error) {
 		logError('下载音频文件时出错:', error)
 		throw error

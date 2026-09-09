@@ -1,10 +1,12 @@
 PODS:
+  - CyMusicNative (1.0.0):
+    - ExpoModulesCore
   - EXConstants (57.0.17):
     - ExpoModulesCore
   - EXJSONUtils (57.0.1)
   - EXManifests (57.0.1):
     - ExpoModulesCore
-  - Expo (57.0.20):
+  - Expo (57.0.21):
     - ExpoModulesCore
     - ExpoModulesJSI
     - hermes-engine
@@ -190,7 +192,7 @@ PODS:
     - ExpoModulesCore
   - ExpoFont (57.0.3):
     - ExpoModulesCore
-  - ExpoGlassEffect (57.0.1):
+  - ExpoGlassEffect (57.0.2):
     - ExpoModulesCore
   - ExpoHaptics (57.0.2):
     - ExpoModulesCore
@@ -213,7 +215,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLogBox (57.0.4):
     - React-Core
-  - ExpoModulesCore (57.0.16):
+  - ExpoModulesCore (57.0.17):
     - ExpoModulesJSI
     - hermes-engine
     - RCTRequired
@@ -237,18 +239,18 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - ExpoModulesJSI (57.0.8):
+  - ExpoModulesJSI (57.1.0):
     - React-Core
     - ReactCommon
-  - ExpoModulesWorklets (57.0.16):
+  - ExpoModulesWorklets (57.0.17):
     - ExpoModulesCore
     - ExpoModulesJSI
-  - ExpoModulesWorkletsAdapter (57.0.16):
+  - ExpoModulesWorkletsAdapter (57.0.17):
     - ExpoModulesCore
     - ExpoModulesJSI
     - ExpoModulesWorklets
     - RNWorklets
-  - ExpoRouter (57.0.19):
+  - ExpoRouter (57.0.20):
     - ExpoModulesCore
     - RNScreens
   - ExpoShareIntentModule (8.0.1):
@@ -257,7 +259,7 @@ PODS:
     - ExpoModulesCore
   - ExpoSymbols (57.0.2):
     - ExpoModulesCore
-  - ExpoUI (57.0.16):
+  - ExpoUI (57.0.17):
     - ExpoModulesCore
     - ExpoModulesWorklets
     - React-RCTFabric
@@ -2322,8 +2324,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
-  - RNFS (2.20.0):
-    - React-Core
   - RNGestureHandler (2.32.0):
     - hermes-engine
     - RCTRequired
@@ -2581,6 +2581,7 @@ PODS:
   - Yoga (0.0.0)
 
 DEPENDENCIES:
+  - CyMusicNative (from `../modules/cymusic-native/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXJSONUtils (from `../node_modules/expo-json-utils/ios`)
   - EXManifests (from `../node_modules/expo-manifests/ios`)
@@ -2700,7 +2701,6 @@ DEPENDENCIES:
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
-  - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -2723,6 +2723,8 @@ SPEC REPOS:
     - SwiftDrawDOM
 
 EXTERNAL SOURCES:
+  CyMusicNative:
+    :path: "../modules/cymusic-native/ios"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
   EXJSONUtils:
@@ -2960,8 +2962,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCMaskedView:
     :path: "../node_modules/@react-native-masked-view/masked-view"
-  RNFS:
-    :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
@@ -2974,10 +2974,11 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
+  CyMusicNative: a8c67b8f977dc28549493e3c077bc45c978d1035
   EXConstants: 799577d2516460afb4b57874d6823a62327ce5c7
   EXJSONUtils: 7a1683cfa2cbe6d11fca97097d51a496755b0287
   EXManifests: f9888c0bf5aaa6ddb7e3d4b224d6d54ac4ca84a4
-  Expo: 20c445ed59fdd6e967ced0bd3d3e99be771ea176
+  Expo: 8fcd49c9918bb861a881ea9844a3f099a9b0bd3b
   expo-dev-client: 053b4d48d32e7ed130d3498491461fdba04aee28
   expo-dev-launcher: c8fe1fb0f46dc02948c63ab23340179f670dc000
   expo-dev-menu: 272e23ced973a0e401c2b9a679595ea6c7c05d78
@@ -2988,7 +2989,7 @@ SPEC CHECKSUMS:
   ExpoDomWebView: beaec034e51bd028428b98bb1f2633ab79c6d095
   ExpoFileSystem: cc500f33804065aacc7b3366007267b84deca8c8
   ExpoFont: d5b77d74f8d5d1a248de70955bfad847079e9074
-  ExpoGlassEffect: 4b62afb489e6b84357701737ce002137c9d5fdbc
+  ExpoGlassEffect: 4b35b067ea72a4115642c4690416fc3ffc71449e
   ExpoHaptics: bc5461002fc97e53c213a1af6c88c8f95965b734
   ExpoImage: 83e66008c6440975f7f279b78bb80f1f9c0c24ca
   ExpoImagePicker: 2286f2bcb81240cf66208dacddc2367fd4a1b715
@@ -2997,15 +2998,15 @@ SPEC CHECKSUMS:
   ExpoLinking: 0e104e1f3402abec3fd8243fd9586ca38df8e3ef
   ExpoLocalization: 659243b03b3a3e9589793cee2f728a899e181329
   ExpoLogBox: 80957303325cd4439137765c90a87d7f22aaf2ff
-  ExpoModulesCore: bf0f447c9164035bdc8d58b939cddfb07b64b608
-  ExpoModulesJSI: 1a6f80255963c29cdf9a11d59cbdc12b3558d585
-  ExpoModulesWorklets: 161e2e951499cdbadb74acf4af86ff19d02919c9
-  ExpoModulesWorkletsAdapter: 5c62c6f47ad637fad26d685b2677fbafe09c6d13
-  ExpoRouter: 7c6fad2473a397635e4bc2171e5166bed9469667
+  ExpoModulesCore: 293e47c82c6c3ec4d3ec9571112a79d56c8a343a
+  ExpoModulesJSI: 9df8e7c9719f59e8c001ec33611774137fc1484a
+  ExpoModulesWorklets: 767d05688faa3bbf38b19c08abca031b5328093a
+  ExpoModulesWorkletsAdapter: 13e111038fec9c5f2e92c16481ba928fa4bf5414
+  ExpoRouter: e8c323faba5926e06e3909b16f3b4b12ccaccdbb
   ExpoShareIntentModule: a25f480ab6e1389406e65973cef42b8f75f16755
   ExpoSplashScreen: 6f422fd595600d78520c6b7dcf8a908fb8a7fec0
   ExpoSymbols: 0efd93edf0f825bf3c762582b0769dd3b296235c
-  ExpoUI: fa0a98f9af0a39d428218c71bcc2de46996b7b09
+  ExpoUI: a0fad5e14b298a3eae971d6e57bb09389d1c3293
   EXUpdatesInterface: 92d2aa5194b6fb93ca8ab749db75665cb28b2e60
   FBLazyVector: 2138c6c2ab66c31bf5754dc18097fbc498a49c7f
   hermes-engine: 63c5db7d529c36335fada6582fd293ae2a105d77
@@ -3097,7 +3098,6 @@ SPEC CHECKSUMS:
   ReactNativeDependencies: 6738e602b46fd24aa453cd58267ec3bb8bf29d27
   RNCAsyncStorage: 2ad919e88b8bc2cd80e8697ce66d04d006743283
   RNCMaskedView: eb2b2e538afa907f05a5848a1a1ac26092e6fec9
-  RNFS: 89de7d7f4c0f6bafa05343c578f61118c8282ed8
   RNGestureHandler: 92172e79df6e88e0e93b6341f9dcd8b5a02746ba
   RNReanimated: fcf6a8cdd698fb09a811a8d6c5bcfe36575d965d
   RNScreens: 62693e770c4b73093c018aa7845b691f5ba9988d

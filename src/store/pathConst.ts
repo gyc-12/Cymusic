@@ -1,11 +1,7 @@
-import { Platform } from 'react-native'
-import RNFS, { CachesDirectoryPath } from 'react-native-fs'
+import FileSystemNative from '../../modules/cymusic-native'
 
 // 基础路径设置
-export const basePath =
-	Platform.OS === 'android'
-		? RNFS.ExternalDirectoryPath // Android 存储路径
-		: RNFS.DocumentDirectoryPath // iOS 存储路径
+export const basePath = FileSystemNative.documentDirectoryPath
 
 // 导出路径配置
 export default {
@@ -14,8 +10,8 @@ export default {
 	logPath: `${basePath}/log/`, // 日志路径
 	dataPath: `${basePath}/data/`, // 数据路径
 	cachePath: `${basePath}/cache/`, // 缓存路径
-	musicCachePath: `${CachesDirectoryPath}/TrackPlayer`, // 音乐缓存路径
-	imageCachePath: `${CachesDirectoryPath}/image_manager_disk_cache`, // 图片缓存路径
+	musicCachePath: `${FileSystemNative.cachesDirectoryPath}/TrackPlayer`, // 音乐缓存路径
+	imageCachePath: `${FileSystemNative.cachesDirectoryPath}/image_manager_disk_cache`, // 图片缓存路径
 	lrcCachePath: `${basePath}/cache/lrc/`, // 歌词缓存路径
 	downloadPath: `${basePath}/download/`, // 下载路径
 	downloadMusicPath: `${basePath}/download/music/`, // 音乐下载路径

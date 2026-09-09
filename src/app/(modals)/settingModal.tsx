@@ -19,6 +19,7 @@ import { showToast } from '@/utils/utils'
 import { MenuView } from '@react-native-menu/menu'
 import Constants from 'expo-constants'
 import * as DocumentPicker from 'expo-document-picker'
+import { File } from 'expo-file-system'
 import { useRouter } from 'expo-router'
 import React, { useEffect, useMemo, useState } from 'react'
 import {
@@ -33,7 +34,6 @@ import {
 	TouchableOpacity,
 	View,
 } from 'react-native'
-import RNFS from 'react-native-fs'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message'
 const QUALITY_OPTIONS = ['128k', '320k', 'flac']
@@ -349,8 +349,7 @@ const importMusicSourceFromFile = async () => {
 		}
 
 		// logInfo('File selected:', result.assets[0].uri)
-		const fileUri = decodeURIComponent(result.assets[0].uri)
-		const fileContents = await RNFS.readFile(fileUri, 'utf8')
+		const fileContents = await new File(result.assets[0].uri).text()
 		logInfo('File contents:', fileContents)
 		const musicApi = await createMusicApiFromScript(fileContents)
 		myTrackPlayer.addMusicApi(musicApi)

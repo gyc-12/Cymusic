@@ -1,0 +1,11 @@
+{
+	"name": "cymusic-native",
+	"version": "1.0.0",
+	"private": true,
+	"main": "index.ts",
+	"types": "index.ts",
+	"description": "Native filesystem path queries for CyMusic",
+	"license": "Apache-2.0",
+	"author": "CyMusic",
+	"homepage": "https://github.com/gyc-12/Cymusic"
+}

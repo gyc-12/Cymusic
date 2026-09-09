@@ -4,9 +4,10 @@ import Config from '@/store/config'
 import delay from '@/utils/delay'
 import { isSameMediaItem, mergeProps, sortByTimestampAndIndex } from '@/utils/mediaItem'
 import * as FileSystem from 'expo-file-system/legacy'
+import { Paths } from 'expo-file-system'
 import { produce } from 'immer'
 import shuffle from 'lodash.shuffle'
-import RNFS from 'react-native-fs'
+import FileSystemNative from '../../modules/cymusic-native'
 import ReactNativeTrackPlayer, {
 	Event,
 	State,
@@ -36,6 +37,7 @@ import { fakeAudioMp3Uri } from '@/constants/images'
 import { nowLanguage } from '@/utils/i18n'
 import { showToast } from '@/utils/utils'
 import { resolveLocalFile } from './localFile'
+import { downloadFile } from './fileDownload'
 import { logError, logInfo } from './logger'
 import { isLxMusicScript, reloadLxMusicScript } from './userApi/lxMusicSourceAdapter'
 
@@ -61,6 +63,7 @@ import {
 	downloadToCache,
 	clearCache,
 	getLocalFilePath,
+	getCacheFileUri,
 	ensureCacheDirExists,
 	ensureDirExists,
 } from '@/player/CacheManager'
@@ -917,30 +920,21 @@ const cacheAndImportMusic = async (track: IMusic.IMusicItem) => {
 		await ensureCacheDirExists()
 		const localPath = getLocalFilePath(track)
 		console.log('localPath:', localPath)
-		const isCacheExist = await RNFS.exists(localPath)
+		const fileUri = getCacheFileUri(localPath)
+		const isCacheExist = Paths.info(fileUri).exists
 		if (isCacheExist) {
 			logInfo('音乐已缓存到本地:', localPath)
 			const newTrack = { ...track, url: localPath }
 			await addImportedLocalMusic([newTrack], false)
 		} else {
 			logInfo('开始下载音乐:', track.url)
-			const downloadResult = await RNFS.downloadFile({
-				fromUrl: track.url,
-				toFile: localPath,
-				progressDivider: 1,
-				progress: (res) => {
-					const progress = res.bytesWritten / res.contentLength
-					logInfo(`下载进度: ${(progress * 100).toFixed(2)}%`)
-				},
-			}).promise
-
-			if (downloadResult.statusCode === 200) {
-				logInfo('音乐已缓存到本地:', `${localPath}`)
-				const newTrack = { ...track, url: `${localPath}` }
-				await addImportedLocalMusic([newTrack], false)
-			} else {
-				throw new Error(`下载失败，状态码: ${downloadResult.statusCode}`)
-			}
+			await downloadFile(track.url, fileUri, (res) => {
+				const progress = res.bytesWritten / res.contentLength
+				logInfo(`下载进度: ${(progress * 100).toFixed(2)}%`)
+			})
+			logInfo('音乐已缓存到本地:', `${localPath}`)
+			const newTrack = { ...track, url: `${localPath}` }
+			await addImportedLocalMusic([newTrack], false)
 		}
 
 		Alert.alert('成功', '音乐已缓存到本地', [{ text: '确定', onPress: () => {} }])
@@ -1085,7 +1079,7 @@ const addImportedLocalMusic = async (musicItem: IMusic.IMusicItem[], isAlert: bo
 		}
 		// 确保目标目录存在 isAlert只有导入本地音乐为true。所有自动缓存为false.,不需要移动文件
 		if (isAlert) {
-			const targetDir = `${RNFS.DocumentDirectoryPath}/importedLocalMusic`
+			const targetDir = `${FileSystemNative.documentDirectoryPath}/importedLocalMusic`
 			await ensureDirExists(targetDir)
 
 			// 移动文件并更新musicItem的url

@@ -1,4 +1,4 @@
-import RNFS from 'react-native-fs'
+import FileSystemNative from '../../modules/cymusic-native'
 
 type UnresolvedReason =
 	| 'invalid'
@@ -38,7 +38,7 @@ const isFilePath = (filePath: string) =>
 		.split('/')
 		.every((part) => part.length > 0 && part !== '.' && part !== '..')
 
-const fileUriFromPath = (filePath: string) =>
+export const fileUriFromPath = (filePath: string) =>
 	`file://${filePath.split('/').map(encodeURIComponent).join('/')}`
 
 function parseLocalFile(
@@ -106,9 +106,9 @@ function getRelocatedPath(filePath: string, roots: LocalRoot[]): string | undefi
 async function existingFiles(paths: string[]) {
 	const files = await Promise.all(
 		paths.map(async (filePath) => {
-			if (!(await RNFS.exists(filePath))) return null
-			const stat = await RNFS.stat(filePath)
-			return { filePath, isFile: stat.isFile() }
+			if (!(await FileSystemNative.exists(filePath))) return null
+			const type = await FileSystemNative.stat(filePath)
+			return { filePath, isFile: type === 'file' }
 		}),
 	)
 	return files.filter((file): file is NonNullable<typeof file> => file !== null)
@@ -118,11 +118,11 @@ async function hasPlainDirectories(filePath: string, root: LocalRoot): Promise<b
 	const relativePath = getRelativePath(filePath, root)
 	if (!relativePath) return false
 	let directory = root.filePath
-	// RNFS's iOS stat distinguishes directories from symbolic links. Check the
+	// The native probe distinguishes directories from symbolic links. Check the
 	// ancestry inside our root so a linked subdirectory cannot redirect deletion.
 	for (const part of ['', ...relativePath.split('/').slice(0, -1)]) {
 		if (part) directory += `/${part}`
-		if (!(await RNFS.stat(directory)).isDirectory()) return false
+		if ((await FileSystemNative.stat(directory)) !== 'directory') return false
 	}
 	return true
 }
@@ -136,8 +136,8 @@ export async function resolveLocalFile(
 	if (parsed.status !== 'paths') return parsed
 	try {
 		const roots = [
-			getNativeRoot(RNFS.DocumentDirectoryPath, 'Documents'),
-			getNativeRoot(RNFS.LibraryDirectoryPath, 'Library'),
+			getNativeRoot(FileSystemNative.documentDirectoryPath, 'Documents'),
+			getNativeRoot(FileSystemNative.libraryDirectoryPath, 'Library'),
 		].filter((root): root is LocalRoot => root !== undefined)
 		let files = await existingFiles(parsed.paths)
 		let relocated = false
