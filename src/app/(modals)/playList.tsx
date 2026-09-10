@@ -5,7 +5,7 @@ import { usePlayList } from '@/store/playList'
 import React, { useMemo } from 'react'
 import { StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 
 const PlayListScreen = () => {
 	const colors = useThemeColors()

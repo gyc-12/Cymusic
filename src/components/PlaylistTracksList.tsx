@@ -5,7 +5,7 @@ import { useDefaultStyles } from '@/styles'
 import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Image } from 'expo-image'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 import { QueueControls } from './QueueControls'
 import { TracksList } from './TracksList'
 

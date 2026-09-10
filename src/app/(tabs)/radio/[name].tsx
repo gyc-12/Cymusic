@@ -7,7 +7,7 @@ import { useDefaultStyles } from '@/styles'
 import { Redirect, useLocalSearchParams } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, ScrollView, View } from 'react-native'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 
 const RadioListScreen = () => {
 	const colors = useThemeColors()

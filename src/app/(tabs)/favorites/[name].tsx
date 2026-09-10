@@ -7,7 +7,7 @@ import { useDefaultStyles } from '@/styles'
 import { Redirect, useLocalSearchParams } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { ScrollView, View } from 'react-native'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 
 const PlaylistScreen = () => {
 	const defaultStyles = useDefaultStyles()

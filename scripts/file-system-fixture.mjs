@@ -66,7 +66,7 @@ export function createFixture() {
 	fs.mkdirSync(documents, { recursive: true })
 	fs.mkdirSync(`${library}/Caches`, { recursive: true })
 
-	function runtime({ realCache = false } = {}) {
+	function runtime({ realCache = false, moduleOverrides = {} } = {}) {
 		const calls = {
 			fs: [],
 			deletes: [],
@@ -84,6 +84,8 @@ export function createFixture() {
 			temporaryDeletes: [],
 			text: [],
 			plays: 0,
+			player: [],
+			disposers: [],
 		}
 		const hooks = {}
 		const disk = new Map()
@@ -113,10 +115,12 @@ export function createFixture() {
 			'nowLyricState',
 			'trackSkipLoadingStore',
 			'trackSourceLoadingStore',
+			'playbackIntentStore',
 		]
 		const stores = Object.fromEntries(storeNames.map((name) => [name, state()]))
 		stores.qualityStore.setValue('128k')
 		stores.repeatModeStore.setValue('queue')
+		stores.playbackIntentStore.setValue('pause')
 		const persistence = {
 			get: (key) => {
 				const value = disk.has(key) ? JSON.parse(disk.get(key)) : null
@@ -239,30 +243,94 @@ export function createFixture() {
 				persistence.set('music.play-list', tracks)
 			},
 		}
+		const eventListeners = new Map()
+		const nativeProjection = (track) => track && ({
+			...track,
+			url: typeof track.url === 'object' ? track.url.uri : track.url,
+		})
 		const player = {
 			queue: [],
-			setRate: async () => {},
-			addEventListener: () => ({ remove() {} }),
-			setQueue: async (tracks) => {
+			activeIndex: null,
+			state: 'idle',
+			playing: false,
+			progress: { position: 0, duration: 0, buffered: 0, cached: 0 },
+			rate: 1,
+			volume: 1,
+			setupPlayer: (options) => { calls.player.push(['setup', options]) },
+			setCommands: (options) => { calls.player.push(['commands', options]) },
+			setRepeatMode: (mode) => { calls.player.push(['repeat', mode]) },
+			setShuffleEnabled: (enabled) => { calls.player.push(['shuffle', enabled]) },
+			setVolume: (volume) => { player.volume = volume },
+			getVolume: () => player.volume,
+			setPlaybackSpeed: (rate) => { player.rate = rate },
+			getPlaybackSpeed: () => player.rate,
+			registerPlaybackSession: (session) => session(),
+			addEventListener: (event, callback) => {
+				if (!eventListeners.has(event)) eventListeners.set(event, new Set())
+				eventListeners.get(event).add(callback)
+				return { remove: () => eventListeners.get(event).delete(callback) }
+			},
+			emit: (event, payload) => {
+				for (const listener of [...eventListeners.get(event) ?? []]) listener(payload)
+			},
+			listenerCount: (event) => eventListeners.get(event)?.size ?? 0,
+			setMediaItems: (tracks) => {
+				calls.player.push(['items', tracks])
 				player.queue = tracks
+				player.activeIndex = tracks.length ? 0 : null
+				player.state = tracks.length ? 'ready' : 'idle'
+				player.playing = false
+				player.progress = { position: 0, duration: 0, buffered: 0, cached: 0 }
 			},
-			play: async () => {
+			updateMetadata: (index, metadata) => {
+				calls.player.push(['metadata', index, metadata])
+				Object.assign(player.queue[index], metadata)
+			},
+			play: () => {
+				calls.player.push(['play'])
 				calls.plays++
+				player.playing = true
+				player.state = 'ready'
 			},
-			pause: async () => {},
-			getTrack: async (index) => player.queue[index],
-			getActiveTrackIndex: async () => 0,
-			getPlaybackState: async () => ({ state: 'paused' }),
-			seekTo: async () => {},
-			getProgress: async () => ({ position: 0 }),
-			getRate: async () => 1,
-			reset: async () => {
+			pause: () => {
+				calls.player.push(['pause'])
+				player.playing = false
+			},
+			stop: () => {
+				calls.player.push(['stop'])
+				player.playing = false
+				player.state = 'idle'
+				player.progress.position = 0
+			},
+			getQueue: () => player.queue.map(nativeProjection),
+			getActiveMediaItem: () => nativeProjection(player.queue[player.activeIndex]) ?? null,
+			getActiveMediaItemIndex: () => player.activeIndex,
+			getPlaybackState: () => player.state,
+			isPlaying: () => player.playing,
+			seekTo: (position) => {
+				calls.player.push(['seek', position])
+				player.progress.position = position
+			},
+			getProgress: () => player.progress,
+			clear: () => {
+				calls.player.push(['clear'])
 				player.queue = []
+				player.activeIndex = null
+				player.state = 'idle'
+				player.playing = false
 			},
-			usePlaybackState: () => ({}),
-			useProgress: () => ({}),
-			Event: { PlaybackActiveTrackChanged: 'track', PlaybackError: 'error' },
-			State: { Playing: 'playing', Stopped: 'stopped' },
+			usePlaybackState: () => player.state,
+			useIsPlaying: () => player.playing,
+			useProgress: (interval) => {
+				calls.player.push(['progress-hook', interval])
+				return player.progress
+			},
+			Event: {
+				MediaItemTransition: 'transition',
+				PlaybackError: 'error',
+				PlaybackProgressUpdated: 'progress',
+			},
+			PlaybackState: { Idle: 'idle', Ready: 'ready', Buffering: 'buffering', Ended: 'ended', Error: 'error' },
 		}
 		const cache = {
 			isCached: async (track) => {
@@ -293,7 +361,7 @@ export function createFixture() {
 			},
 			'expo-modules-core': { uuid: { v4: randomUUID }, UnavailabilityError: Error },
 			'expo-file-system': expoFs,
-			'react-native-track-player': player,
+			'@rntp/player': player,
 			'@/player/PlayerStore': stores,
 			'@/store/PersistStatus': persistence,
 			'@/helpers/logger': logger,
@@ -342,15 +410,17 @@ export function createFixture() {
 			},
 		}
 		if (!realCache) overrides['@/player/CacheManager'] = cache
+		Object.assign(overrides, moduleOverrides)
 		const modules = new Map()
 		const globals = {}
 		function load(relativeFile) {
 			let filename = path.resolve(projectRoot, relativeFile)
 			if (fs.existsSync(`${filename}.ts`)) filename += '.ts'
+			else if (fs.existsSync(`${filename}.tsx`)) filename += '.tsx'
 			else if (fs.existsSync(filename) && fs.statSync(filename).isDirectory())
 				filename = path.join(filename, 'index.ts')
 			if (modules.has(filename)) return modules.get(filename).exports
-			const module = { exports: {} }
+			const module = { exports: {}, hot: { dispose: (callback) => calls.disposers.push(callback) } }
 			modules.set(filename, module)
 			const source = fs.readFileSync(filename, 'utf8')
 			const compiled = ts.transpileModule(source, {
@@ -358,6 +428,7 @@ export function createFixture() {
 					target: ts.ScriptTarget.ES2022,
 					module: ts.ModuleKind.CommonJS,
 					esModuleInterop: true,
+					jsx: ts.JsxEmit.React,
 				},
 			}).outputText
 			const imported = (specifier) => {

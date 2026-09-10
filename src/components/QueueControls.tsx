@@ -8,7 +8,7 @@ import shuffle from 'lodash.shuffle'
 import { useMemo } from 'react'
 import { StyleSheet, Text, View, ViewProps } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 
 type QueueControlsProps = {
 	tracks: Track[]

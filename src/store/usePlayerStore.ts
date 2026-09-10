@@ -1,6 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { create } from 'zustand';
-import { Track, useActiveTrack } from 'react-native-track-player';
+import type { Track } from '@/player/types';
 
 interface PlayerState {
   isLoading: boolean;

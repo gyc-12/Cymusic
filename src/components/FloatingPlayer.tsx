@@ -16,13 +16,12 @@ import Animated, {
 	useSharedValue,
 	withTiming,
 } from 'react-native-reanimated'
-import { useActiveTrack, useProgress } from 'react-native-track-player'
 import { MovingText } from './MovingText'
 
 const ProgressIndicator = React.memo(() => {
 	const colors = useThemeColors()
 	const styles = useMemo(() => createStyles(colors), [colors])
-	const { position, duration } = useProgress(1000)
+	const { position, duration } = myTrackPlayer.useProgress(1)
 	const progress = duration > 0 ? position / duration : 0
 	return (
 		<View style={styles.progressBarContainer}>
@@ -38,10 +37,9 @@ export const FloatingPlayer = React.memo(({ style }: ViewProps) => {
 	const styles = useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
 	const router = useRouter()
 	const currentMusic = myTrackPlayer.useCurrentMusic()
-	const activeTrack = useActiveTrack()
 	const lastActiveTrack = useLastActiveTrack()
 	const isTrackSourceLoading = trackSourceLoadingStore.useValue() !== null
-	const displayedTrack = currentMusic ?? activeTrack ?? lastActiveTrack
+	const displayedTrack = currentMusic ?? lastActiveTrack
 
 	const artworkOpacity = useSharedValue(1)
 	const prevArtworkRef = useRef(displayedTrack?.artwork)

@@ -8,7 +8,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useMemo } from 'react'
 import { Alert, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 
 const AddToPlaylistModal = () => {
 	const defaultStyles = useDefaultStyles()

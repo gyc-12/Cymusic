@@ -9,7 +9,8 @@ import { router } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { StyleProp, Text, View, ViewStyle } from 'react-native'
 import { Image } from 'expo-image'
-import { Track, useIsPlaying } from 'react-native-track-player'
+import type { Track } from '@/player/types'
+import { useIsPlaying } from '@rntp/player'
 import { QueueControls } from './QueueControls'
 export type TracksListProps = {
 	id: string
@@ -50,7 +51,7 @@ export const TracksList = React.memo(
 		const utilsStyles = useUtilsStyles()
 		const { activeQueueId, setActiveQueueId } = useQueue()
 		const currentMusic = myTrackPlayer.useCurrentMusic()
-		const { playing } = useIsPlaying()
+		const playing = useIsPlaying()
 
 		const ItemDivider = useCallback(
 			() => <View style={{ ...utilsStyles.itemSeparator, marginVertical: 9, marginLeft: 60 }} />,

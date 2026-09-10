@@ -8,7 +8,8 @@ import { FlashList, type FlashListRef } from '@shopify/flash-list'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Image } from 'expo-image'
-import { Track, useIsPlaying } from 'react-native-track-player'
+import type { Track } from '@/player/types'
+import { useIsPlaying } from '@rntp/player'
 import TracksListItem from './TracksListItem'
 
 export type TracksListProps = {
@@ -48,7 +49,7 @@ export const NowPlayList = React.memo(({ tracks }: TracksListProps) => {
 	const styles = useMemo(() => createStyles(colors, utilsStyles), [colors, utilsStyles])
 	const listRef = useRef<FlashListRef<Track>>(null)
 	const currentMusic = myTrackPlayer.useCurrentMusic()
-	const { playing } = useIsPlaying()
+	const playing = useIsPlaying()
 
 	const initialIndex = useMemo(
 		() =>

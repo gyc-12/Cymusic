@@ -1,7 +1,7 @@
 import musicSdk from '@/components/utils/musicSdk'
 import { Artist, Playlist, TrackWithPlaylist } from '@/helpers/types'
 import { useEffect } from 'react'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 import { create } from 'zustand'
 
 import { getTopLists } from '@/helpers/userApi/getMusicSource'

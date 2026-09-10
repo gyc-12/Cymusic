@@ -14,7 +14,7 @@
 
 ##  简介
 
-代码未内置源。可以导入自定义源，注意导入的音乐源的安全可靠性。仅供学习交流使用，请勿用于商业用途，如有侵权请联系删除。
+代码未内置源。可以导入自定义源，注意导入的音乐源的安全可靠性。**CyMusic 官方 App 永久免费，仅限个人非商业使用，禁止用于商业用途。** 如有侵权请联系删除。源码与第三方组件的授权范围见下方[项目协议](#项目协议)。
 
 -  **支持的平台**：iOS 16.4 及以上
 -  **软件下载**：[发布页面](https://github.com/gyc-12/Cymusic/releases)
@@ -30,7 +30,7 @@
 -  **React Native 0.86.3 / React 19.2.3**：New Architecture、Fabric 和 Hermes
 -  **Expo 57.0.21**：与 React Native 配套的稳定版本
 -  **TypeScript**：JavaScript 的超集，添加了静态类型检查
--  **React Native Track Player**：用于音频播放的库
+-  **React Native Track Player v5（`@rntp/player` 5.9.2）**：通过 New Architecture 原生接口播放音频，采用[独立许可证](third-party-licenses/rntp-player-5.9.2.txt)
 -  **Zustand**：轻量级状态管理库
 -  **Expo Router**：基于文件系统的路由，使用其配套的导航依赖
 -  **MMKV 4 / Nitro 与 AsyncStorage**：保留现有数据库和分块存储格式
@@ -131,6 +131,8 @@ xcodebuild -workspace ios/CyMusic.xcworkspace \
 使用上述 Node 24 环境运行；包含 Foundation、JavaScriptCore 或 Swift 的检查需要 macOS/Xcode：
 
 ```bash
+node scripts/check-rntp-player.mjs
+node scripts/check-rntp-remote-native.mjs
 node scripts/check-local-files.mjs
 node scripts/check-file-downloads.mjs
 node scripts/check-source-host.mjs
@@ -143,8 +145,10 @@ node scripts/check-native-services.mjs
 ```
 
 文件 I/O 已统一到 Expo FileSystem；系统音量、HTTP 有限后台执行时间和睡眠截止事件
-由本地 Expo Modules 提供。播放器仍保留 RNTP 4.1.2，输入分享保留现有扩展和协议。
-版本、依赖、构建结果及历史静态检查问题见
+由本地 Expo Modules 提供。播放器已迁移到 RNTP v5，保留现有业务歌单、音源解析和缓存；
+输入分享保留现有扩展和协议。播放器迁移的验证与回退说明见
+[RNTP v5 集成记录](docs/maintenance/2026-09-10-rntp-v5.md)。
+此前框架和自有模块的版本、构建结果及历史静态检查问题见
 [升级优化结果与验证范围](docs/maintenance/2026-09-10-results.md)，任务顺序见
 [执行计划](docs/maintenance/2026-09-10-plan.md)，全部 Git 追踪路径见
 [项目文件状态](docs/maintenance/2026-09-10-files.md)。
@@ -197,7 +201,13 @@ node scripts/check-native-services.mjs
 
 ##  项目协议
 
-本项目基于 Apache License 2.0 许可证发行，以下协议是对于 Apache License 2.0 的补充，如有冲突，以以下协议为准。
+本项目的源码许可、第三方组件许可与官方 App 使用范围分别如下：
+
+- **CyMusic 自有源码**按 [Apache License 2.0](LICENSE) 授权。下述 App 使用说明不修改 Apache-2.0 的条款，也不撤销已有的源码授权。
+- **RNTP v5 不属于 CyMusic 的 Apache-2.0 授权范围**，不能因为本项目开源而将 RNTP v5 视为 Apache-2.0、MIT 或其他开源许可证下的软件。本项目使用 `@rntp/player@5.9.2`；其版权属于 Double Symmetry GmbH，适用随该版本发布的[独立许可证原文](third-party-licenses/rntp-player-5.9.2.txt)。来源与版本见[第三方许可说明](third-party-licenses/README.md)。使用或分发时须遵守该许可证，CyMusic 不另行授予其商业使用或再许可权利。
+- **集成 RNTP v5 的 CyMusic 官方 App 永久免费，仅限个人、非职业、非商业使用，禁止商业用途。** 免费不等于可以用于公司、组织或商业产品；RNTP 的授权条件以其原文为准。其他第三方依赖同样保留各自的许可证。
+
+以下为官方 App 的使用说明，不替代自有源码或第三方组件各自的许可证。
 
 ---
 
@@ -231,7 +241,7 @@ node scripts/check-native-services.mjs
 
 ### 六、使用限制 
 
-6.1 本项目完全免费，且开源发布于 GitHub 面向全世界人用作对技术的学习交流。本项目不对项目内的技术可能存在违反当地法律法规的行为作保证。
+6.1 CyMusic 官方 App **永久免费，仅限个人非商业使用，禁止用于商业用途**。自有源码在 GitHub 发布并按上述源码许可证授权；RNTP v5 等第三方组件依各自许可证授权。本项目不对项目内的技术可能存在违反当地法律法规的行为作保证。
 
 6.2 **禁止在违反当地法律法规的情况下使用本项目。** 对于使用者在明知或不知当地法律法规不允许的情况下使用本项目所造成的任何违法违规行为由使用者承担，本项目不承担由此造成的任何直接、间接、特殊、偶然或结果性责任。
 
@@ -241,11 +251,11 @@ node scripts/check-native-services.mjs
 
 ### 八、非商业性质 
 
-8.1 本项目仅用于对技术可行性的探索及研究，不接受任何商业（包括但不限于广告等）合作及捐赠。
+8.1 CyMusic 官方 App 仅供个人、非职业、非商业用途，不接受任何商业（包括但不限于广告等）合作及捐赠。
 
 ### 九、接受协议 
 
-9.1 若你使用了本项目，将代表你接受本协议。
+9.1 使用 CyMusic 官方 App 表示接受上述 App 使用说明；源码及第三方组件的使用权利与义务以其各自许可证为准。
 
 ---
 

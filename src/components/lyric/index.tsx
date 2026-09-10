@@ -10,6 +10,7 @@ import useDelayFalsy from '@/hooks/useDelayFalsy'
 import PersistStatus from '@/store/PersistStatus'
 import delay from '@/utils/delay'
 import { musicIsPaused } from '@/utils/trackUtils'
+import { useIsPlaying } from '@rntp/player'
 import { FlatList } from 'react-native-gesture-handler'
 import rpx from '../../utils/rpx'
 import LyricItemComponent from './lyricItem'
@@ -61,7 +62,7 @@ export default function Lyric(_props: IProps) {
 	)
 
 	const [draggingIndex, setDraggingIndex] = useDelayFalsy<number | undefined>(undefined, 2000)
-	const musicState = myTrackPlayer.useMusicState()
+	const playing = useIsPlaying()
 
 	const listRef = useRef<NativeFlatList<ILyric.IParsedLrcItem> | null>(null)
 
@@ -154,14 +155,14 @@ export default function Lyric(_props: IProps) {
 		if (
 			lyrics.length === 0 ||
 			draggingIndex !== undefined ||
-			(draggingIndex === undefined && musicIsPaused(musicState)) ||
+			(draggingIndex === undefined && musicIsPaused(playing)) ||
 			lyrics[lyrics.length - 1].time < 1
 		) {
 			return
 		}
 		const targetIndex = currentLrcItem?.index === -1 || !currentLrcItem ? 0 : currentLrcItem.index ?? 0
 		scrollToLyricIndex(targetIndex, lyrics.length)
-	}, [currentLrcItem?.index, lyrics.length, draggingIndex, musicState, scrollToLyricIndex])
+	}, [currentLrcItem?.index, lyrics.length, draggingIndex, playing, scrollToLyricIndex])
 
 	useEffect(() => {
 		scrollToCurrentLrcItem()
@@ -218,7 +219,7 @@ export default function Lyric(_props: IProps) {
 			if (index >= 0 && index < lyrics.length) {
 				const time = lyrics[index].time + +(meta?.offset ?? 0)
 				if (time !== undefined && !isNaN(time)) {
-					await myTrackPlayer.seekTo(time)
+					myTrackPlayer.seekTo(time)
 					await myTrackPlayer.play()
 				}
 			}

@@ -13,7 +13,7 @@ import MusicInfo from '@/utils/musicInfo'
 import * as DocumentPicker from 'expo-document-picker'
 import React, { useMemo, useState } from 'react'
 import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, View } from 'react-native'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 const LocalMusicScreen = () => {
 	const colors = useThemeColors()
 	const defaultStyles = useDefaultStyles()

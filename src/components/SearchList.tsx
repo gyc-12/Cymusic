@@ -13,7 +13,8 @@ import React, { memo, useCallback, useMemo } from 'react'
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { Image } from 'expo-image'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Track, useIsPlaying } from 'react-native-track-player'
+import type { Track } from '@/player/types'
+import { useIsPlaying } from '@rntp/player'
 import TracksListItem from './TracksListItem'
 
 export type SearchListProps = {
@@ -93,7 +94,7 @@ export const SearchList: React.FC<SearchListProps> = ({
 	const defaultStyles = useDefaultStyles()
 	const styles = useMemo(() => createStyles(colors), [colors])
 	const currentMusic = myTrackPlayer.useCurrentMusic()
-	const { playing } = useIsPlaying()
+	const playing = useIsPlaying()
 
 	const handleTrackSelect = useCallback(async (selectedTrack: Track) => {
 		if (selectedTrack.isArtist) {

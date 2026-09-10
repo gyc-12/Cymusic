@@ -1,38 +1,19 @@
-import { Event, useTrackPlayerEvents } from 'react-native-track-player'
-
-const events = [
-	Event.PlaybackState,
-	Event.PlaybackError,
-	Event.PlaybackQueueEnded,
-	Event.PlaybackActiveTrackChanged,
-	Event.PlaybackPlayWhenReadyChanged,
-	Event.PlaybackTrackChanged,
-	Event.PlaybackProgressUpdated,
-]
+import { useEffect } from 'react'
+import TrackPlayer, { Event } from '@rntp/player'
 
 export const useLogTrackPlayerState = () => {
-	useTrackPlayerEvents(events, async (event) => {
-		if (event.type === Event.PlaybackError) {
-			console.warn('An error occurred: ', event)
-		}
-
-		if (event.type === Event.PlaybackState) {
-			console.log('Playback state: ', event.state)
-		} else if (event.type === Event.PlaybackQueueEnded) {
-			console.log(' PlaybackQueueEnded: ', event.track)
-		} else if (event.type === Event.PlaybackPlayWhenReadyChanged) {
-			console.log('Ready ?:', event.playWhenReady)
-		}
-		// else if (event.type === Event.PlaybackProgressUpdated) {
-		// 	const currentPosition = event.position
-		// 	const currentLyric =
-		// 		LyricManager.getLyricState().lyricParser?.getPosition(currentPosition).lrc
-		// 	console.log('PlaybackProgressUpdated: ', currentLyric)
-		// 	LyricManager.setCurrentLyric(currentLyric || null)
-		// 	// LyricManager.refreshLyric()
-		// }
-		else {
-			// console.log('Track other type:', event.type)
-		}
-	})
+	useEffect(() => {
+		const subscriptions = [
+			TrackPlayer.addEventListener(Event.PlaybackError, (event) => {
+				console.warn('An error occurred: ', event)
+			}),
+			TrackPlayer.addEventListener(Event.PlaybackStateChanged, (event) => {
+				console.log('Playback state: ', event.state)
+			}),
+			TrackPlayer.addEventListener(Event.IsPlayingChanged, (event) => {
+				console.log('Playing: ', event.playing)
+			}),
+		]
+		return () => subscriptions.forEach((subscription) => subscription.remove())
+	}, [])
 }

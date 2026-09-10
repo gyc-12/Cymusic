@@ -1,8 +1,6 @@
-import { State } from 'react-native-track-player'
+import { PlaybackState } from '@rntp/player'
 
-export const musicIsPaused = (state: State | undefined) =>
-    state !== State.Playing;
+export const musicIsPaused = (playing: boolean | undefined) => !playing
 
-export const musicIsBuffering = (state: State | undefined) =>
-    state === State.Loading || state === State.Buffering;
-
+export const musicIsBuffering = (state: PlaybackState | undefined) =>
+    state === PlaybackState.Buffering

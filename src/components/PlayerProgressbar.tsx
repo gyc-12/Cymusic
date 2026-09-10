@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { StyleSheet, Text, View, ViewProps } from 'react-native'
 import { Slider } from 'react-native-awesome-slider'
 import Animated, { Reanimated3DefaultSpringConfig, SharedValue, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
-import TrackPlayer, { useProgress } from 'react-native-track-player'
+import myTrackPlayer from '@/helpers/trackPlayerIndex'
 
 const AnimatedThumb = React.memo(({ isSliding }: { isSliding: SharedValue<boolean> }) => {
 	const colors = useThemeColors()
@@ -31,7 +31,7 @@ export const PlayerProgressBar = React.memo(({
 	const colors = useThemeColors()
 	const defaultStyles = useDefaultStyles()
 	const utilsStyles = useUtilsStyles()
-	const { position, duration } = useProgress(250)
+	const { position, duration } = myTrackPlayer.useProgress(0.25)
 	const isSliding = useSharedValue(false)
 	const progress = useSharedValue(0)
 	const min = useSharedValue(0)
@@ -51,12 +51,12 @@ export const PlayerProgressBar = React.memo(({
 		isSliding.value = true
 	}, [])
 
-	const handleSlidingComplete = useCallback(async (value: number) => {
+	const handleSlidingComplete = useCallback((value: number) => {
 		isSliding.value = false
 		const clampedValue = Math.min(Math.max(value, 0), 1)
 		const newPosition = clampedValue * duration
 		progress.value = clampedValue
-		await TrackPlayer.seekTo(newPosition)
+		myTrackPlayer.seekTo(newPosition)
 		if (onSeek) {
 			onSeek(newPosition)
 		}

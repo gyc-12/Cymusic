@@ -6,7 +6,7 @@ import PersistStatus from '@/store/PersistStatus'
 import { isSameMediaItem } from '@/utils/mediaItem'
 import { GlobalState } from '@/utils/stateMapper'
 import LyricParser from '@/utils/lrcParser'
-import ReactNativeTrackPlayer, { Event } from 'react-native-track-player'
+import ReactNativeTrackPlayer, { Event } from '@rntp/player'
 import myTrackPlayer, { nowLyricState } from './trackPlayerIndex'
 const lyricStateStore = new GlobalState<{
 	loading: boolean
@@ -107,7 +107,7 @@ async function refreshLyric(fromStart?: boolean, forceRequest = false, positionO
 				updateCurrentLyricByPosition(positionOverride, lyricParser)
 				return
 			}
-			const progress = await myTrackPlayer.getProgress()
+			const progress = myTrackPlayer.getProgress()
 			updateCurrentLyricByPosition(progress.position, lyricParser)
 			return
 		}
@@ -141,7 +141,7 @@ async function refreshLyric(fromStart?: boolean, forceRequest = false, positionO
 			return
 		}
 
-		const progress = await myTrackPlayer.getProgress()
+		const progress = myTrackPlayer.getProgress()
 		updateCurrentLyricByPosition(progress.position, parser)
 	} catch (e) {
 		console.log(e, 'LRC')
@@ -156,7 +156,8 @@ async function refreshLyric(fromStart?: boolean, forceRequest = false, positionO
 	}
 }
 
-ReactNativeTrackPlayer.addEventListener(Event.PlaybackProgressUpdated, (data) => {
+const progressSubscription = ReactNativeTrackPlayer.addEventListener(Event.PlaybackProgressUpdated, (data) => {
+	if (!myTrackPlayer.isCurrentProgressEvent(data)) return
 	durationStore.setValue(data.duration)
 
 	const musicItem = myTrackPlayer.getCurrentMusic()
@@ -183,10 +184,22 @@ ReactNativeTrackPlayer.addEventListener(Event.PlaybackProgressUpdated, (data) =>
 	})
 })
 
-ReactNativeTrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, () => {
+const transitionSubscription = ReactNativeTrackPlayer.addEventListener(Event.MediaItemTransition, (event) => {
+	if (event.item == null) {
+		if (ReactNativeTrackPlayer.getActiveMediaItem() == null) durationStore.setValue(0)
+		return
+	}
+	if (!myTrackPlayer.isCurrentNativeItem(event.item)) return
+	durationStore.setValue(0)
 	refreshLyric(true, true, 0).catch((e) => {
 		console.log(e, 'LRC_ACTIVE_TRACK')
 	})
+})
+
+const hotModule = module as typeof module & { hot?: { dispose(callback: () => void): void } }
+hotModule.hot?.dispose(() => {
+	progressSubscription.remove()
+	transitionSubscription.remove()
 })
 
 // 获取歌词

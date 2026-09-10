@@ -15,7 +15,7 @@ import {
 	View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 
 type SearchType = 'songs' | 'artists'
 

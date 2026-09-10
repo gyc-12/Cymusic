@@ -11,7 +11,7 @@ import React, { memo, useEffect, useMemo, useState } from 'react'
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import { Image } from 'expo-image'
 import LoaderKit from 'react-native-loader-kit'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 import { StopPropagation } from './utils/StopPropagation'
 
 export type TracksListItemProps = {

@@ -1,9 +1,9 @@
 import { useThemeColors } from '@/hooks/useAppTheme'
-import myTrackPlayer, { trackSkipLoadingStore } from '@/helpers/trackPlayerIndex'
+import myTrackPlayer, { playbackIntentStore, trackSkipLoadingStore, trackSourceLoadingStore } from '@/helpers/trackPlayerIndex'
 import { FontAwesome6 } from '@expo/vector-icons'
 import React from 'react'
 import { ActivityIndicator, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native'
-import TrackPlayer, { useIsPlaying } from 'react-native-track-player'
+import { PlaybackState, useIsPlaying, usePlaybackState } from '@rntp/player'
 
 type PlayerControlsProps = {
 	style?: ViewStyle
@@ -28,7 +28,11 @@ export const PlayerControls = React.memo(({ style }: PlayerControlsProps) => {
 })
 
 export const PlayPauseButton = React.memo(({ style, iconSize = 48 }: PlayerButtonProps) => {
-	const { playing } = useIsPlaying()
+	const playing = useIsPlaying()
+	const state = usePlaybackState()
+	const intent = playbackIntentStore.useValue()
+	const sourcePending = trackSourceLoadingStore.useValue() !== null
+	const shouldPause = playing || (intent === 'play' && (sourcePending || state === PlaybackState.Buffering))
 	const colors = useThemeColors()
 
 	return (
@@ -36,9 +40,9 @@ export const PlayPauseButton = React.memo(({ style, iconSize = 48 }: PlayerButto
 			<TouchableOpacity
 				activeOpacity={0.85}
 				hitSlop={10}
-				onPress={playing ? TrackPlayer.pause : TrackPlayer.play}
+				onPress={() => shouldPause ? myTrackPlayer.pause() : void myTrackPlayer.play()}
 			>
-				<FontAwesome6 name={playing ? 'pause' : 'play'} size={iconSize} color={colors.text} />
+				<FontAwesome6 name={shouldPause ? 'pause' : 'play'} size={iconSize} color={colors.text} />
 			</TouchableOpacity>
 		</View>
 	)

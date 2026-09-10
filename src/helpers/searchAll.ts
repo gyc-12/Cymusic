@@ -1,7 +1,7 @@
 // helpers/searchAll.ts
 
 import { searchArtist, searchMusic } from '@/helpers/userApi/xiaoqiu'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 
 const PAGE_SIZE = 20
 

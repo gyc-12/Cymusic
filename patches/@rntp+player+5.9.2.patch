@@ -1,0 +1,122 @@
+diff --git a/node_modules/@rntp/player/ios/TrackPlayer.swift b/node_modules/@rntp/player/ios/TrackPlayer.swift
+index e14f0a0..017c4b8 100644
+--- a/node_modules/@rntp/player/ios/TrackPlayer.swift
++++ b/node_modules/@rntp/player/ios/TrackPlayer.swift
+@@ -682,8 +682,11 @@
+     RemoteCommandHandlers(
+       togglePlayPause: { [weak self] in
+         guard let self else { return .commandFailed }
+-        return self.handleRemoteCommand(.PlayPause, action: {
+-          if self.player.state == .playing {
++        // Select the event and action together, before the action changes state.
++        let shouldPause = self.player.state == .playing
++        let event: EmitEvent = shouldPause ? RemotePauseEvent() : RemotePlayEvent()
++        return self.handleRemoteCommand(.PlayPause, event: event, action: {
++          if shouldPause {
+             self.player.pause()
+           } else {
+             self.player.play()
+@@ -692,23 +695,23 @@
+       },
+       play: { [weak self] in
+         guard let self else { return .commandFailed }
+-        return self.handleRemoteCommand(.PlayPause, action: { self.player.play() })
++        return self.handleRemoteCommand(.PlayPause, event: RemotePlayEvent(), action: { self.player.play() })
+       },
+       pause: { [weak self] in
+         guard let self else { return .commandFailed }
+-        return self.handleRemoteCommand(.PlayPause, action: { self.player.pause() })
++        return self.handleRemoteCommand(.PlayPause, event: RemotePauseEvent(), action: { self.player.pause() })
+       },
+       next: { [weak self] in
+         guard let self else { return .commandFailed }
+-        return self.handleRemoteCommand(.Next, action: { self.player.next() })
++        return self.handleRemoteCommand(.Next, event: RemoteNextEvent(), action: { self.player.next() })
+       },
+       previous: { [weak self] in
+         guard let self else { return .commandFailed }
+-        return self.handleRemoteCommand(.Previous, action: { self.player.previous() })
++        return self.handleRemoteCommand(.Previous, event: RemotePreviousEvent(), action: { self.player.previous() })
+       },
+       stop: { [weak self] in
+         guard let self else { return .commandFailed }
+-        return self.handleRemoteCommand(.Stop, action: { self.player.stop() })
++        return self.handleRemoteCommand(.Stop, event: RemoteStopEvent(), action: { self.player.stop() })
+       },
+       changePosition: { [weak self] position in
+         guard let self else { return .commandFailed }
+@@ -738,17 +741,16 @@
+     }
+   }
+
+-  private func handleRemoteCommand(_ command: PlayerCommand, action: @escaping () -> Void) -> MPRemoteCommandHandlerStatus {
+-    if shouldHandleNatively(command) {
++  private func handleRemoteCommand(_ command: PlayerCommand, event: EmitEvent, action: @escaping () -> Void) -> MPRemoteCommandHandlerStatus {
++    let handleNatively = shouldHandleNatively(command)
++    if handleNatively {
+       action()
+-      if remoteControlHandling == .hybrid {
+-        emitRemoteEventIfNeeded(command: command)
+-      }
+-      return .success
+-    } else {
+-      emitRemoteEventIfNeeded(command: command)
+-      return .success
+-    }
++    }
++    // Hybrid transport observers update JS intent without repeating the native action.
++    if !handleNatively || (remoteControlHandling == .hybrid && (command == .PlayPause || command == .Stop)) {
++      emitEvent(event: event)
++    }
++    return .success
+   }
+
+   private func handleRemoteSeek(position: TimeInterval) -> MPRemoteCommandHandlerStatus {
+@@ -805,35 +807,6 @@
+     }
+   }
+
+-  private func emitRemoteEventIfNeeded(command: PlayerCommand) {
+-    let shouldEmit: Bool
+-    switch remoteControlHandling {
+-    case .native: shouldEmit = false
+-    case .js: shouldEmit = true
+-    case .hybrid:
+-      let perCommand = perCommandHandling[command.rawValue]
+-      shouldEmit = perCommand == .js
+-    }
+-
+-    if shouldEmit {
+-      let event: EmitEvent
+-      switch command {
+-      case .PlayPause:
+-        event = player.state == .playing ? RemotePauseEvent() : RemotePlayEvent()
+-      case .Next:
+-        event = RemoteNextEvent()
+-      case .Previous:
+-        event = RemotePreviousEvent()
+-      case .Stop:
+-        event = RemoteStopEvent()
+-      case .Seek:
+-        event = RemoteSeekEvent(position: player.currentTime)
+-      case .SkipForward, .SkipBackward:
+-        return
+-      }
+-      emitEvent(event: event)
+-    }
+-  }
+ }
+
+ extension TrackPlayer {
+diff --git a/node_modules/@rntp/player/src/trackPlayerModule.ts b/node_modules/@rntp/player/src/trackPlayerModule.ts
+index 3093274..362db37 100644
+--- a/node_modules/@rntp/player/src/trackPlayerModule.ts
++++ b/node_modules/@rntp/player/src/trackPlayerModule.ts
+@@ -11,7 +11,6 @@
+ // does not exist in browser ESM bundlers like Vite/webpack) out of the web
+ // bundle entirely.
+
+-// @ts-expect-error global.__turboModuleProxy is injected by the New Architecture.
+ const isTurboModuleEnabled = global.__turboModuleProxy != null;
+
+ const TrackPlayerModule = isTurboModuleEnabled

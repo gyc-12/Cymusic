@@ -6,7 +6,7 @@ import { useDefaultStyles } from '@/styles'
 import i18n from '@/utils/i18n'
 import React, { useMemo } from 'react'
 import { ScrollView, View } from 'react-native'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 const FavoriteMusicScreen = () => {
 	const defaultStyles = useDefaultStyles()
 	// const search = useNavigationSearch({

@@ -1,4 +1,4 @@
-import type { Track as RNTrack } from 'react-native-track-player'
+import type { Track as AppTrack } from '@/player/types'
 
 declare global {
   namespace LX {
@@ -75,7 +75,7 @@ declare global {
         index: number
       }
 
-      interface Track extends RNTrack {
+      interface Track extends AppTrack {
         musicId: string
         // original: PlayMusic
         // quality: LX.Quality

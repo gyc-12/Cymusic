@@ -1,32 +1,41 @@
 import myTrackPlayer from '@/helpers/trackPlayerIndex'
 import { useEffect } from 'react'
-import TrackPlayer, { Capability, RatingType, RepeatMode } from 'react-native-track-player'
+import TrackPlayer, { PlayerCommand, RepeatMode } from '@rntp/player'
 
-const setupPlayer = async () => {
-	await TrackPlayer.setupPlayer({})
+let nativeConfigured = false
 
-	await TrackPlayer.updateOptions({
-		ratingType: RatingType.Heart,
+const setupPlayer = () => {
+	if (nativeConfigured) return
+	TrackPlayer.setupPlayer({
+		progressSync: { intervalSeconds: 1 },
+		autoUpdateMetadataFromStream: false,
+	})
+	TrackPlayer.setCommands({
 		capabilities: [
-			Capability.Play,
-			Capability.Pause,
-			Capability.SkipToNext,
-			Capability.SkipToPrevious,
-			Capability.Stop,
-			Capability.SeekTo,
+			PlayerCommand.PlayPause,
+			PlayerCommand.Next,
+			PlayerCommand.Previous,
+			PlayerCommand.Stop,
+			PlayerCommand.Seek,
 		],
-		progressUpdateEventInterval: 1,
+		handling: 'hybrid',
+		perCommandHandling: {
+			[PlayerCommand.Next]: 'js',
+			[PlayerCommand.Previous]: 'js',
+		},
 	})
 
-	await TrackPlayer.setVolume(1) // 默认音量1
-	await TrackPlayer.setRepeatMode(RepeatMode.Queue)
+	TrackPlayer.setVolume(1)
+	TrackPlayer.setRepeatMode(RepeatMode.Off)
+	TrackPlayer.setShuffleEnabled(false)
+	nativeConfigured = true
 }
 
 let initialization: Promise<void> | undefined
 
 const initializePlayer = () => {
 	if (!initialization) {
-		initialization = setupPlayer()
+		initialization = Promise.resolve().then(setupPlayer)
 			.then(() => myTrackPlayer.setupTrackPlayer())
 			.catch((error) => {
 				initialization = undefined

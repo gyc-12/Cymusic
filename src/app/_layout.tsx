@@ -19,10 +19,10 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message'
-import TrackPlayer from 'react-native-track-player'
+import TrackPlayer from '@rntp/player'
 SplashScreen.preventAutoHideAsync()
 
-TrackPlayer.registerPlaybackService(() => playbackService)
+TrackPlayer.registerPlaybackSession(playbackService)
 setI18nConfig()
 const App = () => {
 	const handleTrackPlayerLoaded = useCallback(() => {

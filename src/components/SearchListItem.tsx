@@ -9,7 +9,10 @@ import { useMemo } from 'react'
 import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
 import { Image } from 'expo-image'
 import LoaderKit from 'react-native-loader-kit'
-import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
+import type { Track } from '@/player/types'
+import { currentMusicStore } from '@/player/PlayerStore'
+import { isSameMediaItem } from '@/utils/mediaItem'
+import { useIsPlaying } from '@rntp/player'
 
 export type TracksListItemProps = {
 	track: Track
@@ -27,9 +30,9 @@ export const SearchListItem = ({
 	const colors = useThemeColors()
 	const defaultStyles = useDefaultStyles()
 	const styles = useMemo(() => createStyles(colors, defaultStyles), [colors, defaultStyles])
-	const { playing } = useIsPlaying()
+	const playing = useIsPlaying()
 
-	const isActiveTrack = useActiveTrack()?.id === track.id
+	const isActiveTrack = !!isSameMediaItem(currentMusicStore.useValue(), track as IMusic.IMusicItem)
 
 	return (
 		<TouchableHighlight onPress={() => handleTrackSelect(track)} underlayColor={colors.surfaceMuted}>

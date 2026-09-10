@@ -44,7 +44,7 @@ import Animated, {
 	withTiming,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useActiveTrack, usePlaybackState } from 'react-native-track-player'
+import { useIsPlaying } from '@rntp/player'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25
@@ -136,15 +136,14 @@ const PlayerScreenContent = () => {
 	const lyricsTranslateY = useSharedValue(50)
 	const artworkScale = useSharedValue(1)
 
-	const playbackState = usePlaybackState()
-	const isPlaying = playbackState.state === 'playing'
+	const isPlaying = useIsPlaying()
 
 	const lyricsAnimatedStyle = useAnimatedStyle(() => ({
 		opacity: lyricsOpacity.value,
 		transform: [{ translateY: lyricsTranslateY.value }],
 	}))
 
-	const currentActiveTrack = useActiveTrack()
+	const currentActiveTrack = myTrackPlayer.useCurrentMusic()
 	const prevTrackRef = useRef(currentActiveTrack)
 
 	useEffect(() => {

@@ -1,0 +1,43 @@
+react-native-track-player
+
+Copyright (c) Double Symmetry GmbH
+
+Non-Commercial Use
+
+Free for non-commercial use. Non-commercial means use by a private individual
+solely for personal, non-professional purposes (Personal Use), or use by a
+qualified academic institution strictly for instructional or non-commercial
+research activities (Educational Use). Any use that does not strictly and
+entirely qualify as Personal Use or Educational Use requires a commercial
+license, including any use within a for-profit company, non-profit
+organization, or government entity.
+
+Commercial Use
+
+Commercial use requires a paid license. See https://rntp.dev/pricing.
+
+By obtaining a commercial license, you are granted a non-exclusive,
+non-transferable right to use this software in your project, subject to
+the following terms:
+
+1. Non-Competition: This software may not be used, in whole or in part,
+   to build a product or service that competes directly with
+   react-native-track-player.
+
+2. Redistribution: This software may not be shared, distributed, or
+   sub-licensed to third parties without explicit written permission.
+
+3. Termination: Your license is terminated immediately upon violation of
+   these terms.
+
+Disclaimer
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING
+FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+For licensing questions or permissions, contact team@doublesymmetry.com.

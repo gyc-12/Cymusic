@@ -8,13 +8,15 @@ an SDK template is a reference for integration changes, not a replacement projec
 
 The current retained-native target is Expo **57.0.21**, React Native **0.86.3**,
 React **19.2.3**, New Architecture and Hermes HBC **98**, with iOS **16.4+**.
-Its implementation and verification scopes are summarized in
-`../../../docs/maintenance/2026-09-10-results.md`.
+Its framework and self-owned module verification is summarized in
+`../../../docs/maintenance/2026-09-10-results.md`; the current playback engine is
+`@rntp/player` **5.9.2**, with its separate migration results in
+`../../../docs/maintenance/2026-09-10-rntp-v5.md`.
 Use the existing `package.json`, `yarn.lock` and `ios/Podfile.lock` as one graph;
 do not independently advance React/RN or replace the retained iOS project with a
-generated template. Original Debug/Release builds and M01–M12 manual acceptance
-exist; internal cleanup, full Release storage comparison, CI and signed-device
-limits remain explicitly recorded in that task.
+generated template. Earlier Debug/Release builds and M01–M12 manual acceptance
+retain their original scope; they do not validate later playback changes.
+Each migration record distinguishes actual runtime checks, builds and device limits.
 
 The current file/dependency assessment is in
 `../../../docs/audit/2026-09-09/report.md`. Retired intermediate evidence is indexed
@@ -52,6 +54,17 @@ PersistStatus.useValue<K>(key: K, defaultValue?: IPersistConfig[K]): IPersistCon
 
 // src/helpers/trackPlayerIndex.ts
 deleteImportedLocalMusic(musicItemsIdToDelete: string): Promise<void>
+observeNativeTransport(intent: 'play' | 'pause' | 'stop'): void
+
+// src/player/mediaItem.ts; Track is app-owned, MediaItem is RNTP's native ABI
+toMediaItem(track: Track, token: string, placeholder?: boolean): MediaItem
+getNativeTrackIdentity(item: MediaItem | null | undefined): NativeTrackIdentity | null
+
+// @rntp/player 5.9.2: commands return void, getters return synchronously
+TrackPlayer.setMediaItems(items: MediaItem[], startIndex?: number): void
+TrackPlayer.getActiveMediaItem(): MediaItem | null
+TrackPlayer.getProgress(): Progress
+TrackPlayer.seekTo(seconds: number): void
 
 // modules/cymusic-native/index.ts (CyMusicFileSystem, iOS only)
 documentDirectoryPath: string // synchronous raw Foundation path
@@ -182,6 +195,69 @@ destroy(): string
 - Keep `babel-preset-expo` responsible for the compatible Worklets transform;
   adding a duplicate legacy Reanimated plugin is not the Reanimated4 migration.
 
+### RNTP v5 playback and queue ownership
+
+- Pin `@rntp/player@5.9.2` and `RNTPPlayer`; remove active RNTP4 imports and
+  SwiftAudioEx. Keep app `Track` types in `src/player/types.ts` and persisted
+  `IMusicItem` records unchanged. `store/playList.ts` owns the business queue;
+  `helpers/trackPlayerIndex.ts` owns playback, resolution and repeat/shuffle.
+- Project a resolved source only at `toMediaItem`: `album` → `albumTitle`,
+  `artwork` → `artworkUrl`, and headers → `url: { uri, headers }`. A real item uses
+  `mediaId = cymusic:${JSON.stringify([platform, id])}` and
+  `extras.cymusic = { id, platform, token, placeholder: false }`. Native getters
+  lose HTTP headers and can return raw local paths; retain the full resolved
+  source in JS instead of reconstructing a source from those getters.
+- Resolve local records through the existing path owner before this projection.
+  Empty, malformed and bare asset names must fail before native invocation;
+  RNTP's missing iOS asset path can trap. A persisted raw filename remains valid
+  input to the app resolver, but is not a valid direct input to `toMediaItem`.
+- Native queue remains real item + bundled silent placeholder. Native repeat is
+  `Off` and native shuffle is false. Every replacement, including SINGLE replay,
+  receives a fresh token; a placeholder uses `cymusic:placeholder:${token}`.
+  Advance once only when event index/item, synchronous active item, queue token,
+  current business selection and play intent agree. Ignore empty, stale and
+  duplicate transitions; a resumed pending placeholder completes its handoff.
+- Keep one root setup owner and idempotent module-lifetime subscriptions. v5 has
+  no `registerPlaybackService`. Commands return void and getters are synchronous;
+  `await` is not a playback-readiness or seek-completion barrier. `progressSync`
+  uses `intervalSeconds: 1`; without an endpoint it emits local events and writes
+  RNTP's native saved-progress preference, not a second MMKV schema.
+- Set commands to hybrid with only Next/Previous handled in JS. Native owns
+  Play/Pause/Seek/Stop. The pinned Swift patch emits the explicitly chosen hybrid
+  Play/Pause/Stop event once after native execution; JS only calls
+  `observeNativeTransport`, never executes that transport twice. Do not infer
+  the selected toggle action from state after it has already changed.
+- Source tokens reject superseded requests, including same-track replacement.
+  Pause retains a still-current late source as paused; Stop retains it stopped.
+  A direct selection/reset retires the old skip-operation token, and an old
+  `finally` cannot release a newer operation's lock. User controls increment a
+  revision so a delayed 500 ms recovery cannot override a newer action.
+- Playback errors have no item identity. Check the actual current real item and
+  Error state before scheduling recovery, then recheck queue/source/revision.
+  Stop a valid failed native item to retain its source for an immediate native
+  Play retry; clear when there is no valid current native item. A newer explicit
+  control cancels the old delayed Next in either case.
+  Progress/lyrics require current mediaId and an event timestamp no earlier than
+  that queue generation; placeholder progress cannot become a saved real track.
+- Use boolean `useIsPlaying()` independently from `PlaybackState`: Ready can be
+  paused. Show Pause for actual output, or play intent while source loading or
+  Buffering; Ready with no output shows Play after a native interruption. Hook
+  progress intervals are seconds (`0.25` / `1`), not legacy milliseconds.
+  Removing the current song uses the same actual-output/loading distinction;
+  deleting a song after a native interruption must not start the next one.
+  v5's polling hook does not reset its sample on transition. Use it to drive
+  the existing interval, then return the facade's current synchronous progress
+  snapshot on render; a new song must not inherit the prior song's duration
+  for display or slider calculations, including before the next poll.
+- Retain Expo system-volume and sleep owners, existing caches/downloads and
+  source protocols. RNTP gain is not system volume; do not silently add RNTP
+  cache/preload/sleep owners. Hot disposal must retire pending work, clear its
+  native queue and remove subscriptions.
+- RNTP's preserved third-party license applies independently of CyMusic's
+  Apache-2.0 source license. Keep the exact pinned notice and record local patches;
+  the official App's free personal/non-commercial policy does not revoke prior
+  Apache grants or grant RNTP rights beyond its license.
+
 ### New Architecture list and image consumers
 
 - FlashList2.0.2 auxiliary slots such as `ListEmptyComponent` and
@@ -283,8 +359,8 @@ destroy(): string
   UserDefaults reasons `CA92.1` and `1C8F.1`. Resource presence and simulator ad-hoc
   signatures do not prove provisioned physical-device App Group access.
 - For RNTP seek assertions, observe bounded convergence of position, active track
-  identity and playing state. The resolved `seekTo` promise alone is not proof
-  that the native player has completed its seek.
+  identity and playing state. RNTP v5 `seekTo` returns void; returning from the
+  call is not proof that the native player has completed its seek.
 - Preserve the existing separate CommonJS/LX runtime owners. The CommonJS
   four-argument `getMusicUrl` protocol has no generic cancellation/destroy API.
   Actual selection of CommonJS retires the prior LX runtime via the existing reload
@@ -321,6 +397,12 @@ destroy(): string
 | Request finishes before its native background-task identifier returns | End the late task exactly once; do not keep a lease for completed work |
 | Sleep timer is cancelled/replaced before an old event reaches JS | No pause from that stale generation/deadline |
 | New sleep schedule fails synchronously | Keep the previous deadline/generation; log without escaping the UI callback |
+| Empty/duplicate/stale RNTP placeholder transition | No business queue advance |
+| Source resolves after Pause or Stop for the same selection | Load paused/stopped; a later explicit Play can resume |
+| Old skip request finishes after direct selection and a new skip | Old completion cannot clear the new lock or replace the selected source |
+| Error recovery delay outlives a user transport/selection | Discard the old recovery; do not undo the user action |
+| RNTP Ready with `isPlaying() === false` and no loading | Show Play; Ready alone does not establish audio output |
+| Source passed to native lacks a resolved URI | Reject at the app boundary, before any iOS asset lookup |
 
 ## 5. Good / Base / Bad Cases
 
@@ -334,6 +416,13 @@ destroy(): string
 - **Bad:** decode every string twice, replace all container UUIDs in JSON, use an
   ID as a pathname, clear MMKV after a read error, or treat a resolved seek promise
   and a successful compilation as functional acceptance.
+- **Good:** real end → current placeholder → one business Next; SINGLE repeats
+  with a fresh token and retained headers on every cycle. A late resolver after
+  Pause can load the same track but cannot restart its clock.
+- **Base:** native Pause executes once, its hybrid event updates JS intent, and
+  the app's existing sleep deadline calls the same facade pause owner.
+- **Bad:** rebuild a source from the native getter, enable native repeat beside
+  the business queue, or replay Play/Pause from a hybrid observation event.
 
 ## 6. Tests Required
 
@@ -390,6 +479,16 @@ test framework. Re-run assertions affected by the change and record exact inputs
     must fail; `status: null` is not exit code zero. After integration, check
     Expo registration and actual iOS events/HTTP closure without equating them
     to private lease counts or physical-device background/volume acceptance.
+12. RNTP: `scripts/check-rntp-player.mjs` executes changed JS owners for source
+    projection, once-only initialization, transition/recovery tokens, queue
+    operations, paused/loading controls and superseded requests.
+    `scripts/check-rntp-remote-native.mjs` compiles extracted actual Swift handlers;
+    assert exactly one selected native action and the correct hybrid event across
+    handling modes and player states. Preserve the pristine-upstream failure
+    comparison. On iOS verify local/HTTP playback and headers, progress/lyrics,
+    bounded seek, two consecutive SINGLE replays, Next/Previous/shuffle, native
+    sleep pause and data cleanup. Actual hardware command delivery remains a
+    separate check from executing the native handlers on the host.
 
 Reuse completed evidence unless a change or unresolved concern requires a new
 check. User-confirmed manual steps are valid evidence for their named visible
@@ -432,4 +531,15 @@ store.remove(key)
 
 // Correct: same component and visible behavior, accepted element representation.
 <FlashList ListEmptyComponent={<EmptyListComponent />} />
+```
+
+```ts
+// Wrong for v5: the getter is synchronous and discards resolved-source headers.
+TrackPlayer.getActiveMediaItem().then((item) => replay(item))
+
+// Correct: read the native projection for observation only; the facade retains
+// the resolved app track for replay. A seek must be checked over bounded time.
+const active = TrackPlayer.getActiveMediaItem()
+TrackPlayer.seekTo(5)
+// Observe getProgress().position, active identity and isPlaying() convergence.
 ```

@@ -7,7 +7,7 @@ import i18n from '@/utils/i18n'
 import { MenuAction, MenuView } from '@react-native-menu/menu'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { PropsWithChildren, useCallback, useMemo, useState } from 'react'
-import { Track } from 'react-native-track-player'
+import type { Track } from '@/player/types'
 import { match, P } from 'ts-pattern'
 
 type TrackShortcutsMenuProps = PropsWithChildren<{
