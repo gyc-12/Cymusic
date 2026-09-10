@@ -2,6 +2,8 @@
 // Execute the production facade, MediaItem projection, service, hooks, UI and lyric
 // owners. The native engine is a synchronous seam; audible/seek convergence is iOS acceptance.
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import { I18n } from 'i18n-js'
 import { createFixture, deferred, deepFreeze, item } from './file-system-fixture.mjs'
 import { flush, loadModule } from './native-services-fixture.mjs'
 
@@ -90,12 +92,109 @@ function runtime() {
 	}
 }
 
-function findElement(node, type) {
+function findElement(node, type, matches = () => true) {
 	if (!node || typeof node !== 'object') return undefined
-	if (node.type === type) return node
+	if (node.type === type && matches(node)) return node
 	for (const child of node.props?.children ?? []) {
-		const found = findElement(child, type)
+		const found = findElement(child, type, matches)
 		if (found) return found
+	}
+}
+
+function settingsRuntime() {
+	const h = runtime()
+	const listeners = new Set(), storageWrites = []
+	const states = [], effects = []
+	let stateIndex = 0, effectIndex = 0
+	// Keep hook state and subscription cleanup across renders; only React/native
+	// storage are seams. Settings, PersistStatus and the facade are production code.
+	h.react.useState = (initial) => {
+		const index = stateIndex++
+		if (!(index in states)) states[index] = typeof initial === 'function' ? initial() : initial
+		return [states[index], (value) => { states[index] = value }]
+	}
+	h.react.useEffect = (callback, dependencies) => {
+		const index = effectIndex++
+		const previous = effects[index]
+		if (previous && dependencies.every((value, key) => Object.is(value, previous.dependencies[key]))) return
+		previous?.cleanup?.()
+		effects[index] = { callback, dependencies, pending: true }
+	}
+	const storage = {
+		getString: (key) => h.disk.get(key),
+		set: (key, raw) => {
+			storageWrites.push([key, raw])
+			h.disk.set(key, raw)
+			listeners.forEach((listener) => listener(key))
+		},
+		remove: (key) => {
+			storageWrites.push([key, undefined])
+			const removed = h.disk.delete(key)
+			listeners.forEach((listener) => listener(key))
+			return removed
+		},
+		addOnValueChangedListener: (listener) => {
+			listeners.add(listener)
+			return { remove: () => listeners.delete(listener) }
+		},
+	}
+	const reloadPersistence = () => {
+		Object.assign(h.persistence, loadModule('src/store/PersistStatus.ts', {
+			react: h.react,
+			'@/store/getOrCreateMMKV': (name) => {
+				assert.equal(name, 'appPersistStatus')
+				return storage
+			},
+			'@/utils/safeParse': h.load('src/utils/safeParse.ts').default,
+		}).default)
+	}
+	reloadPersistence()
+	const translations = Object.fromEntries(['zh', 'en'].map((language) => [
+		language, JSON.parse(fs.readFileSync(new URL(`../src/locales/${language}.json`, import.meta.url), 'utf8')),
+	]))
+	const i18n = new I18n(translations)
+	i18n.locale = 'zh'
+	Object.assign(h.nativeViews, { Switch: 'Switch', ScrollView: 'ScrollView', Linking: {} })
+	const SettingModal = loadModule('src/app/(modals)/settingModal.tsx', {
+		react: h.react,
+		'react-native': h.nativeViews,
+		'@/helpers/logger': { logInfo() {}, logError() {} },
+		'@/helpers/trackPlayerIndex': h.load('src/helpers/trackPlayerIndex.ts'),
+		'@/hooks/useAppTheme': {
+			useThemeColors: () => ({ text: 'white', textMuted: 'gray' }),
+			useThemeMode: () => ({ themeMode: 'system', setThemeMode() {} }),
+		},
+		'@/helpers/userApi/importMusicSource': {},
+		'@/store/PersistStatus': h.persistence,
+		'@/utils/i18n': { __esModule: true, default: i18n, nowLanguage: { useValue: () => i18n.locale } },
+		'@/utils/stateMapper': h.load('src/utils/stateMapper.ts'),
+		'@/utils/utils': { showToast() {} },
+		'@react-native-menu/menu': { MenuView: 'MenuView' },
+		'expo-constants': { expoConfig: { version: 'fixture' } },
+		'expo-document-picker': {},
+		'expo-file-system': h.expoFs,
+		'expo-router': { useRouter: () => ({ push() {} }) },
+		'react-native-safe-area-context': { useSafeAreaInsets: () => ({ top: 0 }) },
+		'react-native-toast-message': { __esModule: true, default: 'Toast', BaseToast: 'BaseToast', ErrorToast: 'ErrorToast' },
+		'@/assets/144.png': 1,
+	}).default
+	return {
+		...h, i18n, listeners, storageWrites, reloadPersistence,
+		render() {
+			stateIndex = 0
+			effectIndex = 0
+			const tree = SettingModal()
+			for (const effect of effects) if (effect.pending) {
+				effect.pending = false
+				effect.cleanup = effect.callback()
+			}
+			return tree
+		},
+		unmount() {
+			effects.forEach((effect) => effect.cleanup?.())
+			effects.length = 0
+			states.length = 0
+		},
 	}
 }
 
@@ -131,6 +230,200 @@ await check('invalid source URLs are rejected before reaching the native fatalEr
 	}
 	const url = 'file:///app/100%25%20%23%E6%AD%8C%E6%9B%B2.mp3'
 	assert.equal(toMediaItem(song('local', { url }), 'local').url, url)
+})
+
+await check('precise seeking projection accepts literal true only and leaves identity, headers and library data intact', () => {
+	const { toMediaItem, getNativeTrackIdentity } = runtime().load('src/player/mediaItem.ts')
+	const track = deepFreeze(song('opaque', {
+		url: 'https://media.example/play?id=opaque',
+		headers: { Authorization: 'source-header' }, userAgent: 'app-agent',
+	}))
+	const before = JSON.stringify(track)
+	const baseline = toMediaItem(track, 'policy')
+	for (const [options, expected] of [
+		[undefined, false], [null, false], [{}, false],
+		...[false, null, 0, 1, 'true', [], {}].map((value) => [{ preciseSeeking: value }, false]),
+		[{ preciseSeeking: true }, true],
+	]) {
+		const projected = toMediaItem(track, 'policy', false, options)
+		assert.equal(projected.extras.cymusicPlayback.preciseSeeking, expected)
+		assert.deepEqual(getNativeTrackIdentity(projected), getNativeTrackIdentity(baseline))
+		assert.deepEqual(projected.url, baseline.url)
+		assert.equal(projected.mediaId, baseline.mediaId)
+		assert.equal(projected.mimeType, baseline.mimeType)
+	}
+	assert.equal(JSON.stringify(track), before)
+	assert.equal(track.extras, undefined)
+})
+
+await check('precise seeking is excluded from silent placeholders and explicit live media', () => {
+	const { toMediaItem } = runtime().load('src/player/mediaItem.ts')
+	for (const [placeholder, isLiveStream] of [[true, false], [false, true], [true, true]]) {
+		const projected = toMediaItem(song('excluded', { isLiveStream }), 'policy', placeholder, { preciseSeeking: true })
+		assert.equal(projected.extras.cymusicPlayback.preciseSeeking, false)
+		assert.equal(projected.extras.cymusic.placeholder, placeholder)
+		assert.equal(projected.isLive, isLiveStream)
+	}
+})
+
+await check('Settings defaults off for missing, malformed and non-Boolean persisted values', () => {
+	const h = settingsRuntime()
+	for (const [raw, expected] of [
+		[undefined, false], ['not-json', false], ['null', false], ['false', false],
+		['0', false], ['1', false], ['"true"', false], ['[]', false], ['{}', false], ['true', true],
+	]) {
+		if (raw === undefined) h.disk.delete('music.preciseSeeking')
+		else h.disk.set('music.preciseSeeking', raw)
+		assert.equal(findElement(h.render(), 'Switch').props.value, expected, String(raw))
+		assert.equal(h.listeners.size, 1)
+		h.unmount()
+		assert.equal(h.listeners.size, 0)
+	}
+	assert.deepEqual(h.storageWrites, [])
+})
+
+await check('the real Settings Switch saves one key, updates through the storage listener and restores after remount and module reload', () => {
+	const h = settingsRuntime()
+	h.disk.set('music.quality', '"flac"')
+	let control = findElement(h.render(), 'Switch')
+	assert.equal(control.props.value, false)
+	control.props.onValueChange(true)
+	assert.deepEqual(h.storageWrites, [['music.preciseSeeking', 'true']])
+	assert.equal(findElement(h.render(), 'Switch').props.value, true)
+	assert.equal(h.listeners.size, 1)
+	h.unmount()
+	assert.equal(h.listeners.size, 0)
+	assert.equal(findElement(h.render(), 'Switch').props.value, true)
+	h.unmount()
+	h.reloadPersistence()
+	control = findElement(h.render(), 'Switch')
+	assert.equal(control.props.value, true)
+	control.props.onValueChange(false)
+	assert.equal(findElement(h.render(), 'Switch').props.value, false)
+	h.unmount()
+	h.reloadPersistence()
+	assert.equal(findElement(h.render(), 'Switch').props.value, false)
+	assert.deepEqual([...h.disk], [['music.quality', '"flac"'], ['music.preciseSeeking', 'false']])
+	h.unmount()
+})
+
+await check('the iOS Switch exposes both localized explanations visibly and as its accessibility hint', () => {
+	const h = settingsRuntime()
+	const descriptions = {
+		zh: '改善部分 FLAC 快进后的音频与歌词不同步。开启后可能需要加载完整音频，播放前等待更久。切换歌曲后生效。',
+		en: 'Helps keep audio and lyrics aligned after seeking in some FLAC files. Playback may wait for the full audio file to load. Applies after changing tracks.',
+	}
+	for (const language of ['zh', 'en']) {
+		h.i18n.locale = language
+		const tree = h.render()
+		const control = findElement(tree, 'Switch')
+		assert.equal(control.props.testID, 'settings.preciseSeeking')
+		assert.equal(control.props.accessibilityLabel, language === 'zh' ? '精确跳转' : 'Precise seeking')
+		assert.equal(control.props.accessibilityHint, descriptions[language])
+		const description = findElement(tree, 'Text', (node) => node.props.children.includes(descriptions[language]))
+		assert(description, 'The loading trade-off must be visible before enabling')
+		assert.equal(description.props.numberOfLines, undefined)
+		h.unmount()
+	}
+	h.nativeViews.Platform.OS = 'android'
+	assert.equal(findElement(h.render(), 'Switch'), undefined)
+	h.unmount()
+})
+
+await check('changing the actual Switch during playback or pause cannot interrupt the song or request another source', async () => {
+	for (const [intent, initial] of [['play', false], ['pause', false], ['play', true], ['pause', true]]) {
+		const h = settingsRuntime()
+		h.persistence.set('music.preciseSeeking', initial)
+		await h.setup()
+		await h.facade.play(deepFreeze(song('current', { headers: { Authorization: 'kept' } })))
+		if (intent === 'pause') h.facade.pause()
+		const queue = h.player.queue
+		const current = JSON.stringify(h.facade.getCurrentMusic())
+		const calls = h.calls.player.length, sources = h.sourceCalls.length, timers = h.calls.timers.length
+		const diskBefore = [...h.disk].filter(([key]) => key !== 'music.preciseSeeking')
+		const writes = h.storageWrites.length
+		findElement(h.render(), 'Switch').props.onValueChange(!initial)
+		await flush()
+		assert.equal(h.calls.player.length, calls)
+		assert.equal(h.sourceCalls.length, sources)
+		assert.equal(h.calls.timers.length, timers)
+		assert.equal(h.player.queue, queue)
+		assert.equal(queue[0].extras.cymusicPlayback.preciseSeeking, initial)
+		assert.equal(JSON.stringify(h.facade.getCurrentMusic()), current)
+		assert.equal(h.stores.playbackIntentStore.getValue(), intent)
+		assert.equal(h.player.isPlaying(), intent === 'play')
+		assert.deepEqual(h.storageWrites.slice(writes), [['music.preciseSeeking', JSON.stringify(!initial)]])
+		assert.deepEqual([...h.disk].filter(([key]) => key !== 'music.preciseSeeking'), diskBefore)
+		h.unmount()
+	}
+})
+
+await check('the facade treats non-Boolean preferences as off and never writes the option into songs or playlists', async () => {
+	for (const value of [undefined, false, true, null, 0, 1, 'true', {}, []]) {
+		const h = runtime()
+		h.persistence.set('music.preciseSeeking', value)
+		const track = deepFreeze(song('persisted'))
+		await h.facade.play(track)
+		assert.equal(h.player.queue[0].extras.cymusicPlayback.preciseSeeking, value === true)
+		assert.equal(h.player.queue[1].extras.cymusicPlayback.preciseSeeking, false)
+		assert.deepEqual(h.persistence.get('music.musicItem'), track)
+		assert.deepEqual(h.persistence.get('music.play-list'), [track])
+	}
+})
+
+await check('a delayed source snapshots the latest preference only after the valid result arrives', async () => {
+	for (const [initial, changed] of [[undefined, true], [true, false]]) {
+		const h = runtime()
+		h.persistence.set('music.preciseSeeking', initial)
+		const pending = deferred()
+		h.setResolver(() => pending.promise)
+		const selecting = h.facade.play(song('delayed'))
+		assert.equal(h.reads.has('music.preciseSeeking'), false)
+		h.persistence.set('music.preciseSeeking', changed)
+		assert.equal(h.sourceCalls.length, 1)
+		assert.equal(h.count('items'), 0)
+		pending.resolve({ url: 'https://media.example/opaque-source', wasCached: false })
+		await selecting
+		assert.equal(h.reads.get('music.preciseSeeking'), changed)
+		assert.equal(h.player.queue[0].extras.cymusicPlayback.preciseSeeking, changed)
+	}
+})
+
+await check('Play/Pause and Stop to Play retain the snapshot while explicit reconstruction and SINGLE replay adopt the latest preference', async () => {
+	const h = runtime()
+	await h.setup()
+	await h.facade.play(song('policy-lifetime'))
+	const original = h.player.queue[0]
+	h.persistence.set('music.preciseSeeking', true)
+	h.facade.pause()
+	await h.facade.play()
+	h.facade.stop()
+	await h.facade.play()
+	assert.equal(h.player.queue[0], original)
+	assert.equal(original.extras.cymusicPlayback.preciseSeeking, false)
+	assert.equal(h.sourceCalls.length, 1)
+	assert.equal(h.count('items'), 1)
+	await h.facade.play(null, true)
+	const rebuilt = h.player.queue[0]
+	assert.equal(rebuilt.extras.cymusicPlayback.preciseSeeking, true)
+	assert.notEqual(rebuilt.extras.cymusic.token, original.extras.cymusic.token)
+	h.persistence.set('music.preciseSeeking', false)
+	h.facade.setRepeatMode('single')
+	h.player.activeIndex = 1
+	h.emit('MediaItemTransition', { index: 1, item: h.player.queue[1] })
+	await flush()
+	assert.equal(h.player.queue[0].extras.cymusicPlayback.preciseSeeking, false)
+	assert.notEqual(h.player.queue[0].extras.cymusic.token, rebuilt.extras.cymusic.token)
+	assert.equal(rebuilt.extras.cymusicPlayback.preciseSeeking, true)
+	assert.equal(h.sourceCalls.length, 1)
+	assert.equal(h.count('items'), 3)
+	const repeated = h.player.queue[0]
+	h.persistence.set('music.preciseSeeking', true)
+	await h.facade.play(song('next-policy'))
+	assert.equal(h.player.queue[0].extras.cymusicPlayback.preciseSeeking, true)
+	assert.equal(repeated.extras.cymusicPlayback.preciseSeeking, false)
+	assert.equal(h.sourceCalls.length, 2)
+	assert.equal(h.count('items'), 4)
 })
 
 await check('application setup is once per runtime and configures hybrid business navigation before playback', async () => {
@@ -295,11 +588,15 @@ await check('same-item replacement requests reject an older result as well as a 
 	const a = song('same')
 	const old = h.facade.play(a)
 	const newer = h.facade.play(a, true)
+	h.persistence.set('music.preciseSeeking', true)
 	replacement.resolve({ url: 'https://media.example/new.mp3', wasCached: false })
 	await newer
+	h.persistence.set('music.preciseSeeking', false)
 	first.resolve({ url: 'https://media.example/stale.mp3', wasCached: false })
 	await old
 	assert.equal(h.player.queue[0].url, 'https://media.example/new.mp3')
+	assert.equal(h.player.queue[0].extras.cymusicPlayback.preciseSeeking, true)
+	assert.equal(h.reads.get('music.preciseSeeking'), true, 'A stale result must not resample the preference')
 	assert.equal(h.count('items'), 1)
 	const loadingOther = h.facade.play(song('other'))
 	await h.facade.clear()
@@ -321,16 +618,20 @@ await check('pause and native Stop during source resolution retain the selected 
 			h.player.stop()
 			h.facade.observeNativeTransport('stop')
 		}
+		h.persistence.set('music.preciseSeeking', true)
 		pending.resolve({ url: 'https://media.example/selected.mp3', wasCached: false })
 		await selecting
 		assert.equal(h.count('play'), 0)
 		assert.equal(h.player.playing, false)
 		assert.equal(h.facade.getCurrentMusic().id, intent)
 		assert.equal(h.stores.trackSourceLoadingStore.getValue(), null)
+		assert.equal(h.player.queue[0].extras.cymusicPlayback.preciseSeeking, true)
+		h.persistence.set('music.preciseSeeking', false)
 		await h.facade.play()
 		assert.equal(h.count('play'), 1)
 		assert.equal(h.sourceCalls.length, 1)
 		assert.equal(h.player.queue[0].url.headers.Authorization, 'retained')
+		assert.equal(h.player.queue[0].extras.cymusicPlayback.preciseSeeking, true)
 	}
 })
 

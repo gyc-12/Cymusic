@@ -12,6 +12,8 @@ Its framework and self-owned module verification is summarized in
 `../../../docs/maintenance/2026-09-10-results.md`; the current playback engine is
 `@rntp/player` **5.9.2**, with its separate migration results in
 `../../../docs/maintenance/2026-09-10-rntp-v5.md`.
+Its optional iOS asset-timing policy is recorded in
+`../../../docs/maintenance/2026-09-10-precise-seeking.md`.
 Use the existing `package.json`, `yarn.lock` and `ios/Podfile.lock` as one graph;
 do not independently advance React/RN or replace the retained iOS project with a
 generated template. Earlier Debug/Release builds and M01–M12 manual acceptance
@@ -57,8 +59,19 @@ deleteImportedLocalMusic(musicItemsIdToDelete: string): Promise<void>
 observeNativeTransport(intent: 'play' | 'pause' | 'stop'): void
 
 // src/player/mediaItem.ts; Track is app-owned, MediaItem is RNTP's native ABI
-toMediaItem(track: Track, token: string, placeholder?: boolean): MediaItem
+type MediaItemPlaybackOptions = { preciseSeeking?: boolean }
+toMediaItem(
+  track: Track,
+  token: string,
+  placeholder?: boolean,
+  playbackOptions?: MediaItemPlaybackOptions,
+): MediaItem
 getNativeTrackIdentity(item: MediaItem | null | undefined): NativeTrackIdentity | null
+
+// Existing PersistStatus database; missing/non-Boolean values mean off.
+interface IPersistConfig { 'music.preciseSeeking': boolean }
+// MediaItem.extras.cymusicPlayback has shape { preciseSeeking: boolean };
+// it is separate from extras.cymusic track identity.
 
 // @rntp/player 5.9.2: commands return void, getters return synchronously
 TrackPlayer.setMediaItems(items: MediaItem[], startIndex?: number): void
@@ -258,6 +271,44 @@ destroy(): string
   the official App's free personal/non-commercial policy does not revoke prior
   Apache grants or grant RNTP rights beyond its license.
 
+### Per-item precise seeking
+
+- Settings exposes an iOS-only, default-off Boolean using the existing
+  `PersistStatus` owner. Read with `=== true`; do not coerce strings/numbers or
+  create a second preference store. A toggle writes only `music.preciseSeeking`
+  and issues no playback, queue, source-resolution or setup command. Its visible
+  localized description must explain possible complete-file loading and
+  activation after changing tracks.
+- `setTrackSource` samples the preference after source resolution and current
+  request validation, immediately before `toMediaItem`. The pure projection
+  receives it explicitly, preserves `extras.cymusic` identity and URL/headers,
+  and emits `extras.cymusicPlayback.preciseSeeking`. Explicit live items and
+  silent placeholders emit false. Do not persist transport policy on songs or
+  infer formats/live status from URL suffixes, quality labels or MIME strings.
+- New App item construction, including explicit reconstruction and SINGLE
+  replay, samples the latest setting. Native retry, Stop → Play, Play/Pause
+  and metadata updates retain the current item's snapshot. A later preference
+  write must not reload that item or transfer a retired item's policy forward.
+- The RNTP patch decodes an actual CFBoolean under `extras.cymusicPlayback`;
+  `NSNumber(1)`/`NSNumber(0)`, null, strings and malformed containers do not
+  enable precision. `AudioItem.prefersPreciseTiming` defaults to false; both
+  `AudioPlayer` load sites pass the retained value to
+  `PlayerEngine.load(url:headers:isLive:prefersPreciseTiming:)`.
+- `AVPlayerEngine` normalizes `requested && !isLive` into immutable
+  `SourceContext`. Direct/proxy construction, both one-shot direct fallbacks
+  and live refresh carry that same context. Add
+  `AVURLAssetPreferPreciseDurationAndTimingKey` only when true; omit it otherwise.
+  Preserve HTTP/ICY behavior, load-generation/cache-key guards and reset cleanup.
+  Proxy assets must not receive origin authorization headers.
+- Keep the normal AVPlayerItem initializer, stalling policy and zero-tolerance
+  seek. The observed bug is a disagreement between decoded content and the
+  native timeline. A matching player clock and lyric index is not content proof;
+  a `.playing` state is not proof of the first decoded audio. Use sequential
+  reference decoding plus a contiguous PCM match, and separately measure first
+  PCM from before native `load`. Cold limited-bandwidth tests must use fresh
+  origins/paths and report unique transferred bytes. Full-file preparation is
+  a documented cost of the user's opt-in, not a reason to change quality or lyrics.
+
 ### New Architecture list and image consumers
 
 - FlashList2.0.2 auxiliary slots such as `ListEmptyComponent` and
@@ -403,6 +454,13 @@ destroy(): string
 | Error recovery delay outlives a user transport/selection | Discard the old recovery; do not undo the user action |
 | RNTP Ready with `isPlaying() === false` and no loading | Show Play; Ready alone does not establish audio output |
 | Source passed to native lacks a resolved URI | Reject at the app boundary, before any iOS asset lookup |
+| Precision preference missing, null, numeric or string | Off; no implicit migration or coercion |
+| Preference toggled during playback or source resolution | Current item unchanged; next valid App item snapshots the latest value |
+| Native retry or Stop → Play after a preference change | Reload the retained item's old policy |
+| Explicit live/placeholder item, even when preference is on | Omit precise asset timing; no format/live guessing |
+| Proxy error or item-failure fallback | Retain the full source policy and existing headers; consume fallback once |
+| New load/reset followed by a stale item callback | Existing generation/cache guards prevent retired policy from taking over |
+| PCM match weak/ambiguous, interrupted or discontinuous | Invalid content evidence; never replace it with clock agreement |
 
 ## 5. Good / Base / Bad Cases
 
@@ -423,6 +481,12 @@ destroy(): string
   the app's existing sleep deadline calls the same facade pause owner.
 - **Bad:** rebuild a source from the native getter, enable native repeat beside
   the business queue, or replay Play/Pause from a hybrid observation event.
+- **Good:** a preference change leaves the current queue/token and playback
+  untouched; the next App item uses it, and both native fallback paths retain it.
+- **Base:** off preserves the original asset options; an explicitly live item
+  also omits precision even if the user's preference is on.
+- **Bad:** enable precision with a truthy numeric extra, force an active reload,
+  or adjust lyric timing to hide an independently measured audio seek error.
 
 ## 6. Tests Required
 
@@ -489,6 +553,21 @@ test framework. Re-run assertions affected by the change and record exact inputs
     bounded seek, two consecutive SINGLE replays, Next/Previous/shuffle, native
     sleep pause and data cleanup. Actual hardware command delivery remains a
     separate check from executing the native handlers on the host.
+13. Precise seeking: `scripts/check-rntp-precise-seeking.mjs` compiles actual
+    installed decoder, load and fallback methods. Assert strict Boolean input,
+    both AudioPlayer forwarding sites, direct/proxy option absence/presence,
+    retained retry policy, headers/ICY and stale/reset isolation. The existing
+    live-edge test seam bypasses asset creation and is insufficient here.
+    Its optional `--pcm CONFIG [--simulator UUID]` mode captures decoded content
+    through the patched loading/install/seek boundary. Use original FLAC from
+    `scripts/fixtures/generate-flac-seek-fixture.py`, a fresh controlled source
+    from `range-media-server.py`, and independent `match-rntp-pcm.py` results.
+    Keep media, private source URLs and generated binaries outside Git. Check
+    forward/backward content, pause/resume, other formats and cold startup cost;
+    preserve failing/default controls separately. A rebuilt App must additionally
+    show persistence, non-interrupting toggles, later-item activation, lyrics
+    after seeking and retained lyric-delay behavior. Real gestures/listening and
+    physical-device behavior require their own named evidence.
 
 Reuse completed evidence unless a change or unresolved concern requires a new
 check. User-confirmed manual steps are valid evidence for their named visible
@@ -542,4 +621,16 @@ TrackPlayer.getActiveMediaItem().then((item) => replay(item))
 const active = TrackPlayer.getActiveMediaItem()
 TrackPlayer.seekTo(5)
 // Observe getProgress().position, active identity and isPlaying() convergence.
+```
+
+```ts
+// Wrong: applying a preference by replacing the active item interrupts playback.
+PersistStatus.set('music.preciseSeeking', enabled)
+TrackPlayer.setMediaItems([toMediaItem(current, newToken, false, { preciseSeeking: enabled })])
+
+// Correct Settings handler: a single preference write.
+PersistStatus.set('music.preciseSeeking', enabled)
+// The existing setTrackSource owner samples it at the next valid construction.
+const options = { preciseSeeking: PersistStatus.get('music.preciseSeeking') === true }
+const item = toMediaItem(resolvedTrack, token, false, options)
 ```

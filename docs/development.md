@@ -27,6 +27,12 @@ cd ..
 补丁让颜色值 `0` 沿用系统着色，恢复菜单图标及深浅色适配；此版本不支持用 `0` 隐藏图标。
 更新该补丁后需要重新构建 iOS App，仅刷新 JavaScript 不会生效。
 
+`@rntp/player@5.9.2` 的 iOS 补丁还接入了设置中的“精确跳转”。每次 App 创建歌曲时
+保存所选策略，原生重试及代理回退继续使用该策略；标记为直播的条目和静音占位不启用精确准备。
+更改此补丁同样需要重新编译原生 App。开关默认关闭，开启后的加载等待说明见 README。
+实际音频对齐、冷启动成本及可复用诊断命令见
+[精确跳转实现与验证](maintenance/2026-09-10-precise-seeking.md)。
+
 项目保留了 `ios/` 原生工程，其中包含 `user-api-preload.js` 和分享扩展。
 自定义 JavaScriptCore 引擎与现代原生接口位于 `modules/cymusic-native/`，通过
 Expo 自动链接加入原生构建。修改 Expo 配置后，需要同步检查原生工程；
@@ -102,6 +108,7 @@ xcodebuild -workspace ios/CyMusic.xcworkspace \
 ```bash
 node scripts/check-rntp-player.mjs
 node scripts/check-rntp-remote-native.mjs
+node scripts/check-rntp-precise-seeking.mjs
 node scripts/check-local-files.mjs
 node scripts/check-file-downloads.mjs
 node scripts/check-source-host.mjs

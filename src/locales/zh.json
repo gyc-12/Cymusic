@@ -15,6 +15,7 @@
 			"viewLogs": "查看日志",
 			"clearPlaylist": "清空待播清单",
 			"autoCacheLocal": "自动缓存歌曲到本地",
+			"preciseSeeking": "精确跳转",
 			"switchSource": "切换音源",
 			"selectSource": "选择音源",
 			"sourceStatus": "音源状态",
@@ -30,6 +31,9 @@
 			"testSources": "测试所有音源",
 			"isCachedIconVisible": "是否显示已缓存图标",
 			"songsNumsToLoad": "首页播放歌曲数量"
+		},
+		"descriptions": {
+			"preciseSeeking": "改善部分 FLAC 快进后的音频与歌词不同步。开启后可能需要加载完整音频，播放前等待更久。切换歌曲后生效。"
 		},
 		"actions": {
 			"import": {

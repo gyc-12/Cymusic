@@ -108,6 +108,226 @@ index e14f0a0..017c4b8 100644
  }
 
  extension TrackPlayer {
+diff --git a/node_modules/@rntp/player/ios/models/MediaItem.swift b/node_modules/@rntp/player/ios/models/MediaItem.swift
+index c38942a..1a752f6 100644
+--- a/node_modules/@rntp/player/ios/models/MediaItem.swift
++++ b/node_modules/@rntp/player/ios/models/MediaItem.swift
+@@ -4,6 +4,7 @@
+ //
+
+ import UIKit
++import CoreFoundation
+
+ private let imageCache = NSCache<NSString, UIImage>()
+
+@@ -91,6 +92,12 @@ extension MediaItem: AudioItem {
+   var sourceType: SourceType { url.isLocal ? .file : .stream }
+   var headers: [String: String]? { url.headers }
+   var isLive: Bool { self.isLiveStream ?? false }
++  var prefersPreciseTiming: Bool {
++    guard let playback = extras?["cymusicPlayback"] as? [String: Any],
++          let value = playback["preciseSeeking"] as? NSNumber,
++          CFGetTypeID(value) == CFBooleanGetTypeID() else { return false }
++    return value.boolValue
++  }
+
+   func getArtwork(_ handler: @escaping (UIImage?) -> Void) {
+     guard let artworkUrl = artworkUrl?.value else {
+diff --git a/node_modules/@rntp/player/ios/player/AVPlayerEngine.swift b/node_modules/@rntp/player/ios/player/AVPlayerEngine.swift
+index edc06f0..f9e5053 100644
+--- a/node_modules/@rntp/player/ios/player/AVPlayerEngine.swift
++++ b/node_modules/@rntp/player/ios/player/AVPlayerEngine.swift
+@@ -37,13 +37,13 @@ class AVPlayerEngine: NSObject, PlayerEngine, AVPlayerItemMetadataOutputPushDele
+   /// Cache key for the currently loaded URL, used for cachedPosition.
+   private(set) var currentCacheKey: String?
+
+-  /// Origin url + headers for a one-shot direct fallback. Non-nil exactly when
++  /// Origin context for a one-shot direct fallback. Non-nil exactly when
+   /// the current load went through the cache proxy and a fallback has not yet
+   /// been consumed. If a proxied load fails (e.g. the localhost proxy is
+   /// suspended in the background), the engine retries once directly from the
+   /// origin (uncached) instead of surfacing a failure. Cleared to nil for
+   /// already-direct loads (file://, isLive, no-cache) and once consumed.
+-  private var pendingDirectFallback: (url: URL, headers: [String: String]?)?
++  private var pendingDirectFallback: SourceContext?
+
+   /// Monotonically increasing token incremented on every `load`/`reset`. Each
+   /// item's observers capture the generation in effect when they were installed
+@@ -62,6 +62,7 @@ class AVPlayerEngine: NSObject, PlayerEngine, AVPlayerItemMetadataOutputPushDele
+     let url: URL
+     let headers: [String: String]?
+     let isLive: Bool
++    let prefersPreciseTiming: Bool
+   }
+
+   private struct LiveRefresh {
+@@ -215,7 +216,7 @@ class AVPlayerEngine: NSObject, PlayerEngine, AVPlayerItemMetadataOutputPushDele
+         guard let self, cacheKey == self.currentCacheKey,
+               let ctx = self.pendingDirectFallback else { return }
+         self.pendingDirectFallback = nil
+-        self.loadDirect(url: ctx.url, headers: ctx.headers)
++        self.loadDirect(ctx)
+       }
+     }
+
+@@ -256,38 +257,46 @@ class AVPlayerEngine: NSObject, PlayerEngine, AVPlayerItemMetadataOutputPushDele
+     avPlayer.pause()
+   }
+
+-  func load(url: URL, headers: [String: String]? = nil, isLive: Bool = false) {
++  func load(url: URL, headers: [String: String]? = nil, isLive: Bool = false, prefersPreciseTiming: Bool = false) {
+     cancelLiveRefresh()
+-    activeSource = SourceContext(url: url, headers: headers, isLive: isLive)
+-    loadSource(url: url, headers: headers, isLive: isLive)
++    let source = SourceContext(
++      url: url,
++      headers: headers,
++      isLive: isLive,
++      prefersPreciseTiming: prefersPreciseTiming && !isLive
++    )
++    activeSource = source
++    loadSource(source)
+   }
+
+-  private func loadSource(url: URL, headers: [String: String]?, isLive: Bool) {
++  private func loadSource(_ source: SourceContext) {
+     if let testSourceLoader {
+       loadGeneration &+= 1
+-      testSourceLoader(url, headers, isLive, loadGeneration)
++      testSourceLoader(source.url, source.headers, source.isLive, loadGeneration)
+       return
+     }
+     if let proxy = proxyServer, let cache = cache,
+-       url.scheme?.hasPrefix("http") == true {
++       source.url.scheme?.hasPrefix("http") == true {
+       // Live resources use the in-memory proxy relay; finite resources use disk.
+       let proxyURL = proxy.proxyURL(
+-        for: url,
+-        headers: headers,
+-        cacheable: !isLive,
+-        liveStream: isLive
++        for: source.url,
++        headers: source.headers,
++        cacheable: !source.isLive,
++        liveStream: source.isLive
+       )
+-      let cacheKey = cache.cacheKey(for: url)
++      let cacheKey = cache.cacheKey(for: source.url)
+       currentCacheKey = cacheKey
+-      pendingDirectFallback = (url: url, headers: headers)
++      pendingDirectFallback = source
+
+-      let asset = AVURLAsset(url: proxyURL)
++      let options: [String: Any]? = source.prefersPreciseTiming
++        ? [AVURLAssetPreferPreciseDurationAndTimingKey: true] : nil
++      let asset = AVURLAsset(url: proxyURL, options: options)
+       installItem(AVPlayerItem(asset: asset))
+       prepareCachedMetadataReplay(for: cacheKey)
+     } else {
+       // File URLs and configurations without a cache stay direct. Failures
+       // surface immediately because there is no proxy fallback context.
+-      loadDirect(url: url, headers: headers)
++      loadDirect(source)
+     }
+   }
+
+@@ -295,17 +304,21 @@ class AVPlayerEngine: NSObject, PlayerEngine, AVPlayerItemMetadataOutputPushDele
+   /// item. Reused by the normal direct `load()` branch and by the one-shot
+   /// direct fallback. Clears `currentCacheKey` and arms no fallback context, so
+   /// a subsequent failure surfaces normally.
+-  private func loadDirect(url: URL, headers: [String: String]?) {
++  private func loadDirect(_ source: SourceContext) {
+     // Ask the origin to interleave ICY metadata (matches media3) unless the
+     // caller opted out; AVPlayer parses it natively on the direct path.
+-    var assetHeaders = headers ?? [:]
++    var assetHeaders = source.headers ?? [:]
+     let callerSetIcy = assetHeaders.keys.contains {
+       $0.caseInsensitiveCompare("icy-metadata") == .orderedSame
+     }
+     if !callerSetIcy {
+       assetHeaders["Icy-MetaData"] = "1"
+     }
+-    let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": assetHeaders])
++    var options: [String: Any] = ["AVURLAssetHTTPHeaderFieldsKey": assetHeaders]
++    if source.prefersPreciseTiming {
++      options[AVURLAssetPreferPreciseDurationAndTimingKey] = true
++    }
++    let asset = AVURLAsset(url: source.url, options: options)
+
+     currentCacheKey = nil
+     pendingDirectFallback = nil
+@@ -392,7 +405,7 @@ class AVPlayerEngine: NSObject, PlayerEngine, AVPlayerItemMetadataOutputPushDele
+       return
+     }
+     liveRefresh = LiveRefresh(generation: -1, completions: [completion])
+-    loadSource(url: source.url, headers: source.headers, isLive: source.isLive)
++    loadSource(source)
+     liveRefresh?.generation = loadGeneration
+   }
+
+@@ -445,7 +458,7 @@ class AVPlayerEngine: NSObject, PlayerEngine, AVPlayerItemMetadataOutputPushDele
+
+     if let ctx = pendingDirectFallback {
+       pendingDirectFallback = nil
+-      loadDirect(url: ctx.url, headers: ctx.headers)
++      loadDirect(ctx)
+       return
+     }
+     onItemFailed?(code, message)
+diff --git a/node_modules/@rntp/player/ios/player/AudioItem.swift b/node_modules/@rntp/player/ios/player/AudioItem.swift
+index c95d040..95a6de3 100644
+--- a/node_modules/@rntp/player/ios/player/AudioItem.swift
++++ b/node_modules/@rntp/player/ios/player/AudioItem.swift
+@@ -17,6 +17,8 @@ protocol AudioItem {
+   var sourceType: SourceType { get }
+   var headers: [String: String]? { get }
+   var isLive: Bool { get }
++  /// Immutable per-item asset timing preference; live sources ignore it.
++  var prefersPreciseTiming: Bool { get }
+   var title: String? { get }
+   var artist: String? { get }
+   var albumTitle: String? { get }
+@@ -29,4 +31,5 @@ protocol AudioItem {
+
+ extension AudioItem {
+   var duration: Double? { nil }
++  var prefersPreciseTiming: Bool { false }
+ }
+diff --git a/node_modules/@rntp/player/ios/player/AudioPlayer.swift b/node_modules/@rntp/player/ios/player/AudioPlayer.swift
+index 30e5ef9..debaf27 100644
+--- a/node_modules/@rntp/player/ios/player/AudioPlayer.swift
++++ b/node_modules/@rntp/player/ios/player/AudioPlayer.swift
+@@ -216,7 +216,7 @@ class AudioPlayer {
+
+     guard let itemUrl = url else { return }
+
+-    engine.load(url: itemUrl, headers: item.headers, isLive: item.isLive)
++    engine.load(url: itemUrl, headers: item.headers, isLive: item.isLive, prefersPreciseTiming: item.prefersPreciseTiming)
+     state = .loading
+   }
+
+@@ -456,7 +456,7 @@ class AudioPlayer {
+       artworkUri: nil,
+       genre: nil
+     )
+-    engine.load(url: itemUrl, headers: item.headers, isLive: item.isLive)
++    engine.load(url: itemUrl, headers: item.headers, isLive: item.isLive, prefersPreciseTiming: item.prefersPreciseTiming)
+     state = .loading
+     resetNowPlaying(for: item)
+     onCurrentItemChanged?(item, queue.currentIndex)
+diff --git a/node_modules/@rntp/player/ios/player/PlayerEngine.swift b/node_modules/@rntp/player/ios/player/PlayerEngine.swift
+index 3c9d172..c62df12 100644
+--- a/node_modules/@rntp/player/ios/player/PlayerEngine.swift
++++ b/node_modules/@rntp/player/ios/player/PlayerEngine.swift
+@@ -52,7 +52,7 @@ protocol PlayerEngine: AnyObject {
+
+   func play()
+   func pause()
+-  func load(url: URL, headers: [String: String]?, isLive: Bool)
++  func load(url: URL, headers: [String: String]?, isLive: Bool, prefersPreciseTiming: Bool)
+   func seek(to seconds: TimeInterval, completion: @escaping (Bool) -> Void)
+   func seekToLiveEdge(completion: @escaping (Bool) -> Void)
+   func reset()
 diff --git a/node_modules/@rntp/player/src/trackPlayerModule.ts b/node_modules/@rntp/player/src/trackPlayerModule.ts
 index 3093274..362db37 100644
 --- a/node_modules/@rntp/player/src/trackPlayerModule.ts

@@ -8,6 +8,10 @@ export type NativeTrackIdentity = {
 	placeholder: boolean
 }
 
+export type MediaItemPlaybackOptions = {
+	preciseSeeking?: boolean
+}
+
 export function getNativeTrackIdentity(item: MediaItem | null | undefined): NativeTrackIdentity | null {
 	const identity = item?.extras?.cymusic
 	if (!identity || typeof identity !== 'object') return null
@@ -38,7 +42,12 @@ function requireMediaUri(value: unknown): string {
 }
 
 /** Keep source URL/headers in the app record; native getters do not retain headers. */
-export function toMediaItem(track: Track, token: string, placeholder = false): MediaItem {
+export function toMediaItem(
+	track: Track,
+	token: string,
+	placeholder = false,
+	playbackOptions?: MediaItemPlaybackOptions,
+): MediaItem {
 	const uri = requireMediaUri(track.url)
 	const identity: NativeTrackIdentity = {
 		id: String(track.id),
@@ -60,6 +69,11 @@ export function toMediaItem(track: Track, token: string, placeholder = false): M
 		duration: Number.isFinite(track.duration) && track.duration >= 0 ? track.duration : undefined,
 		isLive: track.isLiveStream,
 		mimeType: track.contentType,
-		extras: { cymusic: identity },
+		extras: {
+			cymusic: identity,
+			cymusicPlayback: {
+				preciseSeeking: playbackOptions?.preciseSeeking === true && !placeholder && !track.isLiveStream,
+			},
+		},
 	}
 }

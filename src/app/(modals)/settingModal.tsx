@@ -26,7 +26,9 @@ import {
 	ActivityIndicator,
 	Alert,
 	Image,
+	type ImageSourcePropType,
 	Linking,
+	Platform,
 	ScrollView,
 	StyleSheet,
 	Switch,
@@ -38,6 +40,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message'
 const QUALITY_OPTIONS = ['128k', '320k', 'flac']
 const CURRENT_VERSION = Constants.expoConfig?.version ?? '未知版本'
+
+type SettingItem = {
+	id: string
+	title: string
+	icon?: ImageSourcePropType
+} & (
+	| {
+			type: 'switch'
+			value: boolean
+			description: string
+			onValueChange: (value: boolean) => void
+		}
+	| { type: 'link' | 'value' | 'custom'; value?: string }
+)
 
 // 将GlobalState实例移到组件外部
 const cooldownStore = new GlobalState<number>(0) // 冷却时间（秒）
@@ -373,6 +389,7 @@ const SettingModal = () => {
 	const autoCacheLocal = autoCacheLocalStore.useValue()
 	const isCachedIconVisible = isCachedIconVisibleStore.useValue()
 	const songsNumsToLoad = songsNumsToLoadStore.useValue()
+	const preciseSeeking = PersistStatus.useValue('music.preciseSeeking', false) === true
 	const themeLabel = useMemo(() => {
 		switch (themeMode) {
 			case 'light':
@@ -383,7 +400,7 @@ const SettingModal = () => {
 				return i18n.t('settings.actions.theme.system')
 		}
 	}, [themeMode])
-	const settingsData = [
+	const settingsData: { title: string; data: SettingItem[] }[] = [
 		{
 			title: i18n.t('settings.sections.appInfo'),
 			data: [
@@ -418,6 +435,18 @@ const SettingModal = () => {
 					title: i18n.t('settings.items.autoCacheLocal'),
 					type: 'value',
 				},
+				...(Platform.OS === 'ios'
+					? [
+						{
+							id: 'preciseSeeking',
+							title: i18n.t('settings.items.preciseSeeking'),
+							description: i18n.t('settings.descriptions.preciseSeeking'),
+							type: 'switch' as const,
+							value: preciseSeeking,
+							onValueChange: (value: boolean) => PersistStatus.set('music.preciseSeeking', value),
+						},
+					]
+					: []),
 			],
 		},
 		{
@@ -671,84 +700,99 @@ const SettingModal = () => {
 		}
 	}
 
-	const renderItem = (item, index, sectionData) => (
-		<View key={item.id}>
-			<TouchableOpacity
-				key={item.id}
-				style={[
-					styles.item,
-					index === 0 && styles.firstItem,
-					index === sectionData.length - 1 && styles.lastItem,
-				]}
-				onPress={() => {
-					if (item.title === i18n.t('settings.items.viewLogs')) {
-						router.push('/(modals)/logScreen')
-					}
-					if (item.title === i18n.t('settings.items.projectLink')) {
-						Linking.openURL('https://github.com/gyc-12/Cymusic').catch((err) =>
-							logError("Couldn't load page", err),
-						)
-					} else if (item.type === 'link') {
-						if (item.title === i18n.t('settings.items.clearPlaylist')) {
-							Alert.alert(
-								i18n.t('settings.actions.clearPlaylist.title'),
-								i18n.t('settings.actions.clearPlaylist.message'),
-								[
-									{ text: i18n.t('settings.actions.clearPlaylist.cancel'), style: 'cancel' },
-									{
-										text: i18n.t('settings.actions.clearPlaylist.confirm'),
-										onPress: () => myTrackPlayer.clearToBePlayed(),
-									},
-								],
-							)
-						} else if (item.title === i18n.t('settings.items.importSource')) {
-							// importMusicSourceFromFile()
-						} else if (item.title === 'CyMusic') {
-							showToast('CyMusic', 'success')
-						}
-						// logInfo(`Navigate to ${item.title}`)
-					} else if (item.title === i18n.t('settings.items.checkUpdate')) {
-						checkForUpdates()
-					} else if (item.title === i18n.t('settings.items.clearCache')) {
-						handleClearCache()
-					}
-				}}
-			>
-				{item.icon && <Image source={item.icon} style={styles.icon} />}
-				<View style={styles.itemContent}>
-					<Text style={styles.itemText}>{item.title}</Text>
-					{item.type === 'switch' && (
-						<Switch
-							value={item.value}
-							onValueChange={(newValue) => {
-								logInfo(`${item.title} switched to ${newValue}`)
-							}}
-						/>
-					)}
-					{item.type === 'value' && <Text style={styles.itemValue}>{item.value}</Text>}
-					{item.title === i18n.t('settings.items.currentQuality') && (
-						<MusicQualityMenu currentQuality={currentQuality} onSelectQuality={setCurrentQuality} />
-					)}
-					{item.title === i18n.t('settings.items.switchSource') && (
-						<MusicSourceMenu isDelete={false} onSelectSource={handleSelectSource} />
-					)}
-					{item.title === i18n.t('settings.items.deleteSource') && (
-						<MusicSourceMenu isDelete={true} onSelectSource={handleDeleteSource} />
-					)}
-					{item.title === i18n.t('settings.items.importSource') && importMusicSourceMenu}
-					{(item.type === 'link' || item.title === i18n.t('settings.items.projectLink')) &&
-						!item.icon && <Text style={styles.arrowRight}>{'>'}</Text>}
-					{item.title === i18n.t('settings.items.autoCacheLocal') && toggleAutoCacheLocalMenu}
-					{item.title === i18n.t('settings.items.changeLanguage') && changeLanguageMenu}
-					{item.title === i18n.t('settings.items.theme') && themeMenu}
-					{item.title === i18n.t('settings.items.isCachedIconVisible') &&
-						toggleIsCachedIconVisibleMenu}
-					{item.title === i18n.t('settings.items.songsNumsToLoad') && toggleSongsNumsToLoadMenu}
+	const renderItem = (item: SettingItem, index: number, sectionData: SettingItem[]) => {
+		const itemStyle = [
+			styles.item,
+			index === 0 && styles.firstItem,
+			index === sectionData.length - 1 && styles.lastItem,
+		]
+		if (item.type === 'switch') {
+			return (
+				<View key={item.id}>
+					<View style={[itemStyle, styles.switchItem]}>
+						<View style={styles.switchHeader}>
+							<Text style={[styles.itemText, styles.switchTitle]}>{item.title}</Text>
+							<Switch
+								testID={`settings.${item.id}`}
+								value={item.value}
+								onValueChange={item.onValueChange}
+								accessibilityLabel={item.title}
+								accessibilityHint={item.description}
+							/>
+						</View>
+						<Text style={styles.itemDescription}>{item.description}</Text>
+					</View>
+					{index !== sectionData.length - 1 && <View style={styles.separator} />}
 				</View>
-			</TouchableOpacity>
-			{index !== sectionData.length - 1 && <View style={styles.separator} />}
-		</View>
-	)
+			)
+		}
+		return (
+			<View key={item.id}>
+				<TouchableOpacity
+					key={item.id}
+					style={itemStyle}
+					onPress={() => {
+						if (item.title === i18n.t('settings.items.viewLogs')) {
+							router.push('/(modals)/logScreen')
+						}
+						if (item.title === i18n.t('settings.items.projectLink')) {
+							Linking.openURL('https://github.com/gyc-12/Cymusic').catch((err) =>
+								logError("Couldn't load page", err),
+							)
+						} else if (item.type === 'link') {
+							if (item.title === i18n.t('settings.items.clearPlaylist')) {
+								Alert.alert(
+									i18n.t('settings.actions.clearPlaylist.title'),
+									i18n.t('settings.actions.clearPlaylist.message'),
+									[
+										{ text: i18n.t('settings.actions.clearPlaylist.cancel'), style: 'cancel' },
+										{
+											text: i18n.t('settings.actions.clearPlaylist.confirm'),
+											onPress: () => myTrackPlayer.clearToBePlayed(),
+										},
+									],
+								)
+							} else if (item.title === i18n.t('settings.items.importSource')) {
+								// importMusicSourceFromFile()
+							} else if (item.title === 'CyMusic') {
+								showToast('CyMusic', 'success')
+							}
+							// logInfo(`Navigate to ${item.title}`)
+						} else if (item.title === i18n.t('settings.items.checkUpdate')) {
+							checkForUpdates()
+						} else if (item.title === i18n.t('settings.items.clearCache')) {
+							handleClearCache()
+						}
+					}}
+				>
+					{item.icon && <Image source={item.icon} style={styles.icon} />}
+					<View style={styles.itemContent}>
+						<Text style={styles.itemText}>{item.title}</Text>
+						{item.type === 'value' && <Text style={styles.itemValue}>{item.value}</Text>}
+						{item.title === i18n.t('settings.items.currentQuality') && (
+							<MusicQualityMenu currentQuality={currentQuality} onSelectQuality={setCurrentQuality} />
+						)}
+						{item.title === i18n.t('settings.items.switchSource') && (
+							<MusicSourceMenu isDelete={false} onSelectSource={handleSelectSource} />
+						)}
+						{item.title === i18n.t('settings.items.deleteSource') && (
+							<MusicSourceMenu isDelete={true} onSelectSource={handleDeleteSource} />
+						)}
+						{item.title === i18n.t('settings.items.importSource') && importMusicSourceMenu}
+						{(item.type === 'link' || item.title === i18n.t('settings.items.projectLink')) &&
+							!item.icon && <Text style={styles.arrowRight}>{'>'}</Text>}
+						{item.title === i18n.t('settings.items.autoCacheLocal') && toggleAutoCacheLocalMenu}
+						{item.title === i18n.t('settings.items.changeLanguage') && changeLanguageMenu}
+						{item.title === i18n.t('settings.items.theme') && themeMenu}
+						{item.title === i18n.t('settings.items.isCachedIconVisible') &&
+							toggleIsCachedIconVisibleMenu}
+						{item.title === i18n.t('settings.items.songsNumsToLoad') && toggleSongsNumsToLoadMenu}
+					</View>
+				</TouchableOpacity>
+				{index !== sectionData.length - 1 && <View style={styles.separator} />}
+			</View>
+		)
+	}
 	const GlobalLoading = () => (
 		<View style={styles.loadingOverlay}>
 			<ActivityIndicator size="large" color={colors.loading} />
@@ -902,6 +946,25 @@ const createStyles = (colors: ThemeColors) =>
 	itemText: {
 		fontSize: 16,
 		color: colors.text,
+	},
+	switchItem: {
+		flexDirection: 'column',
+		alignItems: 'stretch',
+	},
+	switchHeader: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+	},
+	switchTitle: {
+		flex: 1,
+		marginRight: 12,
+	},
+	itemDescription: {
+		marginTop: 8,
+		fontSize: 13,
+		lineHeight: 19,
+		color: colors.textMuted,
 	},
 	itemValue: {
 		fontSize: 16,

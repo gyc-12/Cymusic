@@ -17,6 +17,7 @@ interface IPersistConfig {
 	'music.favorites': IMusic.IMusicItem[]
 	'music.rate': number
 	'music.quality': IMusic.IQualityKey
+	'music.preciseSeeking': boolean
 	'app.skipVersion': string
 	'app.pluginUpdateTime': number
 	'lyric.showTranslation': boolean

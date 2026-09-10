@@ -15,6 +15,7 @@
 			"viewLogs": "View Logs",
 			"clearPlaylist": "Clear Playlist",
 			"autoCacheLocal": "Auto Cache Songs Locally",
+			"preciseSeeking": "Precise seeking",
 			"switchSource": "Switch Source",
 			"selectSource": "Select Source",
 			"sourceStatus": "Source Status",
@@ -30,6 +31,9 @@
 			"testSources": "Test All Sources",
 			"isCachedIconVisible": "isCachedIconVisible",
 			"songsNumsToLoad": "Songs Nums to Load"
+		},
+		"descriptions": {
+			"preciseSeeking": "Helps keep audio and lyrics aligned after seeking in some FLAC files. Playback may wait for the full audio file to load. Applies after changing tracks."
 		},
 		"actions": {
 			"import": {

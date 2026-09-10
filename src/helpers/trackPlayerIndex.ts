@@ -534,7 +534,12 @@ const stop = () => {
 const setTrackSource = (track: Track) => {
 	currentIndex = getMusicIndex(track as IMusic.IMusicItem)
 	const token = createTrackSourceLoadingToken(track as IMusic.IMusicItem)
-	const items = [toMediaItem(track, token), toMediaItem(getFakeNextTrack(), token, true)]
+	// Snapshot after source resolution. A preference change never reloads the active item.
+	const playbackOptions = { preciseSeeking: PersistStatus.get('music.preciseSeeking') === true }
+	const items = [
+		toMediaItem(track, token, false, playbackOptions),
+		toMediaItem(getFakeNextTrack(), token, true),
+	]
 	// Keep the complete resolved source in JS. v5 getter projections lose headers.
 	nativeQueue = { token, track, startedAt: Date.now(), handoffConsumed: false }
 	ReactNativeTrackPlayer.setMediaItems(items)
