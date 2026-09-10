@@ -58,6 +58,11 @@ cd ..
 使用仓库中的 `yarn.lock`、`ios/Podfile.lock` 和 `patch-package --error-on-fail`。
 补丁失败时应修复对应版本的补丁；不要跳过 postinstall 或改用另一份锁文件。
 
+`@react-native-menu/menu@2.0.0` 的 iOS 补丁修复新架构下默认图标颜色被转换为透明色的问题
+（[上游 issue #1034](https://github.com/react-native-menu/menu/issues/1034)）。
+补丁让颜色值 `0` 沿用系统着色，恢复菜单图标及深浅色适配；此版本不支持用 `0` 隐藏图标。
+更新该补丁后需要重新构建 iOS App，仅刷新 JavaScript 不会生效。
+
 项目保留了 `ios/` 原生工程，其中包含 `user-api-preload.js` 和分享扩展。
 自定义 JavaScriptCore 引擎与现代原生接口位于 `modules/cymusic-native/`，通过
 Expo 自动链接加入原生构建。修改 Expo 配置后，需要同步检查原生工程；

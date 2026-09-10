@@ -1,0 +1,14 @@
+diff --git a/node_modules/@react-native-menu/menu/ios/Shared/RCTMenuItem.swift b/node_modules/@react-native-menu/menu/ios/Shared/RCTMenuItem.swift
+--- a/node_modules/@react-native-menu/menu/ios/Shared/RCTMenuItem.swift
++++ b/node_modules/@react-native-menu/menu/ios/Shared/RCTMenuItem.swift
+@@ -32,7 +32,9 @@ class RCTMenuAction {
+             if self.image === nil {
+                 self.image = UIImage(named: image as String)
+             }
+-            if let imageColor = details["imageColor"] {
++            // Fabric defaults an omitted imageColor to 0 (transparent).
++            // Preserve the system tint for default icons, including submenus.
++            if let imageColor = details["imageColor"], (imageColor as? Int) != 0 {
+                 self.image = self.image?.withTintColor(RCTConvert.uiColor(imageColor), renderingMode: .alwaysOriginal)
+             }
+         }
