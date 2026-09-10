@@ -73,3 +73,10 @@ work commit, install pristine pinned dependencies with the retained patches,
 then rebuild native code to restore the old asset timing policy. Reverting a
 patch file alone does not reverse the already-patched `node_modules` files.
 No music-data migration or deletion is required.
+
+## Completed work commit
+
+Approved scope committed as `8514a1aa2966309870638a86411496b70dd6468e`. The paths above
+are the original work-commit paths; these eight task records were subsequently
+moved under `.trellis/tasks/archive/2026-09/09-10-flac-seek-lyric-sync/`
+by the separate task-archival bookkeeping commit.

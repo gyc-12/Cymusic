@@ -3,8 +3,9 @@
 Date: 2026-09-10. Baseline `0bdaf08`; branch `codex/flac-precise-seeking`.
 The user approved implementation with “开始实现”. Product implementation and the
 current-checkout Debug simulator rebuild are complete. Independent review of the PCM matcher's phase-resolution repair, affected
-captures and completed documentation has passed. The user then approved the single work commit and push with “提交推送”;
-the task stays `in_progress` until the work commit and archival finish.
+captures and completed documentation has passed. The user then approved the single work commit and push with “提交推送”.
+Work commit `8514a1a` contains the approved feature scope; this task is
+now completed and archived.
 
 ## Requirements and evidence
 

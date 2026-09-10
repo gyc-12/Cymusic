@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/frontend/native-upgrade-contracts.md", "reason": "Pinned RNTP v5 ownership, native playback, headers, queue generations, licenses, and evidence limits."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Keep actual audio position, native time, facade progress and lyric selection as separate contracts."}
+{"file": ".trellis/tasks/archive/2026-09/09-10-flac-seek-lyric-sync/research/native-flac-seek.md", "reason": "Source-backed AVPlayer loading/seek boundary, independent PCM method and controlled precision trade-offs."}
+{"file": ".trellis/tasks/archive/2026-09/09-10-flac-seek-lyric-sync/research/runtime-reproduction.md", "reason": "Confirmed iOS baseline and precision comparison, full-file startup cost and App/device acceptance limits."}
+{"file": ".trellis/tasks/archive/2026-09/09-10-flac-seek-lyric-sync/research/precision-toggle-app.md", "reason": "Existing Settings and PersistStatus owners; default-off non-interrupting UI and pure per-item projection."}
+{"file": ".trellis/tasks/archive/2026-09/09-10-flac-seek-lyric-sync/research/precision-toggle-native.md", "reason": "Five-file native preference propagation, immutable source/fallback contract and actual-method validation boundaries."}
+{"file": ".trellis/tasks/archive/2026-09/09-10-flac-seek-lyric-sync/research/flac-seek-fixture.md", "reason": "Qualified original FLAC regression source and independent PCM content assertions without user media."}
