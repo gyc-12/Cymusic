@@ -1,0 +1,38 @@
+{
+  "id": "immersive-artwork-player",
+  "name": "immersive-artwork-player",
+  "title": "Immersive artwork player",
+  "description": "Make the player cover fill the upper screen and blend naturally into a matching cover-derived control background.",
+  "status": "completed",
+  "dev_type": "frontend",
+  "scope": "player",
+  "package": null,
+  "priority": "P2",
+  "creator": "gyc",
+  "assignee": "gyc",
+  "createdAt": "2026-09-11",
+  "completedAt": "2026-09-11",
+  "branch": "codex/immersive-artwork-player",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": "5e8340e3e634dcba0a05b224cf14c4f361a5187c",
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "src/app/player.tsx",
+    "src/hooks/usePlayerBackground.tsx",
+    "scripts/check-player-background.mjs",
+    ".trellis/spec/frontend/native-upgrade-contracts.md"
+  ],
+  "notes": "Implementation and independent review complete; feature commit 5e8340e contains the player, palette, focused checks and image contract. User authorized merge to main, commit and push on 2026-09-11. Archive records implementation delivery; current manual slider/swipe/dismissal results remain unreported and are not counted as passed.",
+  "meta": {
+    "complexity": "complex",
+    "planning_status": "approved",
+    "implementation_status": "complete",
+    "review_status": "passed_with_inherited_type_diagnostic",
+    "acceptance_status": "delivery_authorized_manual_gestures_unconfirmed",
+    "delivery_target": "main"
+  }
+}
