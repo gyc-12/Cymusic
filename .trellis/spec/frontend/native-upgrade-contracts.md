@@ -324,6 +324,23 @@ destroy(): string
   fallback artwork. An ordinary loaded cover is insufficient evidence for a
   change affecting delayed/failing sources: repeated native image recreation was
   observed in the directly animated image path.
+- The full player's `usePlayerBackground` owns normalized six-digit hex colors:
+  select iOS `background` (its `primary` is contrasting foreground) and Android/web
+  `dominant`. Scale RGB together to keep relative luminance at most `0.1`; use
+  `#191b20` for missing/invalid/pending/failed results. Associate state with the
+  requested URI during render and retire asynchronous writes on cleanup. Keep
+  the hook's 50-entry LRU cache bounded and the library's unbounded cache disabled.
+- The full player and every artwork fade stop share the same base RGB; the fade
+  must become opaque before the white title and translucent artist label. A dark
+  palette alone does not establish contrast while bright artwork remains beneath
+  those labels. Inspect a pure-white cover as well as normal warm/cool covers on
+  both regular and compact layouts.
+- Full-player artwork keeps its size while paused and animates through its
+  enclosing view, preserving the memoized source, recycling key and placeholder.
+  Always reset horizontal translation in `onFinalize`, including cancelled and
+  unsuccessful skips. Let vertical movement fail the horizontal recognizer so
+  it can reach the existing screen dismissal. Native drag/swipe behavior requires
+  actual gesture evidence; a coordinate action that only taps does not establish it.
 
 ### System volume, request grace and sleep deadlines
 
