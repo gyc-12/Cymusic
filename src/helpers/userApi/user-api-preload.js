@@ -8,6 +8,29 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
     if (typeof str == 'string' && str.length > length) throw new Error('Input too long')
     return str
   }
+  const describeError = (err) => {
+    // Extract a human-readable error message from any thrown value.
+    // CyMusic 上游对 errorMessage 只做 || 兜底，脚本抛 throw "str" / throw null /
+    // Error 无 message / Promise reject(undefined) 时全都会退化成 "unknown"，
+    // 上层 MusicSourceResolver 只拿到 "Script returned error"，导致用户看不到真实原因。
+    if (err == null) return 'Script threw null/undefined (no error object)'
+    if (typeof err === 'string') return err
+    if (typeof err === 'number' || typeof err === 'boolean') return String(err)
+    if (typeof err === 'function') {
+      try { return err.toString().split('\n')[0] } catch { return 'Script threw a function' }
+    }
+    if (typeof err.message === 'string' && err.message) return err.message
+    if (typeof err.toString === 'function') {
+      const s = err.toString()
+      if (s && s !== '[object Object]') return s
+    }
+    if (typeof err.stack === 'string' && err.stack) return err.stack.split('\n')[0]
+    try {
+      const obj = JSON.stringify(err)
+      if (obj && obj !== '{}' && obj !== 'null') return obj.slice(0, 500)
+    } catch {}
+    return 'Script error (unknown shape: ' + Object.prototype.toString.call(err) + ')'
+  }
   const nativeFuncNames = [
     '__lx_native_call__set_timeout',
     '__lx_native_call__utils_str2b64',
@@ -271,14 +294,14 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
         nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: true, result })
       }).catch(err => {
         // console.log('handleRequest err', err)
-        nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: err.message })
+        nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: describeError(err) })
       }).finally(() => {
         if (requestContext) popRequestContext(requestContext)
       })
     } catch (err) {
       if (requestContext) popRequestContext(requestContext)
       // console.log('handleRequest call err', err)
-      nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: err.message })
+      nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: describeError(err) })
     }
   }
 

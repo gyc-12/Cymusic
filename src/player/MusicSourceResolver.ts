@@ -178,8 +178,15 @@ export const resolveSource = async (
 						logInfo(`${logPrefix} ${currentQuality}音质无可用链接(catch),尝试下一个音质`)
 					}
 					const errMsg = error instanceof Error ? error.message : String(error)
+					const errName = error instanceof Error ? error.name : 'UnknownError'
+					const errStack =
+						error instanceof Error && error.stack
+							? error.stack.split('\n').slice(1, 3).join(' > ')
+							: ''
 					if (isCurrentSourceRequest(requestType)) {
-						logError(`${logPrefix} (catch error): ${errMsg}`)
+						logError(
+							`${logPrefix} (catch ${errName}): ${errMsg}${errStack ? ` [stack: ${errStack}]` : ''}`,
+						)
 					}
 					currentQualityIndex++
 				}

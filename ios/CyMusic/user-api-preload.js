@@ -8,9 +8,31 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
     if (typeof str == 'string' && str.length > length) throw new Error('Input too long')
     return str
   }
+  const describeError = (err) => {
+    // Extract a human-readable error message from any thrown value.
+    // CyMusic 上游对 errorMessage 只做 || 兜底，脚本抛 throw "str" / throw null /
+    // Error 无 message / Promise reject(undefined) 时全都会退化成 "unknown"，
+    // 上层 MusicSourceResolver 只拿到 "Script returned error"，导致用户看不到真实原因。
+    if (err == null) return 'Script threw null/undefined (no error object)'
+    if (typeof err === 'string') return err
+    if (typeof err === 'number' || typeof err === 'boolean') return String(err)
+    if (typeof err === 'function') {
+      try { return err.toString().split('\n')[0] } catch { return 'Script threw a function' }
+    }
+    if (typeof err.message === 'string' && err.message) return err.message
+    if (typeof err.toString === 'function') {
+      const s = err.toString()
+      if (s && s !== '[object Object]') return s
+    }
+    if (typeof err.stack === 'string' && err.stack) return err.stack.split('\n')[0]
+    try {
+      const obj = JSON.stringify(err)
+      if (obj && obj !== '{}' && obj !== 'null') return obj.slice(0, 500)
+    } catch {}
+    return 'Script error (unknown shape: ' + Object.prototype.toString.call(err) + ')'
+  }
   const nativeFuncNames = [
     '__lx_native_call__set_timeout',
-    '__lx_native_call__clear_timeout',
     '__lx_native_call__utils_str2b64',
     '__lx_native_call__utils_b642buf',
     '__lx_native_call__utils_str2md5',
@@ -26,18 +48,7 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
       return nativeFunc(...args)
     }
   }
-  // const set_timeout = globalThis.__lx_native_call__set_timeout
-  // delete globalThis.__lx_native_call__set_timeout
-  // const utils_str2b64 = globalThis.__lx_native_call__utils_str2b64
-  // delete globalThis.__lx_native_call__utils_str2b64
-  // const utils_b642buf = globalThis.__lx_native_call__utils_b642buf
-  // delete globalThis.__lx_native_call__utils_b642buf
-  // const utils_str2md5 = globalThis.__lx_native_call__utils_str2md5
-  // delete globalThis.__lx_native_call__utils_str2md5
-  // const utils_aes_encrypt = globalThis.__lx_native_call__utils_aes_encrypt
-  // delete globalThis.__lx_native_call__utils_aes_encrypt
-  // const utils_rsa_encrypt = globalThis.__lx_native_call__utils_rsa_encrypt
-  // delete globalThis.__lx_native_call__utils_rsa_encrypt
+
   const KEY_PREFIX = {
     publicKeyStart: '-----BEGIN PUBLIC KEY-----',
     publicKeyEnd: '-----END PUBLIC KEY-----',
@@ -68,7 +79,6 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
     const id = timeoutId++
     callbacks.set(id, {
       callback(...args) {
-        // eslint-disable-next-line n/no-callback-literal
         callback(...args)
       },
       params,
@@ -80,7 +90,6 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
     const tagret = callbacks.get(id)
     if (!tagret) return
     callbacks.delete(id)
-    nativeFuncs.clear_timeout(id)
   }
   const handleSetTimeout = (id) => {
     const tagret = callbacks.get(id)
@@ -133,14 +142,7 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
     request: 'request',
     cancelRequest: 'cancelRequest',
     response: 'response',
-    // 'utils.crypto.aesEncrypt': 'utils.crypto.aesEncrypt',
-    // 'utils.crypto.rsaEncrypt': 'utils.crypto.rsaEncrypt',
-    // 'utils.crypto.randomBytes': 'utils.crypto.randomBytes',
-    // 'utils.crypto.md5': 'utils.crypto.md5',
-    // 'utils.buffer.from': 'utils.buffer.from',
-    // 'utils.buffer.bufToString': 'utils.buffer.bufToString',
-    // 'utils.zlib.inflate': 'utils.zlib.inflate',
-    // 'utils.zlib.deflate': 'utils.zlib.deflate',
+
   }
   const EVENT_NAMES = {
     request: 'request',
@@ -184,9 +186,21 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
   const requestQueue = new Map()
   let isInitedApi = false
   let isShowedUpdateAlert = false
+  // Best-effort context propagation for native request logs.
+  const requestContextStack = []
+  const pushRequestContext = (context) => {
+    if (!context || typeof context != 'object') return
+    requestContextStack.push(context)
+  }
+  const popRequestContext = (context) => {
+    const index = requestContextStack.lastIndexOf(context)
+    if (index >= 0) requestContextStack.splice(index, 1)
+  }
+  const getCurrentRequestContext = () => requestContextStack[requestContextStack.length - 1] || null
 
   const sendNativeRequest = (url, options, callback) => {
     const requestKey = Math.random().toString()
+    const currentRequestContext = getCurrentRequestContext()
     const requestInfo = {
       aborted: false,
       abort: () => {
@@ -203,7 +217,17 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
       requestInfo,
     })
 
-    nativeCall(NATIVE_EVENTS_NAMES.request, { requestKey, url, options })
+    nativeCall(NATIVE_EVENTS_NAMES.request, {
+      requestKey,
+      url,
+      options,
+      parentRequestKey: currentRequestContext && typeof currentRequestContext.requestKey == 'string'
+        ? currentRequestContext.requestKey
+        : undefined,
+      requestType: currentRequestContext && typeof currentRequestContext.requestType == 'string'
+        ? currentRequestContext.requestType
+        : undefined,
+    })
     return requestInfo
   }
   const handleNativeResponse = ({ requestKey, error, response }) => {
@@ -219,8 +243,25 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
   const handleRequest = ({ requestKey, data }) => {
     // console.log(data)
     if (!events.request) return nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: 'Request event is not defined' })
+    const requestType = data && data.info && typeof data.info == 'object' && data.info.requestContext && typeof data.info.requestContext.requestType == 'string'
+      ? data.info.requestContext.requestType
+      : 'current'
+    const requestContext = typeof requestKey == 'string'
+      ? { requestKey, requestType }
+      : null
+    const requestInfo = data && data.info && typeof data.info == 'object'
+      ? { ...data.info }
+      : data.info
+    if (requestInfo && typeof requestInfo == 'object') delete requestInfo.requestContext
+    if (requestContext) pushRequestContext(requestContext)
     try {
-      events.request.call(globalThis.lx, { source: data.source, action: data.action, info: data.info }).then(response => {
+      Promise.resolve(
+        events.request.call(globalThis.lx, {
+          source: data.source,
+          action: data.action,
+          info: requestInfo,
+        }),
+      ).then(response => {
         let result
         switch (data.action) {
           case 'musicUrl':
@@ -253,11 +294,14 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
         nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: true, result })
       }).catch(err => {
         // console.log('handleRequest err', err)
-        nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: err.message })
+        nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: describeError(err) })
+      }).finally(() => {
+        if (requestContext) popRequestContext(requestContext)
       })
     } catch (err) {
+      if (requestContext) popRequestContext(requestContext)
       // console.log('handleRequest call err', err)
-      nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: err.message })
+      nativeCall(NATIVE_EVENTS_NAMES.response, { requestKey, status: false, errorMessage: describeError(err) })
     }
   }
 
@@ -379,7 +423,7 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
       },
       md5(str) {
         if (typeof str !== 'string') throw new Error('param required a string')
-        const md5 = nativeFuncs.utils_str2md5(encodeURIComponent(str))
+        const md5 = nativeFuncs.utils_str2md5(str)
         // console.log('md5', str, md5)
         return md5
       },
@@ -425,27 +469,10 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
         }
       },
     },
-    // zlib: {
-    //   inflate(buf) {
-    //     return new Promise((resolve, reject) => {
-    //       zlib.inflate(buf, (err, data) => {
-    //         if (err) reject(new Error(err.message))
-    //         else resolve(data)
-    //       })
-    //     })
-    //   },
-    //   deflate(data) {
-    //     return new Promise((resolve, reject) => {
-    //       zlib.deflate(data, (err, buf) => {
-    //         if (err) reject(new Error(err.message))
-    //         else resolve(buf)
-    //       })
-    //     })
-    //   },
-    // }),
+
   }
 
-  globalThis.lx = {
+  globalThis.lxu = {
     EVENT_NAMES,
     request(url, { method = 'get', timeout, headers, body, form, formData, binary }, callback) {
       let options = { headers, binary: binary === true }
@@ -547,25 +574,9 @@ globalThis.lx_setup = (key, id, name, description, version, author, homepage, ra
   globalThis.eval = function() {
     throw new Error('eval is not available')
   }
-  const proxyFunctionConstructor = new Proxy(Function.prototype.constructor, {
-    apply() {
-      throw new Error('Dynamic code execution is not allowed.')
-    },
-    construct() {
-      throw new Error('Dynamic code execution is not allowed.')
-    },
-  })
-  // eslint-disable-next-line no-extend-native
-  Object.defineProperty(Function.prototype, 'constructor', {
-    value: proxyFunctionConstructor,
-    writable: false,
-    configurable: false,
-    enumerable: false,
-  })
-  globalThis.Function = proxyFunctionConstructor
-  // globalThis.Function = function() {
-  //   throw new Error('Function is not available')
-  // }
+  globalThis.Function = function() {
+    throw new Error('Function is not available')
+  }
 
   const excludes = [
     Function.prototype.toString,

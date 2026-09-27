@@ -284,14 +284,24 @@ const handleScriptAction = (runtime: LxRuntime, event: any) => {
 						pending.resolve(result as string)
 					}
 				} else {
+					// 错误字段兜底：errorMessage 是主字段，但脚本可能只填 error / result
+					// 或者 result 本身是一个字符串/JSON 描述失败原因。
+					const raw =
+						respData.errorMessage ??
+						(respData as any).error ??
+						(typeof respData.result === 'string'
+							? respData.result
+							: typeof respData.result === 'object' && respData.result !== null
+								? JSON.stringify(respData.result).slice(0, 300)
+								: null)
+					const msg =
+						typeof raw === 'string' && raw.trim()
+							? raw
+							: `Script returned status=false with no usable error message (requestKey=${respData.requestKey})`
 					if (pending.requestType === 'current') {
-						logError(
-							`${logPrefix} Script response error: ${respData.errorMessage || 'unknown'}`,
-						)
+						logError(`${logPrefix} Script response error: ${msg}`)
 					}
-					pending.reject(
-						new Error(respData.errorMessage || 'Script returned error'),
-					)
+					pending.reject(new Error(msg))
 				}
 			}
 			const settled = runtime.settledRequestTypes.get(respData.requestKey)
